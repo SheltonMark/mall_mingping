@@ -5,8 +5,10 @@ import { useState } from 'react'
 import { mockProductGroups, mockCategories, mockMaterials } from '@/lib/mockData'
 import { ChevronDown, Grid3x3, List, ShoppingCart } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function ProductsPage() {
+  const { t } = useLanguage()
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [priceRange, setPriceRange] = useState({ min: 0, max: 200 })
   const [addedItem, setAddedItem] = useState<string | null>(null)
@@ -21,6 +23,7 @@ export default function ProductsPage() {
       skuId: defaultSKU.skuId,
       sku: defaultSKU.sku,
       groupName: productGroup.groupName,
+      translationKey: productGroup.translationKey,
       colorCombination: defaultSKU.colorCombination || {},
       quantity: 1,
       price: defaultSKU.price,
@@ -38,30 +41,30 @@ export default function ProductsPage() {
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8">
           <Link href="/" className="hover:text-primary transition-colors">
-            Home
+            {t('nav.home')}
           </Link>
           <span>/</span>
           <Link href="/products" className="hover:text-primary transition-colors">
-            Products
+            {t('nav.products')}
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">All Products</span>
+          <span className="text-gray-900 font-medium">{t('products.breadcrumb')}</span>
         </nav>
 
         <div className="flex flex-col md:flex-row gap-12">
           {/* Filtering Sidebar */}
           <aside className="w-full md:w-56 lg:w-64 shrink-0">
             <div className="sticky top-32">
-              <h3 className="text-lg font-bold mb-8 text-gray-900">Filters</h3>
+              <h3 className="text-lg font-bold mb-8 text-gray-900">{t('products.filters')}</h3>
               <div className="space-y-10">
                 {/* Categories */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">Categories</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.categories')}</h4>
                   <ul className="space-y-3 text-sm">
                     {mockCategories.map((category) => (
                       <li key={category.id}>
                         <a className="text-gray-600 hover:text-primary transition-colors cursor-pointer" href="#">
-                          {category.name}
+                          {category.translationKey ? t(category.translationKey) : category.name}
                         </a>
                       </li>
                     ))}
@@ -70,7 +73,7 @@ export default function ProductsPage() {
 
                 {/* Price Range */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">Price Range</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.price_range')}</h4>
                   <div className="relative pt-1">
                     <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-lg">
                       <div
@@ -106,7 +109,7 @@ export default function ProductsPage() {
 
                 {/* Color Filter */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">Color</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.color')}</h4>
                   <div className="flex flex-wrap gap-3">
                     <button className="size-8 rounded-full bg-white border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark hover:border-primary transition-colors" title="White"></button>
                     <button className="size-8 rounded-full bg-gray-800 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark hover:ring-2 hover:ring-primary transition-all" title="Black"></button>
@@ -117,12 +120,12 @@ export default function ProductsPage() {
 
                 {/* Material Filter */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">Material</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.material')}</h4>
                   <ul className="space-y-3 text-sm">
                     {mockMaterials.map((material) => (
                       <li key={material.id}>
                         <a className="text-gray-600 hover:text-primary transition-colors cursor-pointer" href="#">
-                          {material.name}
+                          {material.translationKey ? t(material.translationKey) : material.name}
                         </a>
                       </li>
                     ))}
@@ -135,15 +138,15 @@ export default function ProductsPage() {
           {/* Product Grid */}
           <div className="flex-1">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-              <h1 className="text-3xl font-bold tracking-tight">The LEMOPX Collection</h1>
+              <h1 className="text-3xl font-bold tracking-tight">{t('products.title')}</h1>
               <div className="flex items-center gap-4">
                 {/* Sort Dropdown */}
                 <div className="relative">
                   <select className="appearance-none rounded-lg bg-gray-200/50 dark:bg-gray-800/50 border-transparent focus:ring-2 focus:ring-primary focus:border-transparent py-2 pl-3 pr-8 text-sm">
-                    <option>Sort by Popularity</option>
-                    <option>Sort by New Arrivals</option>
-                    <option>Sort by Price: Low to High</option>
-                    <option>Sort by Price: High to Low</option>
+                    <option>{t('products.sort_popularity')}</option>
+                    <option>{t('products.sort_new')}</option>
+                    <option>{t('products.sort_price_low')}</option>
+                    <option>{t('products.sort_price_high')}</option>
                   </select>
                   <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                 </div>
@@ -200,7 +203,7 @@ export default function ProductsPage() {
                             ? 'bg-green-500 text-white'
                             : 'bg-primary text-white hover:bg-primary-dark'
                         }`}
-                        title={isAdded ? 'Added to cart!' : 'Add to cart'}
+                        title={isAdded ? t('products.added_to_cart') : t('products.add_to_cart')}
                       >
                         <ShoppingCart size={18} />
                       </button>
@@ -208,7 +211,7 @@ export default function ProductsPage() {
                       {/* Added Feedback */}
                       {isAdded && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
-                          <span className="text-white font-semibold text-sm">Added to Cart!</span>
+                          <span className="text-white font-semibold text-sm">{t('products.added_message')}</span>
                         </div>
                       )}
                     </div>
@@ -216,9 +219,11 @@ export default function ProductsPage() {
                     {/* Product Info */}
                     <Link href={`/products/${productGroup.id}`}>
                       <div>
-                        <p className="text-base font-medium hover:text-primary transition-colors">{productGroup.groupName}</p>
+                        <p className="text-base font-medium hover:text-primary transition-colors">
+                          {productGroup.translationKey ? t(productGroup.translationKey) : productGroup.groupName}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          ${defaultSKU.price.toFixed(2)}
+                          ￥{defaultSKU.price.toFixed(2)}
                         </p>
                       </div>
                     </Link>

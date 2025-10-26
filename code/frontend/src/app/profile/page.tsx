@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, Calendar, Clock, User } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 interface Order {
   id: string
@@ -14,6 +15,7 @@ interface Order {
 
 export default function ProfilePage() {
   const router = useRouter()
+  const { t } = useLanguage()
 
   const sampleOrders: Order[] = [
     {
@@ -80,8 +82,10 @@ export default function ProfilePage() {
   }, [])
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    t('profile.january'), t('profile.february'), t('profile.march'),
+    t('profile.april'), t('profile.may'), t('profile.june'),
+    t('profile.july'), t('profile.august'), t('profile.september'),
+    t('profile.october'), t('profile.november'), t('profile.december')
   ]
 
   // Filter orders
@@ -109,7 +113,7 @@ export default function ProfilePage() {
 
       return true
     })
-  }, [searchTerm, yearFilter, monthFilter])
+  }, [searchTerm, yearFilter, monthFilter, t])
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -129,9 +133,9 @@ export default function ProfilePage() {
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-    if (diffDays === 0) return 'Today'
-    if (diffDays === 1) return 'Yesterday'
-    return `${diffDays} days ago`
+    if (diffDays === 0) return t('profile.today')
+    if (diffDays === 1) return t('profile.yesterday')
+    return `${diffDays} ${t('profile.days_ago')}`
   }
 
   const formatDate = (dateString: string) => {
@@ -153,19 +157,19 @@ export default function ProfilePage() {
               QQ
             </div>
             <div className="flex-1">
-              <h1 className="text-5xl font-bold text-gray-900 mb-3">Qianqian</h1>
+              <h1 className="text-5xl font-bold text-gray-900 mb-3">{t('order_confirm.name_qianqian')}</h1>
               <div className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/15 rounded-xl text-sm font-semibold text-primary">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
                   </svg>
-                  Sales Manager, Dongyang Mingpin Commodity Co., Ltd
+                  {t('profile.sales_manager')}
                 </span>
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/15 rounded-xl text-sm font-semibold text-primary">
-                  Account: 3579
+                  {t('profile.account')}: 3579
                 </span>
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/15 rounded-xl text-sm font-semibold text-primary">
-                  Member since 2023
+                  {t('profile.member_since')} 2023
                 </span>
               </div>
             </div>
@@ -177,16 +181,16 @@ export default function ProfilePage() {
       <div className="container mx-auto px-6 py-12">
         {/* Statistics */}
         <div className="mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">Order Statistics</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">{t('profile.order_statistics')}</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-white rounded-2xl p-8 border border-gray-200">
-              <div className="text-sm font-semibold text-gray-500 uppercase mb-3">Total Orders</div>
+              <div className="text-sm font-semibold text-gray-500 uppercase mb-3">{t('profile.total_orders')}</div>
               <div className="text-6xl font-bold text-primary">{stats.totalOrders}</div>
             </div>
             <div className="bg-white rounded-2xl p-8 border border-gray-200">
-              <div className="text-sm font-semibold text-gray-500 uppercase mb-3">Total Amount</div>
+              <div className="text-sm font-semibold text-gray-500 uppercase mb-3">{t('profile.total_amount')}</div>
               <div className="text-6xl font-bold text-primary">
-                ${stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ￥{stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
           </div>
@@ -195,13 +199,13 @@ export default function ProfilePage() {
         {/* Orders Section */}
         <div className="bg-white rounded-2xl p-8 md:p-12 border border-gray-200">
           <div className="mb-8">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">All Orders</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">{t('profile.all_orders')}</h2>
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1 md:max-w-md">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search order number, customer..."
+                  placeholder={t('profile.search_placeholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
@@ -210,9 +214,9 @@ export default function ProfilePage() {
               <select
                 value={yearFilter}
                 onChange={(e) => setYearFilter(e.target.value)}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors bg-white min-w-40"
+                className="px-4 py-3 pr-10 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors bg-white min-w-40 appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCA2TDggMTBMMTIgNiIgc3Ryb2tlPSIjOUI5QjlCIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==')] bg-[center_right_0.75rem] bg-no-repeat"
               >
-                <option value="">All Years</option>
+                <option value="">{t('profile.all_years')}</option>
                 {years.map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
@@ -220,9 +224,9 @@ export default function ProfilePage() {
               <select
                 value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value)}
-                className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors bg-white min-w-40"
+                className="px-4 py-3 pr-10 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors bg-white min-w-40 appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCA2TDggMTBMMTIgNiIgc3Ryb2tlPSIjOUI5QjlCIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==')] bg-[center_right_0.75rem] bg-no-repeat"
               >
-                <option value="">All Months</option>
+                <option value="">{t('profile.all_months')}</option>
                 {months.map((month, idx) => (
                   <option key={idx + 1} value={idx + 1}>{month}</option>
                 ))}
@@ -240,8 +244,8 @@ export default function ProfilePage() {
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-2">No orders found</h3>
-              <p className="text-lg text-gray-600">Try adjusting your search or filter</p>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">{t('profile.no_orders_found')}</h3>
+              <p className="text-lg text-gray-600">{t('profile.try_adjusting')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -254,7 +258,7 @@ export default function ProfilePage() {
                   <div className="flex justify-between items-start mb-4 gap-4 flex-wrap">
                     <div className="text-lg font-semibold text-gray-900">#{order.id}</div>
                     <div className="text-2xl font-bold text-primary">
-                      ${order.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ￥{order.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
 

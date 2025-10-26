@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function CustomerProfilePage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [formData, setFormData] = useState({
     customerName: '',
@@ -27,7 +29,7 @@ export default function CustomerProfilePage() {
   const handleSave = async () => {
     // Validate required fields
     if (!formData.customerName || !formData.email || !formData.phone || !formData.address) {
-      alert('Please fill in all required fields (marked with *)')
+      alert(t('customer_profile.required_fields_message'))
       return
     }
 
@@ -54,7 +56,7 @@ export default function CustomerProfilePage() {
       }, 2000)
     } catch (error) {
       console.error('Error saving customer:', error)
-      alert('Error saving customer. Please try again.')
+      alert(t('customer_profile.save_error'))
     }
   }
 
@@ -67,8 +69,8 @@ export default function CustomerProfilePage() {
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-6 py-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-3">Customer Profile</h1>
-          <p className="text-xl text-gray-600">Create a new customer record</p>
+          <h1 className="text-5xl font-bold text-gray-900 mb-3">{t('customer_profile.title')}</h1>
+          <p className="text-xl text-gray-600">{t('customer_profile.subtitle')}</p>
         </div>
       </div>
 
@@ -77,14 +79,14 @@ export default function CustomerProfilePage() {
         <div className="bg-white rounded-2xl shadow-sm p-8 md:p-12">
           {/* Customer Information Section */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">Customer Information</h2>
+            <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">{t('customer_profile.customer_information')}</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">Customer/Company Name *</label>
+                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">{t('customer_profile.customer_company_name')} *</label>
                 <input
                   type="text"
                   id="customerName"
-                  placeholder="Enter company name"
+                  placeholder={t('customer_profile.enter_company_name')}
                   value={formData.customerName}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
@@ -92,22 +94,22 @@ export default function CustomerProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">Contact Person</label>
+                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">{t('customer_profile.contact_person')}</label>
                 <input
                   type="text"
                   id="contactPerson"
-                  placeholder="Enter contact name"
+                  placeholder={t('customer_profile.enter_contact_name')}
                   value={formData.contactPerson}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">Email *</label>
+                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">{t('customer_profile.email')} *</label>
                 <input
                   type="email"
                   id="email"
-                  placeholder="example@company.com"
+                  placeholder={t('customer_profile.email_placeholder')}
                   value={formData.email}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
@@ -115,11 +117,11 @@ export default function CustomerProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">Phone *</label>
+                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">{t('customer_profile.phone')} *</label>
                 <input
                   type="tel"
                   id="phone"
-                  placeholder="+86 138 0000 0000"
+                  placeholder={t('customer_profile.phone_placeholder')}
                   value={formData.phone}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
@@ -127,10 +129,10 @@ export default function CustomerProfilePage() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">Address *</label>
+                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">{t('customer_profile.address')} *</label>
                 <textarea
                   id="address"
-                  placeholder="Enter full address"
+                  placeholder={t('customer_profile.enter_full_address')}
                   value={formData.address}
                   onChange={handleInputChange}
                   rows={3}
@@ -139,10 +141,10 @@ export default function CustomerProfilePage() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">Remarks / Summary</label>
+                <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">{t('customer_profile.remarks_summary')}</label>
                 <textarea
                   id="remarks"
-                  placeholder="Any special notes about this customer..."
+                  placeholder={t('customer_profile.remarks_placeholder')}
                   value={formData.remarks}
                   onChange={handleInputChange}
                   rows={5}
@@ -158,13 +160,13 @@ export default function CustomerProfilePage() {
               onClick={handleCancel}
               className="px-12 py-4 bg-white border-2 border-gray-200 rounded-full font-semibold text-gray-900 hover:border-primary hover:bg-primary/5 transition-all"
             >
-              Cancel
+              {t('customer_profile.cancel')}
             </button>
             <button
               onClick={handleSave}
               className="px-12 py-4 bg-primary text-white rounded-full font-semibold hover:bg-primary-dark transition-all shadow-lg shadow-primary/30"
             >
-              Save Customer
+              {t('customer_profile.save_customer')}
             </button>
           </div>
         </div>
@@ -173,7 +175,7 @@ export default function CustomerProfilePage() {
       {/* Success Message */}
       {showSuccessMessage && (
         <div className="fixed bottom-8 right-8 px-6 py-4 bg-primary text-white rounded-xl shadow-lg shadow-primary/30 animate-fade-in z-50">
-          Customer saved successfully!
+          {t('customer_profile.success_message')}
         </div>
       )}
     </div>

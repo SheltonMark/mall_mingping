@@ -21,8 +21,10 @@ export interface ProductSKU {
 export interface ProductGroup {
   id: string
   groupName: string
+  translationKey?: string
   categoryId: string
   description: string
+  descriptionKey?: string
   baseComponents: string[]
   availableColors: Record<string, ProductColor[]>
   skus: ProductSKU[]
@@ -34,6 +36,7 @@ export interface CartItem {
   skuId: string
   sku: string
   groupName: string
+  translationKey?: string
   colorCombination: Record<string, { name: string; hex: string }>
   quantity: number
   price: number
@@ -43,5 +46,6 @@ export interface CartItem {
 export interface Category {
   id: string
   name: string
+  translationKey?: string
   sortOrder: number
 }

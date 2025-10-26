@@ -4,19 +4,20 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Search, User, ShoppingCart, ChevronDown, FileText, LogOut } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
+  const { language, setLanguage, t } = useLanguage()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
 
   // Mock login state - in real app, this would come from auth context/state management
-  const [isLoggedIn, setIsLoggedIn] = useState(true) // TODO: Replace with real auth state
+  const [isLoggedIn, setIsLoggedIn] = useState(true)
 
   const isActive = (path: string) => pathname === path
 
   const handleLogout = () => {
-    // TODO: Implement real logout logic
     setIsLoggedIn(false)
     setIsUserMenuOpen(false)
     router.push('/')
@@ -24,7 +25,7 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+    <header className="sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 print:hidden">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
@@ -44,7 +45,7 @@ export default function Navbar() {
                   isActive('/') ? 'text-primary' : 'hover:text-primary'
                 }`}
               >
-                Home
+                {t('nav.home')}
               </Link>
               <Link
                 href="/products"
@@ -52,13 +53,13 @@ export default function Navbar() {
                   isActive('/products') ? 'text-primary' : 'hover:text-primary'
                 }`}
               >
-                Products
+                {t('nav.products')}
               </Link>
               <Link
                 href="/about"
                 className="text-sm font-medium hover:text-primary"
               >
-                About/Contact
+                {t('nav.about')}
               </Link>
             </nav>
           </div>
@@ -69,9 +70,34 @@ export default function Navbar() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 className="form-input w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light dark:text-text-dark bg-gray-200/50 dark:bg-gray-800/50 focus:outline-0 focus:ring-2 focus:ring-primary border-transparent h-10 placeholder:text-gray-400 pl-10 text-sm font-normal"
-                placeholder="Search"
+                placeholder={t('nav.search')}
                 type="text"
               />
+            </div>
+
+            {/* Language Switcher */}
+            <div className="flex items-center gap-2 rounded-lg h-10 px-3 bg-gray-200/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+              <button
+                onClick={() => setLanguage('en')}
+                className={`text-sm font-semibold px-2 py-1 rounded transition-colors ${
+                  language === 'en'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-text-light dark:hover:text-text-dark'
+                }`}
+              >
+                EN
+              </button>
+              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+              <button
+                onClick={() => setLanguage('zh')}
+                className={`text-sm font-semibold px-2 py-1 rounded transition-colors ${
+                  language === 'zh'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-text-light dark:hover:text-text-dark'
+                }`}
+              >
+                中文
+              </button>
             </div>
 
             {/* User & Cart Icons */}
@@ -99,10 +125,10 @@ export default function Navbar() {
                         {/* User Info */}
                         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                           <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            Account: 3579
+                            {t('nav.account')}: 3579
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Qianqian
+                            {t('order_confirm.name_qianqian')}
                           </p>
                         </div>
 
@@ -113,7 +139,7 @@ export default function Navbar() {
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           <User className="w-4 h-4" />
-                          <span>Customer Profile</span>
+                          <span>{t('nav.customer_profile')}</span>
                         </Link>
 
                         <Link
@@ -122,7 +148,7 @@ export default function Navbar() {
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           <FileText className="w-4 h-4" />
-                          <span>My Orders</span>
+                          <span>{t('nav.my_orders')}</span>
                         </Link>
 
                         <button
@@ -130,7 +156,7 @@ export default function Navbar() {
                           className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full text-left"
                         >
                           <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
+                          <span>{t('nav.logout')}</span>
                         </button>
                       </>
                     ) : (
@@ -140,7 +166,7 @@ export default function Navbar() {
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
-                        <span>Login</span>
+                        <span>{t('nav.login')}</span>
                       </Link>
                     )}
                   </div>

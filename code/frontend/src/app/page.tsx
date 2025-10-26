@@ -1,7 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function HomePage() {
+  const { t } = useLanguage()
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -16,17 +21,17 @@ export default function HomePage() {
             <div className="text-center md:text-left">
               <p className="text-lg font-semibold text-primary animate-swoop-in">Meet LEMOPX</p>
               <h2 className="text-5xl md:text-7xl font-black text-text-light dark:text-text-dark leading-tight tracking-tighter mt-2 animate-swoop-in" style={{ animationDelay: '0.2s' }}>
-                The Future of Effortless Cleaning.
+                {t('home.hero.title')}
               </h2>
               <p className="mt-6 text-lg text-gray-600 dark:text-gray-400 max-w-lg mx-auto md:mx-0 animate-swoop-in" style={{ animationDelay: '0.4s' }}>
-                Stunningly clean floors are just a glide away. Discover the innovative design of LEMOPX mops for a brighter, fresher home.
+                {t('home.hero.subtitle')}
               </p>
               <div className="mt-10 flex gap-4 justify-center md:justify-start animate-swoop-in" style={{ animationDelay: '0.6s' }}>
                 <Link
                   href="/products"
                   className="inline-flex items-center justify-center h-14 px-8 rounded-full bg-primary text-base font-bold text-white hover:bg-opacity-90 transform hover:scale-105 transition-all shadow-xl shadow-primary/40"
                 >
-                  Explore Products
+                  {t('home.hero.cta')}
                 </Link>
               </div>
             </div>
@@ -48,9 +53,9 @@ export default function HomePage() {
       <section className="py-20 md:py-32 bg-gray-50 dark:bg-gray-900/50">
         <div className="w-full">
           <div className="text-center mb-16 px-6">
-            <h3 className="text-4xl md:text-5xl font-bold tracking-tight">Our Signature Collection</h3>
+            <h3 className="text-4xl md:text-5xl font-bold tracking-tight">{t('home.signature.title')}</h3>
             <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Engineered for perfection. Find the LEMOPX product that fits your life.
+              {t('home.signature.subtitle')}
             </p>
           </div>
 
@@ -68,7 +73,7 @@ export default function HomePage() {
                 <p className="text-lg md:text-xl text-white/95 mb-8 text-center">Premium microfiber for superior cleaning performance.</p>
                 <div className="flex gap-4 justify-center items-center">
                   <span className="px-6 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary-dark transition-colors cursor-pointer inline-flex items-center justify-center">
-                    Learn More
+                    {t('home.signature.learn_more')}
                   </span>
                 </div>
               </div>
@@ -86,7 +91,7 @@ export default function HomePage() {
                 <p className="text-lg md:text-xl text-white/95 mb-8 text-center">Eco-friendly formula for every surface in your home.</p>
                 <div className="flex gap-4 justify-center items-center">
                   <span className="px-6 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary-dark transition-colors cursor-pointer inline-flex items-center justify-center">
-                    Learn More
+                    {t('home.signature.learn_more')}
                   </span>
                 </div>
               </div>
@@ -104,7 +109,7 @@ export default function HomePage() {
                 <p className="text-lg md:text-xl text-white/95 mb-8 text-center">Elegant design meets everyday functionality.</p>
                 <div className="flex gap-4 justify-center items-center">
                   <span className="px-6 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary-dark transition-colors cursor-pointer inline-flex items-center justify-center">
-                    Learn More
+                    {t('home.signature.learn_more')}
                   </span>
                 </div>
               </div>
@@ -122,7 +127,7 @@ export default function HomePage() {
                 <p className="text-lg md:text-xl text-white/95 mb-8 text-center">Keep your cleaning essentials beautifully organized.</p>
                 <div className="flex gap-4 justify-center items-center">
                   <span className="px-6 py-2 bg-primary text-white text-sm font-bold rounded-full hover:bg-primary-dark transition-colors cursor-pointer inline-flex items-center justify-center">
-                    Learn More
+                    {t('home.signature.learn_more')}
                   </span>
                 </div>
               </div>
@@ -135,7 +140,7 @@ export default function HomePage() {
               href="/products"
               className="inline-flex items-center gap-2 px-12 py-4 bg-primary text-white text-base font-bold rounded-full hover:bg-primary-dark transition-all shadow-lg hover:shadow-xl animate-breathing hover:animate-none"
             >
-              VIEW ALL
+              {t('home.signature.view_all')}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
@@ -146,9 +151,9 @@ export default function HomePage() {
       <section className="py-20 md:py-32 bg-white dark:bg-background-dark">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto">
-            <h3 className="text-4xl md:text-5xl font-bold tracking-tight">Cleaning Made Beautifully Simple</h3>
+            <h3 className="text-4xl md:text-5xl font-bold tracking-tight">{t('home.features.title')}</h3>
             <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-              We believe a clean home is a happy home. That's why our products are designed to be as intuitive as they are effective.
+              {t('home.features.subtitle')}
             </p>
           </div>
 
@@ -159,8 +164,8 @@ export default function HomePage() {
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
               </div>
-              <h4 className="mt-6 text-2xl font-bold">Intuitive Design</h4>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Effortless assembly and use, straight out of the box.</p>
+              <h4 className="mt-6 text-2xl font-bold">{t('home.features.feature1.title')}</h4>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">{t('home.features.feature1.desc')}</p>
             </div>
 
             <div className="p-8 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform duration-300">
@@ -169,8 +174,8 @@ export default function HomePage() {
                   <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
                 </svg>
               </div>
-              <h4 className="mt-6 text-2xl font-bold">Swift & Efficient</h4>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Cover more ground in less time with our wide heads.</p>
+              <h4 className="mt-6 text-2xl font-bold">{t('home.features.feature2.title')}</h4>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">{t('home.features.feature2.desc')}</p>
             </div>
 
             <div className="p-8 rounded-xl bg-gray-50 dark:bg-gray-900/50 flex flex-col items-center text-center transform hover:-translate-y-2 transition-transform duration-300">
@@ -187,8 +192,8 @@ export default function HomePage() {
                   <path d="M12 19L11 21"></path>
                 </svg>
               </div>
-              <h4 className="mt-6 text-2xl font-bold">Dazzling Finish</h4>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Our microfiber pads capture dust and grime for a flawless shine.</p>
+              <h4 className="mt-6 text-2xl font-bold">{t('home.features.feature3.title')}</h4>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">{t('home.features.feature3.desc')}</p>
             </div>
           </div>
         </div>

@@ -2,12 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { X, Mail, Phone, MapPin } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 interface ScrollElement {
   isVisible: boolean
 }
 
 export default function AboutPage() {
+  const { t } = useLanguage()
   const [showModal, setShowModal] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [scrollVisibility, setScrollVisibility] = useState<Record<string, boolean>>({})
@@ -44,7 +46,7 @@ export default function AboutPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Thank you! We will contact you soon.')
+    alert(t('about.form_success'))
     setShowModal(false)
   }
 
@@ -63,11 +65,11 @@ export default function AboutPage() {
         />
         <div className="relative z-10 text-center text-white px-6">
           <h1 className="text-7xl md:text-8xl font-bold mb-4 leading-tight" style={{ letterSpacing: '-0.015em' }}>
-            Crafted with Care.
+            {t('about.hero_title_1')}
             <br />
-            The Art of Cleaning.
+            {t('about.hero_title_2')}
           </h1>
-          <p className="text-2xl md:text-3xl opacity-90">Thirty years of dedication to excellence</p>
+          <p className="text-2xl md:text-3xl opacity-90">{t('about.hero_subtitle')}</p>
         </div>
       </section>
 
@@ -79,24 +81,24 @@ export default function AboutPage() {
             data-scroll-id="story-header"
           >
             <div className="text-sm font-semibold text-primary uppercase mb-3" style={{ letterSpacing: '0.8px' }}>
-              Our Story
+              {t('about.our_story')}
             </div>
             <h2 className="text-5xl md:text-6xl font-bold mb-5" style={{ letterSpacing: '-0.015em' }}>
-              Since 1995
+              {t('about.since_1995')}
               <br />
-              Factory Direct Excellence
+              {t('about.factory_direct')}
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Born from a passion for quality</p>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">{t('about.born_passion')}</p>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 items-center gap-0">
           <div className="p-12 md:p-16 transition-all duration-700" data-scroll-id="story-1-text">
-            <h3 className="text-4xl md:text-5xl font-bold mb-6">Craftsmanship Excellence</h3>
+            <h3 className="text-4xl md:text-5xl font-bold mb-6">{t('about.craftsmanship_title')}</h3>
             <p className="text-lg md:text-2xl text-gray-600 mb-5">
-              Starting from a small workshop, LEMOPX has always adhered to the principle of quality first.
+              {t('about.craftsmanship_desc_1')}
             </p>
-            <p className="text-lg md:text-2xl text-gray-600">Every product undergoes strict quality control.</p>
+            <p className="text-lg md:text-2xl text-gray-600">{t('about.craftsmanship_desc_2')}</p>
           </div>
           <div className="h-96 md:h-auto aspect-video overflow-hidden transition-all duration-700" data-scroll-id="story-1-image">
             <img
@@ -116,9 +118,9 @@ export default function AboutPage() {
             />
           </div>
           <div className="p-12 md:p-16 order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
-            <h3 className="text-4xl md:text-5xl font-bold mb-6">Factory Direct Supply</h3>
-            <p className="text-lg md:text-2xl text-gray-600 mb-5">Complete production line and R&D team.</p>
-            <p className="text-lg md:text-2xl text-gray-600">Competitive prices with excellent quality.</p>
+            <h3 className="text-4xl md:text-5xl font-bold mb-6">{t('about.factory_supply_title')}</h3>
+            <p className="text-lg md:text-2xl text-gray-600 mb-5">{t('about.factory_supply_desc_1')}</p>
+            <p className="text-lg md:text-2xl text-gray-600">{t('about.factory_supply_desc_2')}</p>
           </div>
         </div>
       </section>
@@ -128,18 +130,18 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-6xl px-6">
           <div className="text-center mb-20 transition-all duration-700" data-scroll-id="values-header">
             <div className="text-sm font-semibold text-primary uppercase mb-3" style={{ letterSpacing: '0.8px' }}>
-              Our Values
+              {t('about.our_values')}
             </div>
             <h2 className="text-5xl md:text-6xl font-bold" style={{ letterSpacing: '-0.015em' }}>
-              What We Believe
+              {t('about.what_we_believe')}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { number: '01', title: 'Quality First', description: 'Strict quality control ensures every product meets the highest standards' },
-              { number: '02', title: 'Environmental Responsibility', description: 'Eco-friendly materials for sustainable development' },
-              { number: '03', title: 'Customer First', description: 'Providing quality products and services' }
+              { number: '01', title: t('about.value_1_title'), description: t('about.value_1_desc') },
+              { number: '02', title: t('about.value_2_title'), description: t('about.value_2_desc') },
+              { number: '03', title: t('about.value_3_title'), description: t('about.value_3_desc') }
             ].map((value, idx) => (
               <div
                 key={idx}
@@ -160,9 +162,9 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-7xl px-6">
           <div className="text-center mb-16 text-white">
             <h2 className="text-6xl md:text-7xl font-bold mb-4" style={{ letterSpacing: '-0.009em' }}>
-              Modern Production
+              {t('about.modern_production')}
             </h2>
-            <p className="text-2xl opacity-90">10,000㎡ Smart Factory · Fully Automated Lines</p>
+            <p className="text-2xl opacity-90">{t('about.smart_factory')}</p>
           </div>
 
           <div className="relative">
@@ -172,9 +174,9 @@ export default function AboutPage() {
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
                 {[
-                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbiIeS_8I9cg8G2DxKoNSd2c4etQEF_eM1nrAXWr0fMOS5V9nIi-7waq9GJ1zVBS5CYwejTNYxnqdeDa6f7z6akHTU1fzmm-Q_XaSUWF7VQO5JuN63-WE_ThhDV89_hq72MKk950Cc_D8dtl4HYUhmfjPrRMzJsjFq_Ks1gB91gY6MMk8Eg-k2cmp5lX_lowkNXZ6iyx-ZtZrlq-9CriHkS0R0EN-sm3Yg_0lwz4K3nZIj9F-zDq3e9qRP6QOMxfY_827bfXZ4pJWt', label: 'Production Line A' },
-                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: 'Quality Control' },
-                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: 'R&D Center' }
+                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbiIeS_8I9cg8G2DxKoNSd2c4etQEF_eM1nrAXWr0fMOS5V9nIi-7waq9GJ1zVBS5CYwejTNYxnqdeDa6f7z6akHTU1fzmm-Q_XaSUWF7VQO5JuN63-WE_ThhDV89_hq72MKk950Cc_D8dtl4HYUhmfjPrRMzJsjFq_Ks1gB91gY6MMk8Eg-k2cmp5lX_lowkNXZ6iyx-ZtZrlq-9CriHkS0R0EN-sm3Yg_0lwz4K3nZIj9F-zDq3e9qRP6QOMxfY_827bfXZ4pJWt', label: t('about.production_line_a') },
+                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: t('about.quality_control') },
+                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: t('about.rd_center') }
                 ].map((item, idx) => (
                   <div key={idx} className="min-w-full aspect-video">
                     <div className="relative h-full">
@@ -211,19 +213,19 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-6xl px-6">
           <div className="text-center mb-20 transition-all duration-700" data-scroll-id="stats-header">
             <div className="text-sm font-semibold text-primary uppercase mb-3" style={{ letterSpacing: '0.8px' }}>
-              By The Numbers
+              {t('about.by_numbers')}
             </div>
             <h2 className="text-5xl md:text-6xl font-bold" style={{ letterSpacing: '-0.015em' }}>
-              Our Achievements
+              {t('about.our_achievements')}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-4 gap-12">
             {[
-              { number: '30+', label: 'Years Experience' },
-              { number: '10,000㎡', label: 'Production Facility' },
-              { number: '500+', label: 'Partner Clients' },
-              { number: '50+', label: 'Product Series' }
+              { number: t('about.stat_1_number'), label: t('about.stat_1_label') },
+              { number: t('about.stat_2_number'), label: t('about.stat_2_label') },
+              { number: t('about.stat_3_number'), label: t('about.stat_3_label') },
+              { number: t('about.stat_4_number'), label: t('about.stat_4_label') }
             ].map((stat, idx) => (
               <div
                 key={idx}
@@ -243,31 +245,31 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-6xl px-6">
           <div className="text-center mb-20 transition-all duration-700" data-scroll-id="contact-header">
             <div className="text-sm font-semibold text-primary uppercase mb-3" style={{ letterSpacing: '0.8px' }}>
-              Contact Us
+              {t('about.contact_us')}
             </div>
             <h2 className="text-5xl md:text-6xl font-bold mb-5" style={{ letterSpacing: '-0.015em' }}>
-              Get In Touch
+              {t('about.get_in_touch')}
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">We look forward to working with you</p>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">{t('about.look_forward')}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             {[
               {
                 icon: Mail,
-                title: 'Email',
+                title: t('about.contact_email'),
                 content: 'XXL7702@163.com',
                 href: 'mailto:XXL7702@163.com'
               },
               {
                 icon: Phone,
-                title: 'Phone',
+                title: t('about.contact_phone'),
                 content: '13806777702',
                 href: 'tel:13806777702'
               },
               {
                 icon: MapPin,
-                title: 'Address',
+                title: t('about.contact_address'),
                 content: 'Dongyang, Zhejiang, China',
                 href: '#'
               }
@@ -294,7 +296,7 @@ export default function AboutPage() {
               onClick={() => setShowModal(true)}
               className="inline-block bg-primary text-white px-12 py-4 rounded-full text-lg font-semibold hover:bg-primary-dark transition-all hover:scale-105"
             >
-              Start Partnership
+              {t('about.start_partnership')}
             </button>
           </div>
         </div>
@@ -305,7 +307,7 @@ export default function AboutPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-3xl p-12 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-3xl font-bold">Start Partnership</h3>
+              <h3 className="text-3xl font-bold">{t('about.modal_title')}</h3>
               <button
                 onClick={() => setShowModal(false)}
                 className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center"
@@ -313,48 +315,48 @@ export default function AboutPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-gray-600 text-lg mb-8">Fill out the form below and we'll get back to you within 24 hours.</p>
+            <p className="text-gray-600 text-lg mb-8">{t('about.modal_subtitle')}</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Your Name *</label>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">{t('about.form_name')} *</label>
                 <input
                   type="text"
                   required
-                  placeholder="John Smith"
+                  placeholder={t('about.form_name_placeholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Email *</label>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">{t('about.form_email')} *</label>
                 <input
                   type="email"
                   required
-                  placeholder="john@company.com"
+                  placeholder={t('about.form_email_placeholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Company</label>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">{t('about.form_company')}</label>
                 <input
                   type="text"
-                  placeholder="Your Company Name"
+                  placeholder={t('about.form_company_placeholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Phone</label>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">{t('about.form_phone')}</label>
                 <input
                   type="tel"
-                  placeholder="+86 138 0013 8000"
+                  placeholder={t('about.form_phone_placeholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Message *</label>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">{t('about.form_message')} *</label>
                 <textarea
                   required
-                  placeholder="Tell us about your needs..."
+                  placeholder={t('about.form_message_placeholder')}
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary transition-colors resize-none"
                 />
@@ -363,7 +365,7 @@ export default function AboutPage() {
                 type="submit"
                 className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors"
               >
-                Submit
+                {t('about.form_submit')}
               </button>
             </form>
           </div>

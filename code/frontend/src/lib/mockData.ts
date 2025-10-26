@@ -1,33 +1,35 @@
 import { ProductGroup, ProductSKU, Category } from '@/types'
 
 export const mockCategories: Category[] = [
-  { id: 'cat-1', name: 'Cleaning Tools', sortOrder: 1 },
-  { id: 'cat-2', name: 'Kitchen Items', sortOrder: 2 },
-  { id: 'cat-3', name: 'Storage', sortOrder: 3 },
-  { id: 'cat-4', name: 'Floor Cleaning', sortOrder: 4 },
-  { id: 'cat-5', name: 'Window & Glass', sortOrder: 5 },
-  { id: 'cat-6', name: 'Brushes & Brooms', sortOrder: 6 },
-  { id: 'cat-7', name: 'Dusting Tools', sortOrder: 7 },
-  { id: 'cat-8', name: 'Home Organization', sortOrder: 8 },
+  { id: 'cat-1', name: 'Cleaning Tools', translationKey: 'category.cleaning_tools', sortOrder: 1 },
+  { id: 'cat-2', name: 'Kitchen Items', translationKey: 'category.kitchen_items', sortOrder: 2 },
+  { id: 'cat-3', name: 'Storage', translationKey: 'category.storage', sortOrder: 3 },
+  { id: 'cat-4', name: 'Floor Cleaning', translationKey: 'category.floor_cleaning', sortOrder: 4 },
+  { id: 'cat-5', name: 'Window & Glass', translationKey: 'category.window_glass', sortOrder: 5 },
+  { id: 'cat-6', name: 'Brushes & Brooms', translationKey: 'category.brushes_brooms', sortOrder: 6 },
+  { id: 'cat-7', name: 'Dusting Tools', translationKey: 'category.dusting_tools', sortOrder: 7 },
+  { id: 'cat-8', name: 'Home Organization', translationKey: 'category.home_organization', sortOrder: 8 },
 ]
 
-export const mockMaterials: Array<{ id: string; name: string }> = [
-  { id: 'mat-1', name: 'Microfiber' },
-  { id: 'mat-2', name: 'Stainless Steel' },
-  { id: 'mat-3', name: 'Recycled Plastic' },
-  { id: 'mat-4', name: 'Natural Bristles' },
-  { id: 'mat-5', name: 'Synthetic Fibers' },
-  { id: 'mat-6', name: 'Rubber' },
-  { id: 'mat-7', name: 'Bamboo' },
-  { id: 'mat-8', name: 'Nylon' },
+export const mockMaterials: Array<{ id: string; name: string; translationKey: string }> = [
+  { id: 'mat-1', name: 'Microfiber', translationKey: 'material.microfiber' },
+  { id: 'mat-2', name: 'Stainless Steel', translationKey: 'material.stainless_steel' },
+  { id: 'mat-3', name: 'Recycled Plastic', translationKey: 'material.recycled_plastic' },
+  { id: 'mat-4', name: 'Natural Bristles', translationKey: 'material.natural_bristles' },
+  { id: 'mat-5', name: 'Synthetic Fibers', translationKey: 'material.synthetic_fibers' },
+  { id: 'mat-6', name: 'Rubber', translationKey: 'material.rubber' },
+  { id: 'mat-7', name: 'Bamboo', translationKey: 'material.bamboo' },
+  { id: 'mat-8', name: 'Nylon', translationKey: 'material.nylon' },
 ]
 
 export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-1',
     groupName: 'Rotating Mop Set',
+    translationKey: 'product.rotating_mop_set',
     categoryId: 'cat-1',
     description: '360-degree rotation for easy cleaning',
+    descriptionKey: 'product.rotating_mop_set.desc',
     baseComponents: ['Handle', 'Mop Head', 'Cloth'],
     availableColors: {
       Handle: [
@@ -97,8 +99,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-2',
     groupName: 'Multi-Function Broom',
+    translationKey: 'product.multi_function_broom',
     categoryId: 'cat-1',
     description: 'Lightweight and durable',
+    descriptionKey: 'product.multi_function_broom.desc',
     baseComponents: ['Broom Handle', 'Broom Head'],
     availableColors: {
       'Broom Handle': [
@@ -146,8 +150,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-3',
     groupName: 'Kitchen Sponge Set',
+    translationKey: 'product.kitchen_sponge_set',
     categoryId: 'cat-2',
     description: 'Strong cleaning power, safe for cookware',
+    descriptionKey: 'product.kitchen_sponge_set.desc',
     baseComponents: ['Sponge Body', 'Handle'],
     availableColors: {
       'Sponge Body': [
@@ -195,8 +201,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-4',
     groupName: 'Deluxe Cleaning Bucket',
+    translationKey: 'product.deluxe_cleaning_bucket',
     categoryId: 'cat-1',
     description: 'Large capacity with handle',
+    descriptionKey: 'product.deluxe_cleaning_bucket.desc',
     baseComponents: ['Bucket', 'Handle'],
     availableColors: {
       Bucket: [
@@ -230,8 +238,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-5',
     groupName: 'Microfiber Cloth Pack',
+    translationKey: 'product.microfiber_cloth_pack',
     categoryId: 'cat-1',
     description: 'Premium microfiber, pack of 6',
+    descriptionKey: 'product.microfiber_cloth_pack.desc',
     baseComponents: ['Cloth'],
     availableColors: {
       Cloth: [
@@ -260,8 +270,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-6',
     groupName: 'Window Squeegee',
+    translationKey: 'product.window_squeegee',
     categoryId: 'cat-1',
     description: 'Streak-free shine guaranteed',
+    descriptionKey: 'product.window_squeegee.desc',
     baseComponents: ['Handle', 'Blade'],
     availableColors: {
       Handle: [
@@ -294,8 +306,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-7',
     groupName: 'Storage Basket',
+    translationKey: 'product.storage_basket',
     categoryId: 'cat-3',
     description: 'Organize your cleaning supplies',
+    descriptionKey: 'product.storage_basket.desc',
     baseComponents: ['Basket'],
     availableColors: {
       Basket: [
@@ -324,8 +338,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-8',
     groupName: 'Dust Pan & Brush Set',
+    translationKey: 'product.dust_pan_brush_set',
     categoryId: 'cat-1',
     description: 'Compact and efficient',
+    descriptionKey: 'product.dust_pan_brush_set.desc',
     baseComponents: ['Pan', 'Brush'],
     availableColors: {
       Pan: [
@@ -358,8 +374,10 @@ export const mockProductGroups: ProductGroup[] = [
   {
     id: 'group-9',
     groupName: 'Floor Scrubber',
+    translationKey: 'product.floor_scrubber',
     categoryId: 'cat-1',
     description: 'Heavy-duty for tough stains',
+    descriptionKey: 'product.floor_scrubber.desc',
     baseComponents: ['Handle', 'Brush Head'],
     availableColors: {
       Handle: [

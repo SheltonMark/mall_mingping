@@ -6,11 +6,15 @@ import Link from 'next/link'
 import { mockProductGroups, findSKUByColors } from '@/lib/mockData'
 import { ProductGroup, ProductSKU } from '@/types'
 import { ShoppingCart, Check } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
+import { useCart } from '@/context/CartContext'
 
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
+  const { t } = useLanguage()
+  const { addItem } = useCart()
 
   const [productGroup, setProductGroup] = useState<ProductGroup | null>(null)
   const [selectedColors, setSelectedColors] = useState<Record<string, string>>({})
@@ -49,8 +53,17 @@ export default function ProductDetailPage() {
   }
 
   const handleAddToCart = () => {
-    if (currentSKU) {
-      // TODO: Add to cart logic
+    if (currentSKU && productGroup) {
+      addItem({
+        skuId: currentSKU.id,
+        sku: currentSKU.sku,
+        groupName: productGroup.groupName,
+        translationKey: productGroup.translationKey,
+        colorCombination: currentSKU.colorCombination,
+        quantity: quantity,
+        price: currentSKU.price,
+        mainImage: currentSKU.mainImage,
+      })
       setAddedToCart(true)
       setTimeout(() => setAddedToCart(false), 2000)
     }
@@ -60,9 +73,9 @@ export default function ProductDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500">Product not found</p>
+          <p className="text-gray-500">{t('detail.product_not_found')}</p>
           <Link href="/products" className="mt-4 inline-block text-primary hover:underline">
-            Back to Products
+            {t('detail.back_to_products')}
           </Link>
         </div>
       </div>
@@ -75,14 +88,16 @@ export default function ProductDetailPage() {
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8">
           <Link href="/" className="hover:text-primary transition-colors">
-            Home
+            {t('nav.home')}
           </Link>
           <span>/</span>
           <Link href="/products" className="hover:text-primary transition-colors">
-            Products
+            {t('nav.products')}
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">{productGroup.groupName}</span>
+          <span className="text-gray-900 font-medium">
+            {productGroup.translationKey ? t(productGroup.translationKey) : productGroup.groupName}
+          </span>
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -129,31 +144,33 @@ export default function ProductDetailPage() {
           <div className="space-y-6">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                {productGroup.groupName}
+                {productGroup.translationKey ? t(productGroup.translationKey) : productGroup.groupName}
               </h1>
-              <p className="text-lg text-gray-600">{productGroup.description}</p>
+              <p className="text-lg text-gray-600">
+                {productGroup.descriptionKey ? t(productGroup.descriptionKey) : productGroup.description}
+              </p>
             </div>
 
             {/* Current SKU Info */}
             <div className="bg-primary/5 rounded-xl p-6 border border-primary/20">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Current SKU</span>
+                <span className="text-sm font-medium text-gray-700">{t('detail.current_sku')}</span>
                 {currentSKU ? (
                   <span className="text-xl font-bold text-primary">{currentSKU.sku}</span>
                 ) : (
-                  <span className="text-sm text-red-500">Out of stock</span>
+                  <span className="text-sm text-red-500">{t('detail.out_of_stock')}</span>
                 )}
               </div>
               {currentSKU && (
                 <div className="text-3xl font-bold text-gray-900">
-                  ${currentSKU.price.toFixed(2)}
+                  ￥{currentSKU.price.toFixed(2)}
                 </div>
               )}
             </div>
 
             {/* Color Selector */}
             <div className="space-y-6 bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900">Select Colors</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t('detail.select_colors')}</h3>
 
               {Object.entries(productGroup.availableColors).map(([component, colors]) => (
                 <div key={component} className="space-y-3">
@@ -201,7 +218,7 @@ export default function ProductDetailPage() {
 
             {/* Quantity Selector */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Quantity</label>
+              <label className="text-sm font-semibold text-gray-700">{t('detail.quantity')}</label>
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -240,12 +257,12 @@ export default function ProductDetailPage() {
                 {addedToCart ? (
                   <span className="flex items-center justify-center gap-2">
                     <Check className="w-6 h-6" />
-                    Added to Cart
+                    {t('detail.added_to_cart')}
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
                     <ShoppingCart className="w-6 h-6" />
-                    Add to Cart
+                    {t('detail.add_to_cart')}
                   </span>
                 )}
               </button>
@@ -254,17 +271,17 @@ export default function ProductDetailPage() {
                 href="/cart"
                 className="block w-full h-14 rounded-xl border-2 border-primary text-primary font-bold text-lg hover:bg-primary/5 transition-all flex items-center justify-center"
               >
-                Buy Now
+                {t('detail.buy_now')}
               </Link>
             </div>
 
             {/* Product Details */}
             <div className="pt-6 border-t border-gray-200 space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">Product Details</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t('detail.product_details')}</h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <p><strong>Components:</strong> {productGroup.baseComponents.join(' + ')}</p>
-                <p><strong>Available Combinations:</strong> {productGroup.skus.length} options</p>
-                <p><strong>Status:</strong> {productGroup.status === 'active' ? 'In Stock' : 'Out of Stock'}</p>
+                <p><strong>{t('detail.components')}:</strong> {productGroup.baseComponents.join(' + ')}</p>
+                <p><strong>{t('detail.available_combinations')}:</strong> {productGroup.skus.length} {t('detail.options')}</p>
+                <p><strong>{t('detail.status')}:</strong> {productGroup.status === 'active' ? t('detail.in_stock') : t('detail.out_of_stock')}</p>
               </div>
             </div>
           </div>

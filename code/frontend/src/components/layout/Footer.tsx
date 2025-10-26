@@ -2,10 +2,13 @@
 
 import Link from 'next/link'
 import { Grid3x3 } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function Footer() {
+  const { t } = useLanguage()
+
   return (
-    <footer className="bg-gray-200 dark:bg-gray-900/50 mt-16">
+    <footer className="bg-gray-200 dark:bg-gray-900/50 mt-16 print:hidden">
       <div className="container mx-auto px-6 py-12">
         {/* Logo Section */}
         <div className="mb-12">
@@ -16,56 +19,56 @@ export default function Footer() {
             <span className="text-3xl font-black tracking-tighter text-primary">LEMOPX</span>
           </Link>
           <p className="mt-4 text-base text-gray-500 dark:text-gray-400 max-w-md">
-            Revolutionizing cleaning with innovative, eco-friendly products that make your life easier and your home cleaner.
+            {t('footer.tagline')}
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">Company</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.company')}</h3>
             <ul className="mt-4 space-y-4">
-              <li><span className="text-base text-gray-400 cursor-not-allowed" title="Coming soon">About</span></li>
-              <li><span className="text-base text-gray-400 cursor-not-allowed" title="Coming soon">Contact</span></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">Careers</a></li>
+              <li><span className="text-base text-gray-400 cursor-not-allowed" title={t('footer.coming_soon')}>{t('footer.about')}</span></li>
+              <li><span className="text-base text-gray-400 cursor-not-allowed" title={t('footer.coming_soon')}>{t('footer.contact')}</span></li>
+              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.careers')}</a></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">Products</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.products')}</h3>
             <ul className="mt-4 space-y-4">
-              <li><Link href="/products" className="text-base text-gray-500 dark:text-gray-400 hover:text-primary">All Products</Link></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">New Arrivals</a></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">Best Sellers</a></li>
+              <li><Link href="/products" className="text-base text-gray-500 dark:text-gray-400 hover:text-primary">{t('footer.all_products')}</Link></li>
+              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.new_arrivals')}</a></li>
+              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.best_sellers')}</a></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">Support</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.support')}</h3>
             <ul className="mt-4 space-y-4">
-              <li><span className="text-base text-gray-400 cursor-not-allowed" title="Coming soon">Contact Us</span></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">FAQ</a></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">Shipping & Returns</a></li>
+              <li><span className="text-base text-gray-400 cursor-not-allowed" title={t('footer.coming_soon')}>{t('footer.contact_us')}</span></li>
+              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.faq')}</a></li>
+              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.shipping')}</a></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">Newsletter</h3>
-            <p className="mt-4 text-base text-gray-500 dark:text-gray-400">Get the latest updates and promotions.</p>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.newsletter')}</h3>
+            <p className="mt-4 text-base text-gray-500 dark:text-gray-400">{t('footer.newsletter_desc')}</p>
             <form className="mt-4">
               <input
                 className="w-full appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-4 text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-2"
-                placeholder="Enter your email"
+                placeholder={t('footer.email_placeholder')}
                 type="email"
               />
               <button
                 className="w-full px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-primary hover:bg-primary/90 transition-all"
                 type="submit"
               >
-                Subscribe
+                {t('footer.subscribe')}
               </button>
             </form>
           </div>
         </div>
 
         <div className="mt-8 border-t border-gray-300 dark:border-gray-700 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-base text-gray-400">© 2024 LEMOPX. All rights reserved.</p>
+          <p className="text-base text-gray-400">{t('footer.copyright')}</p>
           <div className="flex space-x-6">
             <a className="text-gray-400 hover:text-primary transition-colors" href="#" aria-label="Facebook">
               <svg aria-hidden="true" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
