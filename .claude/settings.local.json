@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if exist package.json type package.json)",
+      "Bash(cat:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(npx next dev)",
+      "Bash(find UI -type f ( -name \"*.jpg\" -o -name \"*.png\" -o -name \"*.svg\" -o -name \"*.webp\" ) -exec cp {} code/frontend/public/images/ ;)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
