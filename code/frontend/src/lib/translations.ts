@@ -8,7 +8,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.about': 'About/Contact',
     'nav.search': 'Search',
     'nav.account': 'Account',
-    'nav.customer_profile': 'Customer Profile',
+    'nav.customer_profile': 'Customer Management',
     'nav.my_orders': 'My Orders',
     'nav.logout': 'Logout',
     'nav.login': 'Login',
@@ -275,6 +275,21 @@ export const translations: Record<Language, Record<string, string>> = {
     'customer_profile.save_error': 'Error saving customer. Please try again.',
     'customer_profile.success_message': 'Customer saved successfully!',
 
+    // Customer Management Page
+    'customer_management.title': 'Customer Management',
+    'customer_management.subtitle': 'Manage customers under salesperson Qianqian',
+    'customer_management.add_customer': 'Add Customer',
+    'customer_management.search_placeholder': 'Search by name, email, phone, or address...',
+    'customer_management.total_customers': 'Total Customers',
+    'customer_management.total_orders': 'Total Orders',
+    'customer_management.total_revenue': 'Total Revenue',
+    'customer_management.customer_list': 'Customer List',
+    'customer_management.no_customers_found': 'No customers found',
+    'customer_management.try_different_search': 'Try a different search term',
+    'customer_management.orders': 'orders',
+    'customer_management.created': 'Created',
+    'customer_management.last_order': 'Last Order',
+
     // About Page
     'about.hero_title_1': 'Crafted with Care.',
     'about.hero_title_2': 'The Art of Cleaning.',
@@ -362,7 +377,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.about': '关于/联系',
     'nav.search': '搜索',
     'nav.account': '账户',
-    'nav.customer_profile': '客户建档',
+    'nav.customer_profile': '客户管理',
     'nav.my_orders': '我的订单',
     'nav.logout': '退出登录',
     'nav.login': '登录',
@@ -628,6 +643,21 @@ export const translations: Record<Language, Record<string, string>> = {
     'customer_profile.required_fields_message': '请填写所有必填字段（标有*的字段）',
     'customer_profile.save_error': '保存客户时出错，请重试。',
     'customer_profile.success_message': '客户保存成功！',
+
+    // Customer Management Page
+    'customer_management.title': '客户管理',
+    'customer_management.subtitle': '管理业务员倩倩名下的客户',
+    'customer_management.add_customer': '新增客户',
+    'customer_management.search_placeholder': '按姓名、邮箱、电话或地址搜索...',
+    'customer_management.total_customers': '客户总数',
+    'customer_management.total_orders': '订单总数',
+    'customer_management.total_revenue': '总营收',
+    'customer_management.customer_list': '客户列表',
+    'customer_management.no_customers_found': '未找到客户',
+    'customer_management.try_different_search': '尝试使用不同的搜索词',
+    'customer_management.orders': '个订单',
+    'customer_management.created': '创建于',
+    'customer_management.last_order': '最后订单',
 
     // About Page
     'about.hero_title_1': '用心制作。',

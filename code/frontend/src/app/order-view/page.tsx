@@ -171,7 +171,7 @@ export default function OrderViewPage() {
               <h2 className="text-2xl font-bold">{t('order_confirm.order_classification')}</h2>
               <button
                 onClick={() => handleEdit('classification')}
-                className={`px-6 py-2 rounded-full font-semibold border-2 transition-all ${
+                className={`print:hidden px-6 py-2 rounded-full font-semibold border-2 transition-all ${
                   isEditing('classification')
                     ? 'bg-primary text-white border-primary'
                     : 'bg-white text-primary border-primary hover:bg-primary hover:text-white'
@@ -256,7 +256,7 @@ export default function OrderViewPage() {
               <h2 className="text-2xl font-bold">{t('order_confirm.product_category')}</h2>
               <button
                 onClick={() => handleEdit('category')}
-                className={`px-6 py-2 rounded-full font-semibold border-2 transition-all ${
+                className={`print:hidden px-6 py-2 rounded-full font-semibold border-2 transition-all ${
                   isEditing('category')
                     ? 'bg-primary text-white border-primary'
                     : 'bg-white text-primary border-primary hover:bg-primary hover:text-white'
@@ -317,7 +317,7 @@ export default function OrderViewPage() {
               <h2 className="text-2xl font-bold">{t('order_confirm.order_date')}</h2>
               <button
                 onClick={() => handleEdit('orderDate')}
-                className={`px-6 py-2 rounded-full font-semibold border-2 transition-all ${
+                className={`print:hidden px-6 py-2 rounded-full font-semibold border-2 transition-all ${
                   isEditing('orderDate')
                     ? 'bg-primary text-white border-primary'
                     : 'bg-white text-primary border-primary hover:bg-primary hover:text-white'
@@ -341,7 +341,7 @@ export default function OrderViewPage() {
               <h2 className="text-2xl font-bold">{t('order_confirm.customer_information')}</h2>
               <button
                 onClick={() => handleEdit('customer')}
-                className={`px-6 py-2 rounded-full font-semibold border-2 transition-all ${
+                className={`print:hidden px-6 py-2 rounded-full font-semibold border-2 transition-all ${
                   isEditing('customer')
                     ? 'bg-primary text-white border-primary'
                     : 'bg-white text-primary border-primary hover:bg-primary hover:text-white'
@@ -424,7 +424,7 @@ export default function OrderViewPage() {
               <h2 className="text-2xl font-bold">{t('order_confirm.product_information')}</h2>
               <button
                 onClick={() => handleEdit('product')}
-                className={`px-6 py-2 rounded-full font-semibold border-2 transition-all ${
+                className={`print:hidden px-6 py-2 rounded-full font-semibold border-2 transition-all ${
                   isEditing('product')
                     ? 'bg-primary text-white border-primary'
                     : 'bg-white text-primary border-primary hover:bg-primary hover:text-white'
@@ -525,7 +525,7 @@ export default function OrderViewPage() {
               <h2 className="text-2xl font-bold">{t('order_confirm.order_details')}</h2>
               <button
                 onClick={() => handleEdit('orderDetails')}
-                className={`px-6 py-2 rounded-full font-semibold border-2 transition-all ${
+                className={`print:hidden px-6 py-2 rounded-full font-semibold border-2 transition-all ${
                   isEditing('orderDetails')
                     ? 'bg-primary text-white border-primary'
                     : 'bg-white text-primary border-primary hover:bg-primary hover:text-white'
@@ -631,7 +631,7 @@ export default function OrderViewPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-center gap-4 pt-8 border-t-2 border-gray-200">
+          <div className="print:hidden flex justify-center gap-4 pt-8 border-t-2 border-gray-200">
             <button
               onClick={() => router.push('/')}
               className="flex items-center gap-2 px-12 py-4 border-2 border-gray-300 rounded-full font-semibold hover:border-primary hover:bg-primary/5 transition-all"
