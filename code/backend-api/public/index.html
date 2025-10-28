@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEMOPX 后台管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* 登录页面 */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 48px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 400px;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* 主界面 */
+        .main-app {
+            display: none;
+        }
+
+        .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: #001529;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            bottom: 0;
+            width: 256px;
+            background: #001529;
+            color: white;
+            overflow-y: auto;
+            padding: 24px 0;
+        }
+
+        .menu-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .menu-item:hover {
+            background: #1890ff;
+            color: white;
+        }
+
+        .menu-item.active {
+            background: #1890ff;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 256px;
+            margin-top: 64px;
+            padding: 24px;
+            min-height: calc(100vh - 64px);
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 48px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .welcome-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .welcome-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 32px;
+        }
+
+        .api-info {
+            background: #f6f8fa;
+            padding: 24px;
+            border-radius: 8px;
+            text-align: left;
+            margin-top: 32px;
+        }
+
+        .api-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .api-list {
+            list-style: none;
+        }
+
+        .api-list li {
+            padding: 8px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .api-list code {
+            background: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="logo-icon">L</div>
+                <div class="login-title">LEMOPX 后台管理</div>
+                <div class="login-subtitle">欢迎回来，请登录您的账号</div>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" id="username" class="form-input" placeholder="请输入用户名" value="admin" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入密码" value="admin123456" required>
+                </div>
+
+                <button type="submit" class="login-btn">登录</button>
+            </form>
+
+            <div style="margin-top: 16px; text-align: center; color: #999; font-size: 12px;">
+                测试账号: admin / admin123456
+            </div>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="mainApp" class="main-app">
+        <div class="top-header">
+            <div class="logo-area">
+                <div class="logo">L</div>
+                <span>LEMOPX 后台管理</span>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span>👤 </span>
+                    <span id="currentUser">admin</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="menu-item active">
+                <span>📊</span>
+                <span>仪表盘</span>
+            </div>
+            <div class="menu-item">
+                <span>👥</span>
+                <span>业务员管理</span>
+            </div>
+            <div class="menu-item">
+                <span>👤</span>
+                <span>客户管理</span>
+            </div>
+            <div class="menu-item">
+                <span>📦</span>
+                <span>订单管理</span>
+            </div>
+            <div class="menu-item">
+                <span>🏷️</span>
+                <span>产品管理</span>
+            </div>
+            <div class="menu-item">
+                <span>📧</span>
+                <span>订阅管理</span>
+            </div>
+            <div class="menu-item">
+                <span>🤝</span>
+                <span>合作管理</span>
+            </div>
+            <div class="menu-item">
+                <span>⚙️</span>
+                <span>系统配置</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="welcome-card">
+                <div class="welcome-icon">🎉</div>
+                <h1 class="welcome-title">欢迎使用 LEMOPX 后台管理系统</h1>
+                <p class="welcome-text">后台API服务已成功启动！您可以通过以下方式访问和管理系统。</p>
+
+                <div class="api-info">
+                    <div class="api-title">🚀 可用的API端点</div>
+                    <ul class="api-list">
+                        <li>📝 认证管理: <code>POST /api/auth/login</code>, <code>POST /api/auth/register</code></li>
+                        <li>👥 业务员管理: <code>GET /api/salespersons</code></li>
+                        <li>👤 客户管理: <code>GET /api/customers</code></li>
+                        <li>📦 订单管理: <code>GET /api/orders</code></li>
+                        <li>🏷️ 产品管理: <code>GET /api/products/skus</code></li>
+                        <li>📂 文件上传: <code>POST /api/upload/single</code></li>
+                        <li>⚙️ 系统配置: <code>GET /api/system/homepage</code></li>
+                        <li>🤝 合作申请: <code>GET /api/partnerships</code></li>
+                    </ul>
+                </div>
+
+                <div class="api-info" style="margin-top: 16px;">
+                    <div class="api-title">💡 下一步操作</div>
+                    <ul class="api-list">
+                        <li>✅ 后台服务运行在: <code>http://localhost:3001</code></li>
+                        <li>✅ 数据库已创建: <code>SQLite (dev.db)</code></li>
+                        <li>✅ 管理员账号: <code>admin / admin123456</code></li>
+                        <li>📌 您可以使用 Postman 或其他工具测试API</li>
+                        <li>📌 完整的管理后台UI正在开发中...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        function checkLogin() {
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+
+            if (token && username) {
+                showMainApp(username);
+            }
+        }
+
+        // 登录处理
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 登录成功
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('username', data.user.username);
+                    showMainApp(data.user.username);
+                } else {
+                    // 登录失败
+                    errorDiv.textContent = data.message || '登录失败，请检查用户名和密码';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = '登录请求失败，请确保后台服务正在运行';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        // 显示主界面
+        function showMainApp(username) {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('currentUser').textContent = username;
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            location.reload();
+        }
+
+        // 页面加载时检查登录状态
+        checkLogin();
+    </script>
+</body>
+</html>

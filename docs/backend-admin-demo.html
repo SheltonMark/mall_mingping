@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEMOPX 后台管理系统 - 示意图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Seguro UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* 顶部导航栏 */
+        .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: #001529;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #1890ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .lang-switch {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .user-menu:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            bottom: 0;
+            width: 256px;
+            background: #001529;
+            color: white;
+            overflow-y: auto;
+            padding: 24px 0;
+        }
+
+        .menu-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .menu-item:hover {
+            background: #1890ff;
+            color: white;
+        }
+
+        .menu-item.active {
+            background: #1890ff;
+            color: white;
+        }
+
+        .menu-icon {
+            font-size: 18px;
+            width: 20px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-left: 256px;
+            margin-top: 64px;
+            padding: 24px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* 面包屑 */
+        .breadcrumb {
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .breadcrumb span {
+            margin: 0 8px;
+        }
+
+        /* 页面头部 */
+        .page-header {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+
+        .search-input {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px;
+        }
+
+        /* 数据表格 */
+        .data-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #fafafa;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            font-weight: 600;
+            color: #333;
+        }
+
+        td {
+            color: #666;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .tag-success {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .tag-warning {
+            background: #fffbe6;
+            color: #faad14;
+            border: 1px solid #ffe58f;
+        }
+
+        .action-btn {
+            color: #1890ff;
+            cursor: pointer;
+            margin: 0 8px;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            color: #40a9ff;
+        }
+
+        /* 分页 */
+        .pagination {
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .page-num {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .page-num.active {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        .page-num:hover:not(.active) {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .icon-blue { background: #e6f7ff; color: #1890ff; }
+        .icon-green { background: #f6ffed; color: #52c41a; }
+        .icon-orange { background: #fff7e6; color: #fa8c16; }
+        .icon-purple { background: #f9f0ff; color: #722ed1; }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="top-header">
+        <div class="logo-area">
+            <div class="logo">L</div>
+            <span>LEMOPX 后台管理</span>
+        </div>
+        <div class="header-right">
+            <div class="lang-switch">中文 / EN</div>
+            <div class="user-menu">
+                <div class="user-avatar">倩</div>
+                <span>倩倩</span>
+                <span>▼</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="menu-item">
+            <span class="menu-icon">📊</span>
+            <span>仪表盘</span>
+        </div>
+        <div class="menu-item active">
+            <span class="menu-icon">👥</span>
+            <span>业务员管理</span>
+        </div>
+        <div class="menu-item">
+            <span class="menu-icon">📦</span>
+            <span>订单管理</span>
+        </div>
+        <div class="menu-item">
+            <span class="menu-icon">🏷️</span>
+            <span>品号管理</span>
+        </div>
+        <div class="menu-item">
+            <span class="menu-icon">👤</span>
+            <span>客户管理</span>
+        </div>
+        <div class="menu-item">
+            <span class="menu-icon">📧</span>
+            <span>订阅管理</span>
+        </div>
+        <div class="menu-item">
+            <span class="menu-icon">🤝</span>
+            <span>合作管理</span>
+        </div>
+        <div class="menu-item">
+            <span class="menu-icon">⚙️</span>
+            <span>系统管理</span>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 面包屑 -->
+        <div class="breadcrumb">
+            首页 <span>/</span> 业务员管理
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue">👥</div>
+                <div class="stat-label">业务员总数</div>
+                <div class="stat-value">12</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-green">📦</div>
+                <div class="stat-label">本月订单</div>
+                <div class="stat-value">156</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-orange">💰</div>
+                <div class="stat-label">本月销售额</div>
+                <div class="stat-value">￥98,560</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-purple">👤</div>
+                <div class="stat-label">新增客户</div>
+                <div class="stat-value">28</div>
+            </div>
+        </div>
+
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <h1 class="page-title">业务员管理</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary">+ 新增业务员</button>
+                <input type="text" class="search-input" placeholder="搜索业务员姓名、账号...">
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="data-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>账号ID</th>
+                        <th>中文姓名</th>
+                        <th>英文姓名</th>
+                        <th>邮箱</th>
+                        <th>电话</th>
+                        <th>入职时间</th>
+                        <th>客户数</th>
+                        <th>订单数</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>3579</td>
+                        <td>倩倩</td>
+                        <td>Qianqian</td>
+                        <td>qianqian@lemopx.com</td>
+                        <td>138 0677 7702</td>
+                        <td>2023-01-15</td>
+                        <td>6</td>
+                        <td>15</td>
+                        <td>
+                            <a href="#" class="action-btn">查看</a>
+                            <a href="#" class="action-btn">编辑</a>
+                            <a href="#" class="action-btn">删除</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3580</td>
+                        <td>明明</td>
+                        <td>Mingming</td>
+                        <td>mingming@lemopx.com</td>
+                        <td>138 0677 7703</td>
+                        <td>2023-03-20</td>
+                        <td>8</td>
+                        <td>22</td>
+                        <td>
+                            <a href="#" class="action-btn">查看</a>
+                            <a href="#" class="action-btn">编辑</a>
+                            <a href="#" class="action-btn">删除</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3581</td>
+                        <td>丽丽</td>
+                        <td>Lili</td>
+                        <td>lili@lemopx.com</td>
+                        <td>138 0677 7704</td>
+                        <td>2023-06-10</td>
+                        <td>5</td>
+                        <td>12</td>
+                        <td>
+                            <a href="#" class="action-btn">查看</a>
+                            <a href="#" class="action-btn">编辑</a>
+                            <a href="#" class="action-btn">删除</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3582</td>
+                        <td>强强</td>
+                        <td>Qiangqiang</td>
+                        <td>qiangqiang@lemopx.com</td>
+                        <td>138 0677 7705</td>
+                        <td>2023-08-05</td>
+                        <td>7</td>
+                        <td>18</td>
+                        <td>
+                            <a href="#" class="action-btn">查看</a>
+                            <a href="#" class="action-btn">编辑</a>
+                            <a href="#" class="action-btn">删除</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3583</td>
+                        <td>小红</td>
+                        <td>Xiaohong</td>
+                        <td>xiaohong@lemopx.com</td>
+                        <td>138 0677 7706</td>
+                        <td>2023-10-12</td>
+                        <td>9</td>
+                        <td>25</td>
+                        <td>
+                            <a href="#" class="action-btn">查看</a>
+                            <a href="#" class="action-btn">编辑</a>
+                            <a href="#" class="action-btn">删除</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 分页 -->
+            <div class="pagination">
+                <div class="page-num">«</div>
+                <div class="page-num active">1</div>
+                <div class="page-num">2</div>
+                <div class="page-num">3</div>
+                <div class="page-num">...</div>
+                <div class="page-num">10</div>
+                <div class="page-num">»</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

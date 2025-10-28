@@ -1,0 +1,334 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// 管理员表
+// ========================================
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  email     String?  @unique
+  role      String   @default("admin") // admin, super_admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+// ========================================
+// 业务员表
+// ========================================
+model Salesperson {
+  id           String   @id @default(uuid())
+  accountId    String   @unique @map("account_id")
+  chineseName  String   @map("chinese_name")
+  englishName  String   @map("english_name")
+  email        String?  @unique
+  phone        String?
+  hireDate     DateTime @map("hire_date")
+  avatar       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  customers    Customer[]
+  orders       Order[]
+
+  @@map("salespersons")
+}
+
+// ========================================
+// 客户表
+// ========================================
+model Customer {
+  id              String   @id @default(uuid())
+  name            String
+  contactPerson   String?  @map("contact_person")
+  email           String?
+  phone           String?
+  address         String? 
+  salespersonId   String?  @map("salesperson_id")
+  customerType    CustomerType @default(NEW) @map("customer_type")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  salesperson     Salesperson? @relation(fields: [salespersonId], references: [id])
+  orders          Order[]
+
+  @@map("customers")
+}
+
+enum CustomerType {
+  NEW @map("new")
+  OLD @map("old")
+}
+
+// ========================================
+// 订单表
+// ========================================
+model Order {
+  id              String   @id @default(uuid())
+  orderNumber     String   @unique @map("order_number")
+  customerId      String   @map("customer_id")
+  salespersonId   String   @map("salesperson_id")
+  customerType    CustomerType @map("customer_type")
+  orderType       OrderType @map("order_type")
+  orderDate       DateTime @map("order_date")
+  status          String   @default("pending")
+  totalAmount     Decimal? @map("total_amount")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  customer        Customer @relation(fields: [customerId], references: [id])
+  salesperson     Salesperson @relation(fields: [salespersonId], references: [id])
+  customParams    OrderCustomParam[]
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+enum OrderType {
+  FORMAL    @map("formal")
+  INTENTION @map("intention")
+}
+
+// ========================================
+// 订单自定义参数表
+// ========================================
+model OrderCustomParam {
+  id          String   @id @default(uuid())
+  orderId     String   @map("order_id")
+  paramKey    String   @map("param_key")
+  paramValue  String?  @map("param_value")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  order       Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_custom_params")
+}
+
+// ========================================
+// 订单明细表
+// ========================================
+model OrderItem {
+  id              String   @id @default(uuid())
+  orderId         String   @map("order_id")
+  productSkuId    String   @map("product_sku_id")
+  quantity        Int
+  price           Decimal 
+  subtotal        Decimal 
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  order           Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productSku      ProductSku @relation(fields: [productSkuId], references: [id])
+
+  @@map("order_items")
+}
+
+// ========================================
+// 订单参数配置表
+// ========================================
+model OrderParamConfig {
+  id            String   @id @default(uuid())
+  fieldName     String   @unique @map("field_name")
+  fieldNameZh   String   @map("field_name_zh")
+  fieldType     ParamFieldType @map("field_type")
+  isRequired    Boolean  @default(false) @map("is_required")
+  defaultValue  String?  @map("default_value")
+  options       Json?    // For select type
+  displayOrder  Int      @default(0) @map("display_order")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("order_param_configs")
+}
+
+enum ParamFieldType {
+  TEXT     @map("text")
+  NUMBER   @map("number")
+  DATE     @map("date")
+  SELECT   @map("select")
+  TEXTAREA @map("textarea")
+}
+
+// ========================================
+// 分类表
+// ========================================
+model Category {
+  id            String   @id @default(uuid())
+  nameZh        String   @map("name_zh")
+  nameEn        String   @map("name_en")
+  parentId      String?  @map("parent_id")
+  sortOrder     Int      @default(0) @map("sort_order")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  productGroups ProductGroup[]
+
+  @@map("categories")
+}
+
+// ========================================
+// 材料表
+// ========================================
+model Material {
+  id        String   @id @default(uuid())
+  nameZh    String   @map("name_zh")
+  nameEn    String   @map("name_en")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  productGroups ProductGroup[]
+
+  @@map("materials")
+}
+
+// ========================================
+// 商品组表
+// ========================================
+model ProductGroup {
+  id              String   @id @default(uuid())
+  groupNameZh     String   @map("group_name_zh")
+  groupNameEn     String   @map("group_name_en")
+  descriptionZh   String?  @map("description_zh")
+  descriptionEn   String?  @map("description_en")
+  categoryId      String?  @map("category_id")
+  materialId      String?  @map("material_id")
+  isPublished     Boolean  @default(false) @map("is_published")
+  displayOrder    Int      @default(0) @map("display_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  category        Category? @relation(fields: [categoryId], references: [id])
+  material        Material? @relation(fields: [materialId], references: [id])
+  skus            ProductSku[]
+
+  @@map("product_groups")
+}
+
+// ========================================
+// 品号SKU表 (Product Code)
+// ========================================
+model ProductSku {
+  id                String   @id @default(uuid())
+  groupId           String   @map("group_id")
+  productCode       String   @unique @map("product_code") // 品号
+  price             Decimal 
+  stock             Int      @default(0)
+  colorCombination  Json?    @map("color_combination") // 颜色组合
+  mainImage         String?  @map("main_image")
+  status            SkuStatus @default(ACTIVE)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  group             ProductGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  orderItems        OrderItem[]
+
+  @@map("product_skus")
+}
+
+enum SkuStatus {
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+}
+
+// ========================================
+// 系统配置表
+// ========================================
+model SystemConfig {
+  id          String   @id @default(uuid())
+  configKey   String   @unique @map("config_key")
+  configValue String?  @map("config_value")
+  configType  String?  @map("config_type") // json, text, number
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
+}
+
+// ========================================
+// 订阅表
+// ========================================
+model Subscription {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  source        String?  // footer, popup, etc
+  status        SubscriptionStatus @default(ACTIVE)
+  subscribedAt  DateTime @default(now()) @map("subscribed_at")
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE       @map("active")
+  UNSUBSCRIBED @map("unsubscribed")
+}
+
+// ========================================
+// 合作申请表
+// ========================================
+model PartnershipApplication {
+  id        String   @id @default(uuid())
+  name      String
+  company   String?
+  email     String
+  phone     String?
+  message   String? 
+  status    PartnershipStatus @default(PENDING)
+  notes     String? 
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("partnership_applications")
+}
+
+enum PartnershipStatus {
+  PENDING   @map("pending")
+  CONTACTED @map("contacted")
+  PARTNERED @map("partnered")
+  REJECTED  @map("rejected")
+}
+
+// ========================================
+// 资质认证表
+// ========================================
+model Certification {
+  id                 String   @id @default(uuid())
+  nameZh             String   @map("name_zh")
+  nameEn             String   @map("name_en")
+  category           CertCategory
+  certificateType    String?  @map("certificate_type") // ISO9001, CE, FDA等
+  fileUrl            String   @map("file_url")
+  fileType           String?  @map("file_type") // pdf, jpg, png
+  thumbnailUrl       String?  @map("thumbnail_url")
+  issueDate          DateTime? @map("issue_date")
+  expiryDate         DateTime? @map("expiry_date")
+  issuingAuthority   String?  @map("issuing_authority")
+  certificateNumber  String?  @map("certificate_number")
+  descriptionZh      String?  @map("description_zh")
+  descriptionEn      String?  @map("description_en")
+  displayOrder       Int      @default(0) @map("display_order")
+  isActive           Boolean  @default(true) @map("is_active")
+  showOnFrontend     Boolean  @default(false) @map("show_on_frontend")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("certifications")
+}
+
+enum CertCategory {
+  FACTORY @map("factory")
+  PRODUCT @map("product")
+  PATENT  @map("patent")
+  HONOR   @map("honor")
+  OTHER   @map("other")
+}
