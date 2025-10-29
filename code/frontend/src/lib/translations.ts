@@ -116,7 +116,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'color.beige': 'Beige',
 
     // Product Detail Page
-    'detail.current_sku': 'Current SKU',
+    'detail.current_sku': 'Product Code',
     'detail.out_of_stock': 'Out of stock',
     'detail.select_colors': 'Select Colors',
     'detail.quantity': 'Quantity',
@@ -485,7 +485,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'color.beige': '米色',
 
     // Product Detail Page
-    'detail.current_sku': '当前SKU',
+    'detail.current_sku': '品号',
     'detail.out_of_stock': '缺货',
     'detail.select_colors': '选择颜色',
     'detail.quantity': '数量',
@@ -573,7 +573,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'order_confirm.order_details': '订单详情',
     'order_confirm.image': '图片',
     'order_confirm.product_name': '产品名称',
-    'order_confirm.product_code': '产品编码',
+    'order_confirm.product_code': '品号',
     'order_confirm.unit_price': '单价',
     'order_confirm.quantity': '数量',
     'order_confirm.total': '总计',
