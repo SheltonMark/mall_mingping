@@ -92,7 +92,9 @@
       "Bash(timeout 10 pnpm run build:*)",
       "Bash(npx tsx:*)",
       "Bash(timeout 2 bash:*)",
-      "Bash(timeout 30 bash:*)"
+      "Bash(timeout 30 bash:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

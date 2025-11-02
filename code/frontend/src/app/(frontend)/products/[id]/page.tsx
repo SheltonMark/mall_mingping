@@ -219,7 +219,7 @@ export default function ProductDetailPage() {
       colorCombination,
       quantity: quantity,
       price: Number(selectedSku.price),
-      mainImage: images[0] || productGroup.mainImage || '/images/placeholder.jpg',
+      mainImage: images[0] || (productGroup as any).mainImage || '/images/placeholder.jpg',
     })
 
     setAddedToCart(true)
