@@ -165,13 +165,28 @@ export class SystemService {
   // About Us config
   async getAboutUsConfig() {
     const keys = [
-      'about_company_name',
-      'about_company_intro',
-      'about_mission',
-      'about_vision',
-      'about_history',
-      'about_team',
-      'about_certifications',
+      // 中文字段
+      'about_company_name_zh',
+      'about_company_intro_zh',
+      'about_mission_zh',
+      'about_vision_zh',
+      'about_history_zh',
+      'about_team_zh',
+      'about_certifications_zh',
+      // 英文字段
+      'about_company_name_en',
+      'about_company_intro_en',
+      'about_mission_en',
+      'about_vision_en',
+      'about_history_en',
+      'about_team_en',
+      'about_certifications_en',
+      // 图片字段
+      'about_hero_image',
+      'about_story_image_1',
+      'about_story_image_2',
+      'about_factory_images', // JSON array
+      // 联系方式（不需要分语言）
       'about_contact_email',
       'about_contact_phone',
       'about_contact_address',
