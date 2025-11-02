@@ -21,16 +21,18 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller('orders')
-@UseGuards(JwtAuthGuard)
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  // 公开接口：创建订单（前台订单页面使用）
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
 
+  // 管理接口：需要认证
   @Get()
+  @UseGuards(JwtAuthGuard)
   findAll(
     @Query('search') search?: string,
     @Query('customerId') customerId?: string,
@@ -55,38 +57,48 @@ export class OrderController {
     });
   }
 
+  // 管理接口：需要认证
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(id);
   }
 
+  // 管理接口：需要认证
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.orderService.update(id, updateOrderDto);
   }
 
+  // 管理接口：需要认证
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.orderService.remove(id);
   }
 
-  // Order Param Config endpoints
+  // Order Param Config endpoints - 管理接口：需要认证
   @Post('param-configs')
+  @UseGuards(JwtAuthGuard)
   createParamConfig(@Body() dto: CreateOrderParamConfigDto) {
     return this.orderService.createParamConfig(dto);
   }
 
   @Get('param-configs')
+  @UseGuards(JwtAuthGuard)
   findAllParamConfigs(@Query('activeOnly') activeOnly?: string) {
     return this.orderService.findAllParamConfigs(activeOnly === 'true');
   }
 
   @Get('param-configs/:id')
+  @UseGuards(JwtAuthGuard)
   findOneParamConfig(@Param('id') id: string) {
     return this.orderService.findOneParamConfig(id);
   }
 
   @Patch('param-configs/:id')
+  @UseGuards(JwtAuthGuard)
   updateParamConfig(
     @Param('id') id: string,
     @Body() dto: UpdateOrderParamConfigDto,
@@ -95,17 +107,20 @@ export class OrderController {
   }
 
   @Delete('param-configs/:id')
+  @UseGuards(JwtAuthGuard)
   removeParamConfig(@Param('id') id: string) {
     return this.orderService.removeParamConfig(id);
   }
 
-  // Export endpoints
+  // Export endpoints - 管理接口：需要认证
   @Get(':id/export')
+  @UseGuards(JwtAuthGuard)
   async exportOrder(@Param('id') id: string, @Res() res: Response) {
     return this.orderService.exportOrderToExcel(id, res);
   }
 
   @Post('export-batch')
+  @UseGuards(JwtAuthGuard)
   async exportBatch(@Body('orderIds') orderIds: string[], @Res() res: Response) {
     return this.orderService.exportOrdersToExcel(orderIds, res);
   }

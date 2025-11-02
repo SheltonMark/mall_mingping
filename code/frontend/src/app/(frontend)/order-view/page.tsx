@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { useToast } from '@/components/common/ToastContainer'
 
 export default function OrderViewPage() {
   const router = useRouter()
+  const toast = useToast()
   const { t } = useLanguage()
   const [editingSection, setEditingSection] = useState<string | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -54,7 +56,7 @@ export default function OrderViewPage() {
     setEditingSection(null)
     setShowConfirmModal(false)
     // TODO: Save to backend
-    alert('Changes saved successfully!')
+    toast.success('Changes saved successfully!')
   }
 
   const cancelSave = () => {
@@ -70,10 +72,10 @@ export default function OrderViewPage() {
   const isEditing = (section: string) => editingSection === section
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-32">
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-6 py-12">
+        <div className="max-w-[1440px] mx-auto px-6 py-12">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-5xl font-bold text-gray-900 mb-2">{t('order_view.title')}</h1>
@@ -86,7 +88,7 @@ export default function OrderViewPage() {
       </div>
 
       {/* Main Container */}
-      <div className="container mx-auto px-6 py-8">
+      <div className="max-w-[1440px] mx-auto px-6 py-8">
         <div className="bg-white rounded-2xl shadow-sm p-8 md:p-12">
           {/* Company Info */}
           <div className="p-8 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl mb-12 border border-primary/10">

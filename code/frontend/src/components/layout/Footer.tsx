@@ -1,91 +1,124 @@
 'use client'
 
 import Link from 'next/link'
-import { Grid3x3 } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 export default function Footer() {
   const { t } = useLanguage()
 
   return (
-    <footer className="bg-gray-200 dark:bg-gray-900/50 mt-16 print:hidden">
-      <div className="container mx-auto px-6 py-12">
-        {/* Logo Section */}
-        <div className="mb-12">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center font-bold text-white text-xl group-hover:scale-105 transition-transform">
-              L
-            </div>
-            <span className="text-3xl font-black tracking-tighter text-primary">LEMOPX</span>
-          </Link>
-          <p className="mt-4 text-base text-gray-500 dark:text-gray-400 max-w-md">
-            {t('footer.tagline')}
+    <footer
+      className="bg-neutral-900 text-neutral-400 py-24 px-6 border-t border-neutral-800 print:hidden"
+    >
+      <div className="max-w-[1440px] mx-auto">
+        {/* Footer Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-16 mb-16">
+          {/* Brand Column */}
+          <div>
+            <h3
+              className="text-3xl font-light text-primary mb-6 tracking-[0.08em]"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              LEMOPX
+            </h3>
+            <p className="text-neutral-500 leading-relaxed">
+              {t('footer.tagline') || 'Crafting excellent cleaning solutions with artisan spirit, creating elegant living experiences for global clients.'}
+            </p>
+          </div>
+
+          {/* Products Column */}
+          <div>
+            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
+              {t('footer.products') || 'Products'}
+            </h4>
+            <ul className="space-y-4">
+              <li>
+                <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  {t('footer.all_products') || 'Cleaning Tools'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  {t('footer.new_arrivals') || 'Kitchen Items'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  {t('footer.best_sellers') || 'Storage Solutions'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  Professional Series
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company Column */}
+          <div>
+            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
+              {t('footer.company') || 'Company'}
+            </h4>
+            <ul className="space-y-4">
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  {t('footer.about') || 'About Us'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  Our Story
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  Sustainability
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  {t('footer.careers') || 'Careers'}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support Column */}
+          <div>
+            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
+              {t('footer.support') || 'Support'}
+            </h4>
+            <ul className="space-y-4">
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  {t('footer.contact_us') || 'Contact Us'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  Help Center
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
+                  Terms of Service
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Footer Bottom */}
+        <div className="border-t border-neutral-800 pt-12 text-center">
+          <p className="text-neutral-600 text-sm">
+            {t('footer.copyright') || '© 2025 LEMOPX. Crafted with excellence in Dongyang.'}
           </p>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.company')}</h3>
-            <ul className="mt-4 space-y-4">
-              <li><span className="text-base text-gray-400 cursor-not-allowed" title={t('footer.coming_soon')}>{t('footer.about')}</span></li>
-              <li><span className="text-base text-gray-400 cursor-not-allowed" title={t('footer.coming_soon')}>{t('footer.contact')}</span></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.careers')}</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.products')}</h3>
-            <ul className="mt-4 space-y-4">
-              <li><Link href="/products" className="text-base text-gray-500 dark:text-gray-400 hover:text-primary">{t('footer.all_products')}</Link></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.new_arrivals')}</a></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.best_sellers')}</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.support')}</h3>
-            <ul className="mt-4 space-y-4">
-              <li><span className="text-base text-gray-400 cursor-not-allowed" title={t('footer.coming_soon')}>{t('footer.contact_us')}</span></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.faq')}</a></li>
-              <li><a className="text-base text-gray-500 dark:text-gray-400 hover:text-primary" href="#">{t('footer.shipping')}</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-100">{t('footer.newsletter')}</h3>
-            <p className="mt-4 text-base text-gray-500 dark:text-gray-400">{t('footer.newsletter_desc')}</p>
-            <form className="mt-4">
-              <input
-                className="w-full appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-4 text-base placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mb-2"
-                placeholder={t('footer.email_placeholder')}
-                type="email"
-              />
-              <button
-                className="w-full px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-primary hover:bg-primary/90 transition-all"
-                type="submit"
-              >
-                {t('footer.subscribe')}
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div className="mt-8 border-t border-gray-300 dark:border-gray-700 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-base text-gray-400">{t('footer.copyright')}</p>
-          <div className="flex space-x-6">
-            <a className="text-gray-400 hover:text-primary transition-colors" href="#" aria-label="Facebook">
-              <svg aria-hidden="true" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path clipRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fillRule="evenodd"></path>
-              </svg>
-            </a>
-            <a className="text-gray-400 hover:text-primary transition-colors" href="#" aria-label="Instagram">
-              <svg aria-hidden="true" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path clipRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.024.06 1.378.06 3.808s-.012 2.784-.06 3.808c-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.024.048-1.378.06-3.808.06s-2.784-.013-3.808-.06c-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.048-1.024-.06-1.378-.06-3.808s.012-2.784.06-3.808c.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 016.08 2.525c.636-.247 1.363-.416 2.427-.465C9.53 2.013 9.884 2 12.315 2zM12 7.167a4.833 4.833 0 100 9.666 4.833 4.833 0 000-9.666zM12 15a3 3 0 110-6 3 3 0 010 6zm6.406-11.845a1.44 1.44 0 100 2.88 1.44 1.44 0 000-2.88z" fillRule="evenodd"></path>
-              </svg>
-            </a>
-            <a className="text-gray-400 hover:text-primary transition-colors" href="#" aria-label="Twitter">
-              <svg aria-hidden="true" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
-              </svg>
-            </a>
-          </div>
         </div>
       </div>
     </footer>

@@ -131,10 +131,10 @@ export default function CustomerManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-32">
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-6 py-12">
+        <div className="max-w-[1440px] mx-auto px-6 py-12">
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-5xl font-bold text-gray-900">{t('customer_management.title')}</h1>
@@ -151,7 +151,7 @@ export default function CustomerManagementPage() {
       </div>
 
       {/* Main Container */}
-      <div className="container mx-auto px-6 py-8">
+      <div className="max-w-[1440px] mx-auto px-6 py-8">
         {/* Search Bar */}
         <div className="mb-8">
           <div className="relative max-w-2xl">

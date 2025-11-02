@@ -29,6 +29,7 @@ export class OrderService {
       customerId,
       salespersonId,
       orderNumber,
+      companyName,
       ...orderData
     } = createOrderDto;
 
@@ -65,13 +66,37 @@ export class OrderService {
 
     // Calculate total amount
     let totalAmount = new Decimal(0);
-    const orderItems = items.map((item) => {
+    const orderItems = items.map((item, index) => {
       const subtotal = new Decimal(item.price).mul(item.quantity);
       totalAmount = totalAmount.add(subtotal);
       return {
         productSkuId: item.productSkuId,
+        itemNumber: item.itemNumber || index + 1,
+        customerProductCode: item.customerProductCode,
+        productImage: item.productImage,
+        productSpec: item.productSpec,
+        additionalAttributes: item.additionalAttributes,
         quantity: item.quantity,
+        packagingConversion: item.packagingConversion ? new Decimal(item.packagingConversion) : undefined,
+        packagingUnit: item.packagingUnit,
+        weightUnit: item.weightUnit,
+        netWeight: item.netWeight ? new Decimal(item.netWeight) : undefined,
+        grossWeight: item.grossWeight ? new Decimal(item.grossWeight) : undefined,
+        packagingType: item.packagingType,
+        packagingSize: item.packagingSize,
+        supplierNote: item.supplierNote,
+        expectedDeliveryDate: item.expectedDeliveryDate ? new Date(item.expectedDeliveryDate) : undefined,
         price: new Decimal(item.price),
+        untaxedLocalCurrency: item.untaxedLocalCurrency ? new Decimal(item.untaxedLocalCurrency) : undefined,
+        packingQuantity: item.packingQuantity,
+        cartonQuantity: item.cartonQuantity,
+        packagingMethod: item.packagingMethod,
+        paperCardCode: item.paperCardCode,
+        washLabelCode: item.washLabelCode,
+        outerCartonCode: item.outerCartonCode,
+        cartonSpecification: item.cartonSpecification,
+        volume: item.volume ? new Decimal(item.volume) : undefined,
+        summary: item.summary,
         subtotal,
       };
     });
@@ -82,6 +107,7 @@ export class OrderService {
         orderNumber,
         customerId,
         salespersonId,
+        companyName,
         ...orderData,
         totalAmount,
         items: {
@@ -246,7 +272,6 @@ export class OrderService {
                 group: {
                   include: {
                     category: true,
-                    material: true,
                   },
                 },
               },
@@ -278,13 +303,42 @@ export class OrderService {
 
     // If items are updated, recalculate total
     let totalAmount: Decimal | undefined;
-    if (items && items.length > 0) {
-      totalAmount = new Decimal(0);
-      items.forEach((item) => {
-        const subtotal = new Decimal(item.price).mul(item.quantity);
-        totalAmount = totalAmount!.add(subtotal);
-      });
-    }
+    const orderItems = items && items.length > 0 ? items.map((item, index) => {
+      const subtotal = new Decimal(item.price).mul(item.quantity);
+      if (!totalAmount) totalAmount = new Decimal(0);
+      totalAmount = totalAmount.add(subtotal);
+
+      return {
+        productSkuId: item.productSkuId,
+        itemNumber: item.itemNumber || index + 1,
+        customerProductCode: item.customerProductCode,
+        productImage: item.productImage,
+        productSpec: item.productSpec,
+        additionalAttributes: item.additionalAttributes,
+        quantity: item.quantity,
+        packagingConversion: item.packagingConversion ? new Decimal(item.packagingConversion) : undefined,
+        packagingUnit: item.packagingUnit,
+        weightUnit: item.weightUnit,
+        netWeight: item.netWeight ? new Decimal(item.netWeight) : undefined,
+        grossWeight: item.grossWeight ? new Decimal(item.grossWeight) : undefined,
+        packagingType: item.packagingType,
+        packagingSize: item.packagingSize,
+        supplierNote: item.supplierNote,
+        expectedDeliveryDate: item.expectedDeliveryDate ? new Date(item.expectedDeliveryDate) : undefined,
+        price: new Decimal(item.price),
+        untaxedLocalCurrency: item.untaxedLocalCurrency ? new Decimal(item.untaxedLocalCurrency) : undefined,
+        packingQuantity: item.packingQuantity,
+        cartonQuantity: item.cartonQuantity,
+        packagingMethod: item.packagingMethod,
+        paperCardCode: item.paperCardCode,
+        washLabelCode: item.washLabelCode,
+        outerCartonCode: item.outerCartonCode,
+        cartonSpecification: item.cartonSpecification,
+        volume: item.volume ? new Decimal(item.volume) : undefined,
+        summary: item.summary,
+        subtotal,
+      };
+    }) : undefined;
 
     // Update order
     return this.prisma.order.update({
@@ -293,15 +347,10 @@ export class OrderService {
         ...orderData,
         totalAmount,
         // Delete old items and create new ones if items are provided
-        ...(items && {
+        ...(orderItems && {
           items: {
             deleteMany: {},
-            create: items.map((item) => ({
-              productSkuId: item.productSkuId,
-              quantity: item.quantity,
-              price: new Decimal(item.price),
-              subtotal: new Decimal(item.price).mul(item.quantity),
-            })),
+            create: orderItems,
           },
         }),
         // Delete old custom params and create new ones if provided
@@ -419,87 +468,122 @@ export class OrderService {
   // ============ Excel Export Methods ============
   async exportOrderToExcel(orderId: string, res: Response) {
     const order = await this.findOne(orderId);
-
-    // Prepare order data
-    const orderData = {
-      orderNumber: order.orderNumber,
-      orderDate: order.orderDate.toISOString().split('T')[0],
-      orderType: order.orderType,
-      customerType: order.customerType,
-      status: order.status,
-      customer: order.customer.name,
-      contactPerson: order.customer.contactPerson || '-',
-      salesperson: `${order.salesperson.chineseName} (${order.salesperson.englishName})`,
-      totalAmount: order.totalAmount?.toNumber() || 0,
-    };
-
-    // Prepare items
-    const itemsData = order.items.map((item, index) => ({
-      序号: index + 1,
-      品号: item.productSku.productCode,
-      商品组: item.productSku.group.groupNameZh,
-      数量: item.quantity,
-      单价: item.price.toNumber(),
-      小计: item.subtotal.toNumber(),
-    }));
-
-    // Prepare custom params
-    const paramsData = order.customParams.map((param) => ({
-      参数名: param.paramKey,
-      参数值: param.paramValue || '-',
-    }));
-
-    // Create workbook with multiple sheets
     const ExcelJS = require('exceljs');
     const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
 
-    // Sheet 1: Order Info
-    const infoSheet = workbook.addWorksheet('订单信息');
-    infoSheet.addRow(['订单号', orderData.orderNumber]);
-    infoSheet.addRow(['订单日期', orderData.orderDate]);
-    infoSheet.addRow(['订单类型', orderData.orderType]);
-    infoSheet.addRow(['客户类型', orderData.customerType]);
-    infoSheet.addRow(['状态', orderData.status]);
-    infoSheet.addRow(['客户名称', orderData.customer]);
-    infoSheet.addRow(['联系人', orderData.contactPerson]);
-    infoSheet.addRow(['业务员', orderData.salesperson]);
-    infoSheet.addRow(['订单总额', orderData.totalAmount]);
-    infoSheet.getColumn(1).width = 20;
-    infoSheet.getColumn(2).width = 40;
+    // Company name and title (rows 1-2)
+    const companyName = order.companyName || '东阳市铭品日用品有限公司';
+    worksheet.mergeCells('C1:F1');
+    worksheet.getCell('C1').value = companyName;
+    worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('C1').font = { size: 14, bold: true };
 
-    // Sheet 2: Order Items
-    const itemsSheet = workbook.addWorksheet('订单明细');
-    itemsSheet.columns = [
-      { header: '序号', key: '序号', width: 10 },
-      { header: '品号', key: '品号', width: 20 },
-      { header: '商品组', key: '商品组', width: 25 },
-      { header: '数量', key: '数量', width: 15 },
-      { header: '单价', key: '单价', width: 15 },
-      { header: '小计', key: '小计', width: 15 },
+    worksheet.mergeCells('C2:F2');
+    worksheet.getCell('C2').value = '销售订单';
+    worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('C2').font = { size: 12, bold: true };
+
+    // Category labels (row 5)
+    worksheet.getCell('A5').value = '系统自带';
+    worksheet.getCell('R5').value = '销售填写';
+    worksheet.getCell('A5').font = { bold: true };
+    worksheet.getCell('R5').font = { bold: true };
+
+    // Headers (row 6) - 28 columns matching template
+    const headers = [
+      '项', '品号', '客户料号', '[货品图片]', '品名', '货品规格', '附加属性',
+      '数量', '包装换算', '包装单位', '重量单位', '包装净重', '包装毛重',
+      '包装类型', '包装大小', '厂商备注', '预交日', '单价', '未税本位币',
+      '装箱数', '*箱数*', '包装方式', '纸卡编码', '水洗标编码', '外箱编码',
+      '箱规', '体积', '摘要'
     ];
-    itemsSheet.getRow(1).font = { bold: true };
-    itemsSheet.getRow(1).fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFE0E0E0' },
-    };
-    itemsData.forEach((item) => itemsSheet.addRow(item));
 
-    // Sheet 3: Custom Params (if any)
-    if (paramsData.length > 0) {
-      const paramsSheet = workbook.addWorksheet('自定义参数');
-      paramsSheet.columns = [
-        { header: '参数名', key: '参数名', width: 30 },
-        { header: '参数值', key: '参数值', width: 40 },
-      ];
-      paramsSheet.getRow(1).font = { bold: true };
-      paramsSheet.getRow(1).fill = {
+    headers.forEach((header, index) => {
+      const cell = worksheet.getCell(6, index + 1);
+      cell.value = header;
+      cell.font = { bold: true };
+      cell.fill = {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: 'FFE0E0E0' },
       };
-      paramsData.forEach((param) => paramsSheet.addRow(param));
-    }
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+    });
+
+    // Set column widths
+    const columnWidths = [6, 18, 15, 12, 25, 30, 12, 8, 12, 12, 12, 12, 12, 12, 12, 15, 12, 8, 12, 8, 8, 12, 15, 15, 15, 15, 8, 15];
+    columnWidths.forEach((width, index) => {
+      worksheet.getColumn(index + 1).width = width;
+    });
+
+    // Data rows (starting from row 7)
+    order.items.forEach((item, index) => {
+      const rowNumber = 7 + index;
+      const row = worksheet.getRow(rowNumber);
+
+      row.values = [
+        item.itemNumber || index + 1,                           // A: 项
+        item.productSku.productCode,                            // B: 品号
+        item.customerProductCode || '',                         // C: 客户料号
+        item.productImage || '',                                // D: [货品图片]
+        item.productSku.group.groupNameZh,                      // E: 品名
+        item.productSpec || '',                                 // F: 货品规格
+        item.additionalAttributes || '',                        // G: 附加属性
+        item.quantity,                                          // H: 数量
+        item.packagingConversion?.toNumber() || '',             // I: 包装换算
+        item.packagingUnit || '',                               // J: 包装单位
+        item.weightUnit || '',                                  // K: 重量单位
+        item.netWeight?.toNumber() || '',                       // L: 包装净重
+        item.grossWeight?.toNumber() || '',                     // M: 包装毛重
+        item.packagingType || '',                               // N: 包装类型
+        item.packagingSize || '',                               // O: 包装大小
+        item.supplierNote || '',                                // P: 厂商备注
+        item.expectedDeliveryDate ? item.expectedDeliveryDate.toISOString().split('T')[0] : '',  // Q: 预交日
+        item.price.toNumber(),                                  // R: 单价
+        item.untaxedLocalCurrency?.toNumber() || '',            // S: 未税本位币
+        item.packingQuantity || '',                             // T: 装箱数
+        item.cartonQuantity || '',                              // U: *箱数*
+        item.packagingMethod || '',                             // V: 包装方式
+        item.paperCardCode || '',                               // W: 纸卡编码
+        item.washLabelCode || '',                               // X: 水洗标编码
+        item.outerCartonCode || '',                             // Y: 外箱编码
+        item.cartonSpecification || '',                         // Z: 箱规
+        item.volume?.toNumber() || '',                          // AA: 体积
+        item.summary || '',                                     // AB: 摘要
+      ];
+
+      // Add borders to all cells
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      });
+    });
+
+    // Total row (after all items)
+    const totalRow = 7 + order.items.length + 22; // Leave space for 20 empty rows like template
+    worksheet.getCell(totalRow, 19).value = '自动合计总额'; // Column S
+    worksheet.getCell(totalRow, 27).value = '自动合计总额'; // Column AA
+    worksheet.getCell(totalRow, 19).font = { bold: true };
+    worksheet.getCell(totalRow, 27).font = { bold: true };
+
+    // Calculate totals
+    const totalUntaxed = order.items.reduce((sum, item) =>
+      sum + (item.untaxedLocalCurrency?.toNumber() || 0), 0);
+    const totalVolume = order.items.reduce((sum, item) =>
+      sum + (item.volume?.toNumber() || 0), 0);
+
+    worksheet.getCell(totalRow + 1, 19).value = totalUntaxed;
+    worksheet.getCell(totalRow + 1, 27).value = totalVolume;
 
     // Send response
     res.setHeader(
@@ -508,7 +592,7 @@ export class OrderService {
     );
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="Order_${order.orderNumber}.xlsx"`,
+      `attachment; filename="SalesOrder_${order.orderNumber}_${Date.now()}.xlsx"`,
     );
     await workbook.xlsx.write(res);
     res.end();

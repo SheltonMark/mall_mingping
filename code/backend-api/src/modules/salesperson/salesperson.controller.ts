@@ -17,15 +17,17 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller('salespersons')
-@UseGuards(JwtAuthGuard)
 export class SalespersonController {
   constructor(private readonly salespersonService: SalespersonService) {}
 
+  // 管理接口：需要认证
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createSalespersonDto: CreateSalespersonDto) {
     return this.salespersonService.create(createSalespersonDto);
   }
 
+  // 公开接口：获取业务员列表（前台订单页面使用）
   @Get()
   findAll(
     @Query('search') search?: string,
@@ -39,12 +41,15 @@ export class SalespersonController {
     });
   }
 
+  // 公开接口：获取业务员详情
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.salespersonService.findOne(id);
   }
 
+  // 管理接口：需要认证
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
     @Body() updateSalespersonDto: UpdateSalespersonDto,
@@ -52,7 +57,9 @@ export class SalespersonController {
     return this.salespersonService.update(id, updateSalespersonDto);
   }
 
+  // 管理接口：需要认证
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.salespersonService.remove(id);
   }

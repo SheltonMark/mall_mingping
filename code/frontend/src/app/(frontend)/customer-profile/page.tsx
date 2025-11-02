@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { useToast } from '@/components/common/ToastContainer'
 
 export default function CustomerProfilePage() {
   const router = useRouter()
+  const toast = useToast()
   const { t } = useLanguage()
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,7 +31,7 @@ export default function CustomerProfilePage() {
   const handleSave = async () => {
     // Validate required fields
     if (!formData.customerName || !formData.email || !formData.phone || !formData.address) {
-      alert(t('customer_profile.required_fields_message'))
+      toast.error(t('customer_profile.required_fields_message'))
       return
     }
 
@@ -48,15 +50,14 @@ export default function CustomerProfilePage() {
       console.log('Saving customer:', customerData)
 
       // Show success message
-      setShowSuccessMessage(true)
+      toast.success(t('customer_profile.success_message'))
       setTimeout(() => {
-        setShowSuccessMessage(false)
         // Navigate back
         router.back()
       }, 2000)
     } catch (error) {
       console.error('Error saving customer:', error)
-      alert(t('customer_profile.save_error'))
+      toast.error(t('customer_profile.save_error'))
     }
   }
 
@@ -65,17 +66,17 @@ export default function CustomerProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-32">
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-6 py-12">
+        <div className="max-w-[1440px] mx-auto px-6 py-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-3">{t('customer_profile.title')}</h1>
           <p className="text-xl text-gray-600">{t('customer_profile.subtitle')}</p>
         </div>
       </div>
 
       {/* Main Container */}
-      <div className="container mx-auto px-6 py-8">
+      <div className="max-w-[1440px] mx-auto px-6 py-8">
         <div className="bg-white rounded-2xl shadow-sm p-8 md:p-12">
           {/* Customer Information Section */}
           <div className="mb-12">

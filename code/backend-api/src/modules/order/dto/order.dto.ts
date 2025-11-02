@@ -28,11 +28,109 @@ class OrderItemDto {
 
   @IsNumber()
   @Min(1)
+  @IsOptional()
+  itemNumber?: number;
+
+  @IsString()
+  @IsOptional()
+  customerProductCode?: string;
+
+  @IsString()
+  @IsOptional()
+  productImage?: string;
+
+  @IsString()
+  @IsOptional()
+  productSpec?: string;
+
+  @IsString()
+  @IsOptional()
+  additionalAttributes?: string;
+
+  @IsNumber()
+  @Min(1)
   quantity: number;
 
   @IsNumber()
   @Min(0)
+  @IsOptional()
+  packagingConversion?: number;
+
+  @IsString()
+  @IsOptional()
+  packagingUnit?: string;
+
+  @IsString()
+  @IsOptional()
+  weightUnit?: string;
+
+  @IsNumber()
+  @IsOptional()
+  netWeight?: number;
+
+  @IsNumber()
+  @IsOptional()
+  grossWeight?: number;
+
+  @IsString()
+  @IsOptional()
+  packagingType?: string;
+
+  @IsString()
+  @IsOptional()
+  packagingSize?: string;
+
+  @IsString()
+  @IsOptional()
+  supplierNote?: string;
+
+  @IsDateString()
+  @IsOptional()
+  expectedDeliveryDate?: string;
+
+  @IsNumber()
+  @Min(0)
   price: number;
+
+  @IsNumber()
+  @IsOptional()
+  untaxedLocalCurrency?: number;
+
+  @IsNumber()
+  @IsOptional()
+  packingQuantity?: number;
+
+  @IsNumber()
+  @IsOptional()
+  cartonQuantity?: number;
+
+  @IsString()
+  @IsOptional()
+  packagingMethod?: string;
+
+  @IsString()
+  @IsOptional()
+  paperCardCode?: string;
+
+  @IsString()
+  @IsOptional()
+  washLabelCode?: string;
+
+  @IsString()
+  @IsOptional()
+  outerCartonCode?: string;
+
+  @IsString()
+  @IsOptional()
+  cartonSpecification?: string;
+
+  @IsNumber()
+  @IsOptional()
+  volume?: number;
+
+  @IsString()
+  @IsOptional()
+  summary?: string;
 }
 
 class CustomParamDto {
@@ -62,6 +160,10 @@ export class CreateOrderDto {
 
   @IsDateString()
   orderDate: string;
+
+  @IsString()
+  @IsOptional()
+  companyName?: string;
 
   @IsString()
   @IsOptional()
@@ -103,6 +205,10 @@ export class UpdateOrderDto {
   @IsDateString()
   @IsOptional()
   orderDate?: string;
+
+  @IsString()
+  @IsOptional()
+  companyName?: string;
 
   @IsString()
   @IsOptional()

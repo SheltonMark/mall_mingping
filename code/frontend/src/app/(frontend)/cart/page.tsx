@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation'
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { useToast } from '@/components/common/ToastContainer'
 
 export default function CartPage() {
   const router = useRouter()
+  const toast = useToast()
   const { items, removeItem, updateQuantity } = useCart()
   const { t } = useLanguage()
 
@@ -23,7 +25,7 @@ export default function CartPage() {
       const loggedIn = true // Mock: Replace with real auth check
 
       if (!loggedIn) {
-        alert('请先登录')
+        toast.warning('请先登录')
         router.push('/') // Redirect to login or home page
       }
       setIsLoggedIn(loggedIn)
@@ -31,10 +33,26 @@ export default function CartPage() {
     }
 
     checkAuth()
-  }, [router])
+  }, [router, toast])
 
   const handleCheckout = () => {
-    // Navigate to order confirmation page
+    // 将购物车商品转换为订单商品格式
+    const orderItems = items.map(item => ({
+      skuId: item.skuId,
+      sku: item.sku,
+      productName: item.groupName,
+      translationKey: item.translationKey,
+      colorCombination: item.colorCombination,
+      quantity: item.quantity,
+      unitPrice: item.price,
+      totalPrice: item.price * item.quantity,
+      mainImage: item.mainImage,
+    }))
+
+    // 保存到localStorage
+    localStorage.setItem('orderItems', JSON.stringify(orderItems))
+
+    // 跳转到订单确认页
     router.push('/order-confirmation')
   }
 
@@ -53,8 +71,8 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gray-50 pt-32 pb-8">
+      <div className="max-w-[1440px] mx-auto px-6 py-12">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">

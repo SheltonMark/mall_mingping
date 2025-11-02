@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Calendar, Package, FileText, User, Phone, MapPin } from 'lucide-react'
+import { useToast } from '@/components/common/ToastContainer'
 
 interface OrderFormData {
   customerName: string
@@ -17,6 +18,7 @@ interface OrderFormData {
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const toast = useToast()
   const [formData, setFormData] = useState<OrderFormData>({
     customerName: '',
     customerPhone: '',
@@ -46,13 +48,13 @@ export default function CheckoutPage() {
 
     setIsSubmitting(false)
     // Redirect to success page or orders list
-    alert('订单创建成功！')
+    toast.success('订单创建成功！')
     router.push('/orders')
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gray-50 pt-32 pb-8">
+      <div className="max-w-[1440px] mx-auto px-6 py-12">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900">创建订单</h1>

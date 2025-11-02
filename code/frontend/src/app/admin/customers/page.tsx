@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { customerApi, salespersonApi } from '@/lib/adminApi';
+import { useConfirm } from '@/hooks/useConfirm';
+import ConfirmModal from '@/components/common/ConfirmModal';
+import { useToast } from '@/components/common/ToastContainer';
 
 interface Customer {
   id: string;
@@ -45,6 +48,8 @@ export default function CustomersPage() {
     salespersonId: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const { confirm, isOpen, options, handleConfirm, handleClose } = useConfirm();
+  const toast = useToast();
 
   useEffect(() => {
     loadCustomers();
@@ -61,7 +66,7 @@ export default function CustomersPage() {
       setCustomers(Array.isArray(response) ? response : response.data || []);
     } catch (error) {
       console.error('Failed to load customers:', error);
-      alert('加载客户列表失败');
+      toast.error('加载客户列表失败');
     } finally {
       setLoading(false);
     }
@@ -105,15 +110,23 @@ export default function CustomersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个客户吗？')) return;
+    const confirmed = await confirm({
+      title: '确认删除',
+      message: '确定要删除这个客户吗？此操作不可恢复！',
+      type: 'danger',
+      confirmText: '删除',
+      cancelText: '取消',
+    });
+
+    if (!confirmed) return;
 
     try {
       await customerApi.delete(id);
-      alert('删除成功');
+      toast.success('删除成功');
       loadCustomers();
     } catch (error) {
       console.error('Failed to delete customer:', error);
-      alert('删除失败');
+      toast.error('删除失败');
     }
   };
 
@@ -129,16 +142,16 @@ export default function CustomersPage() {
 
       if (editingId) {
         await customerApi.update(editingId, data);
-        alert('更新成功');
+        toast.success('更新成功');
       } else {
         await customerApi.create(data);
-        alert('创建成功');
+        toast.success('创建成功');
       }
       setIsModalOpen(false);
       loadCustomers();
     } catch (error: any) {
       console.error('Failed to save customer:', error);
-      alert(error.message || '保存失败');
+      toast.error(error.message || '保存失败');
     } finally {
       setSubmitting(false);
     }
@@ -386,6 +399,18 @@ export default function CustomersPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        onConfirm={handleConfirm}
+        title={options.title}
+        message={options.message}
+        confirmText={options.confirmText}
+        cancelText={options.cancelText}
+        type={options.type}
+      />
     </div>
   );
 }

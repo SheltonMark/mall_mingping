@@ -2,12 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+/* ====================
+   🎨 字体导入 - LEMOPX Design System
+   ==================== */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap')
 
+/* ====================
+   🎨 设计系统 - Design Tokens
+   ==================== */
 :root {
+  /* 品牌色彩 - 奢华金色系 */
+  --gold-50: #FFF9E6;
+  --gold-100: #FFF3CC;
+  --gold-200: #FFE799;
+  --gold-300: #FFDB66;
+  --gold-400: #CFBA5C;
+  --gold-500: #BDB76B;
+  --gold-600: #A89B4D;
+  --gold-700: #8A7E3B;
+  --gold-800: #6B612D;
+  --gold-900: #4D451F;
+
+  /* 中性色 - 深邃黑系 */
+  --neutral-50: #FAFAF9;
+  --neutral-100: #F5F5F4;
+  --neutral-200: #E7E5E4;
+  --neutral-300: #D6D3D1;
+  --neutral-400: #A8A29E;
+  --neutral-500: #78716C;
+  --neutral-600: #57534E;
+  --neutral-700: #44403C;
+  --neutral-800: #292524;
+  --neutral-900: #1C1917;
+
+  /* 语义色彩 */
   --primary: #BDB76B;
+  --primary-dark: #8A7E3B;
   --secondary: #8B8970;
   --accent: #FFD700;
+  --text-primary: #1C1917;
+  --text-secondary: #57534E;
+  --text-tertiary: #78716C;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFAF9;
+
+  /* 间距系统 - 8px Grid */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 2.5rem;
+  --space-6: 3rem;
+  --space-8: 4rem;
+  --space-10: 5rem;
+  --space-12: 6rem;
+  --space-16: 8rem;
+
+  /* 字体系统 */
+  --font-display: 'Cormorant Garamond', 'Noto Serif SC', serif;
+  --font-body: 'Space Grotesk', -apple-system, sans-serif;
+  --font-chinese: 'Noto Serif SC', serif;
+
+  /* 圆角系统 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* 阴影系统 */
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.03);
+  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-xlarge: 0 16px 64px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.06);
+
+  /* 过渡时间 */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slower: 600ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -16,8 +91,25 @@
   box-sizing: border-box;
 }
 
+/* ====================
+   🌐 全局样式
+   ==================== */
+::selection {
+  background: var(--gold-200);
+  color: var(--neutral-900);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
 body {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  line-height: 1.7;
+  overflow-x: hidden;
+  background: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -29,16 +121,94 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--neutral-100);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary);
+  background: var(--primary-dark);
+}
+
+/* ====================
+   🎬 动画定义 - LEMOPX Animations
+   ==================== */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 60px); }
+}
+
+@keyframes letterFlyIn {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) rotateX(-90deg);
+  }
+  60% {
+    transform: translateY(-10px) rotateX(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 /* Custom breathing animation for buttons */
@@ -53,6 +223,115 @@ body {
   }
 }
 
+/* Button shine sweep effect */
+@keyframes buttonShine {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
 .animate-breathing {
   animation: breathing 3s ease-in-out infinite;
 }
+
+/* ====================
+   🎨 按钮扫光效果 - Button Shine Effect
+   ==================== */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 600ms ease;
+  pointer-events: none;
+}
+
+.btn-shine:hover::before {
+  left: 100%;
+}
+
+/* ====================
+   🎨 实用工具类 - Utility Classes
+   ==================== */
+.animate-fade-slide-up {
+  animation: fadeSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-slide-left {
+  animation: fadeSlideLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scale utilities */
+.scale-108 {
+  transform: scale(1.08);
+}
+
+.group:hover .group-hover\:scale-108 {
+  transform: scale(1.08);
+}
+
+/* ====================
+   🔔 Toast 通知动画 - Toast Animations
+   ==================== */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes shrinkWidth {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-slideOutRight {
+  animation: slideOutRight 0.2s ease-in;
+}
+
+.animate-shrinkWidth {
+  animation: shrinkWidth linear;
+}
+

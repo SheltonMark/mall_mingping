@@ -148,10 +148,10 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-32">
       {/* Profile Header */}
       <div className="bg-white py-12">
-        <div className="container mx-auto px-6">
+        <div className="max-w-[1440px] mx-auto px-6">
           <div className="flex items-center gap-8">
             <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
               QQ
@@ -178,7 +178,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="max-w-[1440px] mx-auto px-6 py-12">
         {/* Statistics */}
         <div className="mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">{t('profile.order_statistics')}</h2>

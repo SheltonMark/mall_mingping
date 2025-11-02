@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { ToastProvider } from '@/components/common/ToastContainer';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -58,55 +59,57 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-gray-900 text-white flex items-center justify-between px-6 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center text-xl font-bold">
-            L
+    <ToastProvider>
+      <div className="min-h-screen bg-gray-100">
+        {/* Top Header */}
+        <header className="fixed top-0 left-0 right-0 h-16 bg-gray-900 text-white flex items-center justify-between px-6 z-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center text-xl font-bold">
+              L
+            </div>
+            <span className="text-xl font-bold">LEMOPX 管理后台</span>
           </div>
-          <span className="text-xl font-bold">LEMOPX 管理后台</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-300">👤 {username}</span>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors"
-          >
-            退出登录
-          </button>
-        </div>
-      </header>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-300">👤 {username}</span>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors"
+            >
+              退出登录
+            </button>
+          </div>
+        </header>
 
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-16 bottom-0 w-64 bg-gray-900 text-white overflow-y-auto">
-        <nav className="p-4">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.path ||
-                           (item.path !== '/admin' && pathname.startsWith(item.path));
+        {/* Sidebar */}
+        <aside className="fixed left-0 top-16 bottom-0 w-64 bg-gray-900 text-white overflow-y-auto">
+          <nav className="p-4">
+            {menuItems.map((item) => {
+              const isActive = pathname === item.path ||
+                             (item.path !== '/admin' && pathname.startsWith(item.path));
 
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800'
-                }`}
-              >
-                <span className="text-xl">{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </aside>
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-300 hover:bg-gray-800'
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </aside>
 
-      {/* Main Content */}
-      <main className="ml-64 mt-16 p-6">
-        {children}
-      </main>
-    </div>
+        {/* Main Content */}
+        <main className="ml-64 mt-16 p-6">
+          {children}
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
