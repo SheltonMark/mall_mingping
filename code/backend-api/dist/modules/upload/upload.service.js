@@ -31,6 +31,11 @@ let UploadService = class UploadService {
                 maxSize = 5 * 1024 * 1024;
                 subDir = 'images';
                 break;
+            case upload_dto_1.UploadType.VIDEO:
+                allowedExtensions = ['.mp4', '.mov', '.avi', '.wmv', '.flv', '.webm'];
+                maxSize = 50 * 1024 * 1024;
+                subDir = 'videos';
+                break;
             case upload_dto_1.UploadType.DOCUMENT:
                 allowedExtensions = ['.pdf', '.doc', '.docx', '.txt'];
                 maxSize = 10 * 1024 * 1024;

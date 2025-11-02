@@ -22,7 +22,7 @@ let OrderService = class OrderService {
         this.excelService = excelService;
     }
     async create(createOrderDto) {
-        const { items, customParams, customerId, salespersonId, orderNumber, ...orderData } = createOrderDto;
+        const { items, customParams, customerId, salespersonId, orderNumber, companyName, ...orderData } = createOrderDto;
         const existingOrder = await this.prisma.order.findUnique({
             where: { orderNumber },
         });
@@ -47,13 +47,37 @@ let OrderService = class OrderService {
             throw new common_1.BadRequestException('One or more product SKUs not found');
         }
         let totalAmount = new library_1.Decimal(0);
-        const orderItems = items.map((item) => {
+        const orderItems = items.map((item, index) => {
             const subtotal = new library_1.Decimal(item.price).mul(item.quantity);
             totalAmount = totalAmount.add(subtotal);
             return {
                 productSkuId: item.productSkuId,
+                itemNumber: item.itemNumber || index + 1,
+                customerProductCode: item.customerProductCode,
+                productImage: item.productImage,
+                productSpec: item.productSpec,
+                additionalAttributes: item.additionalAttributes,
                 quantity: item.quantity,
+                packagingConversion: item.packagingConversion ? new library_1.Decimal(item.packagingConversion) : undefined,
+                packagingUnit: item.packagingUnit,
+                weightUnit: item.weightUnit,
+                netWeight: item.netWeight ? new library_1.Decimal(item.netWeight) : undefined,
+                grossWeight: item.grossWeight ? new library_1.Decimal(item.grossWeight) : undefined,
+                packagingType: item.packagingType,
+                packagingSize: item.packagingSize,
+                supplierNote: item.supplierNote,
+                expectedDeliveryDate: item.expectedDeliveryDate ? new Date(item.expectedDeliveryDate) : undefined,
                 price: new library_1.Decimal(item.price),
+                untaxedLocalCurrency: item.untaxedLocalCurrency ? new library_1.Decimal(item.untaxedLocalCurrency) : undefined,
+                packingQuantity: item.packingQuantity,
+                cartonQuantity: item.cartonQuantity,
+                packagingMethod: item.packagingMethod,
+                paperCardCode: item.paperCardCode,
+                washLabelCode: item.washLabelCode,
+                outerCartonCode: item.outerCartonCode,
+                cartonSpecification: item.cartonSpecification,
+                volume: item.volume ? new library_1.Decimal(item.volume) : undefined,
+                summary: item.summary,
                 subtotal,
             };
         });
@@ -62,6 +86,7 @@ let OrderService = class OrderService {
                 orderNumber,
                 customerId,
                 salespersonId,
+                companyName,
                 ...orderData,
                 totalAmount,
                 items: {
@@ -195,7 +220,6 @@ let OrderService = class OrderService {
                                 group: {
                                     include: {
                                         category: true,
-                                        material: true,
                                     },
                                 },
                             },
@@ -220,27 +244,51 @@ let OrderService = class OrderService {
         }
         const { items, customParams, ...orderData } = updateOrderDto;
         let totalAmount;
-        if (items && items.length > 0) {
-            totalAmount = new library_1.Decimal(0);
-            items.forEach((item) => {
-                const subtotal = new library_1.Decimal(item.price).mul(item.quantity);
-                totalAmount = totalAmount.add(subtotal);
-            });
-        }
+        const orderItems = items && items.length > 0 ? items.map((item, index) => {
+            const subtotal = new library_1.Decimal(item.price).mul(item.quantity);
+            if (!totalAmount)
+                totalAmount = new library_1.Decimal(0);
+            totalAmount = totalAmount.add(subtotal);
+            return {
+                productSkuId: item.productSkuId,
+                itemNumber: item.itemNumber || index + 1,
+                customerProductCode: item.customerProductCode,
+                productImage: item.productImage,
+                productSpec: item.productSpec,
+                additionalAttributes: item.additionalAttributes,
+                quantity: item.quantity,
+                packagingConversion: item.packagingConversion ? new library_1.Decimal(item.packagingConversion) : undefined,
+                packagingUnit: item.packagingUnit,
+                weightUnit: item.weightUnit,
+                netWeight: item.netWeight ? new library_1.Decimal(item.netWeight) : undefined,
+                grossWeight: item.grossWeight ? new library_1.Decimal(item.grossWeight) : undefined,
+                packagingType: item.packagingType,
+                packagingSize: item.packagingSize,
+                supplierNote: item.supplierNote,
+                expectedDeliveryDate: item.expectedDeliveryDate ? new Date(item.expectedDeliveryDate) : undefined,
+                price: new library_1.Decimal(item.price),
+                untaxedLocalCurrency: item.untaxedLocalCurrency ? new library_1.Decimal(item.untaxedLocalCurrency) : undefined,
+                packingQuantity: item.packingQuantity,
+                cartonQuantity: item.cartonQuantity,
+                packagingMethod: item.packagingMethod,
+                paperCardCode: item.paperCardCode,
+                washLabelCode: item.washLabelCode,
+                outerCartonCode: item.outerCartonCode,
+                cartonSpecification: item.cartonSpecification,
+                volume: item.volume ? new library_1.Decimal(item.volume) : undefined,
+                summary: item.summary,
+                subtotal,
+            };
+        }) : undefined;
         return this.prisma.order.update({
             where: { id },
             data: {
                 ...orderData,
                 totalAmount,
-                ...(items && {
+                ...(orderItems && {
                     items: {
                         deleteMany: {},
-                        create: items.map((item) => ({
-                            productSkuId: item.productSkuId,
-                            quantity: item.quantity,
-                            price: new library_1.Decimal(item.price),
-                            subtotal: new library_1.Decimal(item.price).mul(item.quantity),
-                        })),
+                        create: orderItems,
                     },
                 }),
                 ...(customParams && {
@@ -338,75 +386,102 @@ let OrderService = class OrderService {
     }
     async exportOrderToExcel(orderId, res) {
         const order = await this.findOne(orderId);
-        const orderData = {
-            orderNumber: order.orderNumber,
-            orderDate: order.orderDate.toISOString().split('T')[0],
-            orderType: order.orderType,
-            customerType: order.customerType,
-            status: order.status,
-            customer: order.customer.name,
-            contactPerson: order.customer.contactPerson || '-',
-            salesperson: `${order.salesperson.chineseName} (${order.salesperson.englishName})`,
-            totalAmount: order.totalAmount?.toNumber() || 0,
-        };
-        const itemsData = order.items.map((item, index) => ({
-            序号: index + 1,
-            品号: item.productSku.productCode,
-            商品组: item.productSku.group.groupNameZh,
-            数量: item.quantity,
-            单价: item.price.toNumber(),
-            小计: item.subtotal.toNumber(),
-        }));
-        const paramsData = order.customParams.map((param) => ({
-            参数名: param.paramKey,
-            参数值: param.paramValue || '-',
-        }));
         const ExcelJS = require('exceljs');
         const workbook = new ExcelJS.Workbook();
-        const infoSheet = workbook.addWorksheet('订单信息');
-        infoSheet.addRow(['订单号', orderData.orderNumber]);
-        infoSheet.addRow(['订单日期', orderData.orderDate]);
-        infoSheet.addRow(['订单类型', orderData.orderType]);
-        infoSheet.addRow(['客户类型', orderData.customerType]);
-        infoSheet.addRow(['状态', orderData.status]);
-        infoSheet.addRow(['客户名称', orderData.customer]);
-        infoSheet.addRow(['联系人', orderData.contactPerson]);
-        infoSheet.addRow(['业务员', orderData.salesperson]);
-        infoSheet.addRow(['订单总额', orderData.totalAmount]);
-        infoSheet.getColumn(1).width = 20;
-        infoSheet.getColumn(2).width = 40;
-        const itemsSheet = workbook.addWorksheet('订单明细');
-        itemsSheet.columns = [
-            { header: '序号', key: '序号', width: 10 },
-            { header: '品号', key: '品号', width: 20 },
-            { header: '商品组', key: '商品组', width: 25 },
-            { header: '数量', key: '数量', width: 15 },
-            { header: '单价', key: '单价', width: 15 },
-            { header: '小计', key: '小计', width: 15 },
+        const worksheet = workbook.addWorksheet('Sheet1');
+        const companyName = order.companyName || '东阳市铭品日用品有限公司';
+        worksheet.mergeCells('C1:F1');
+        worksheet.getCell('C1').value = companyName;
+        worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getCell('C1').font = { size: 14, bold: true };
+        worksheet.mergeCells('C2:F2');
+        worksheet.getCell('C2').value = '销售订单';
+        worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getCell('C2').font = { size: 12, bold: true };
+        worksheet.getCell('A5').value = '系统自带';
+        worksheet.getCell('R5').value = '销售填写';
+        worksheet.getCell('A5').font = { bold: true };
+        worksheet.getCell('R5').font = { bold: true };
+        const headers = [
+            '项', '品号', '客户料号', '[货品图片]', '品名', '货品规格', '附加属性',
+            '数量', '包装换算', '包装单位', '重量单位', '包装净重', '包装毛重',
+            '包装类型', '包装大小', '厂商备注', '预交日', '单价', '未税本位币',
+            '装箱数', '*箱数*', '包装方式', '纸卡编码', '水洗标编码', '外箱编码',
+            '箱规', '体积', '摘要'
         ];
-        itemsSheet.getRow(1).font = { bold: true };
-        itemsSheet.getRow(1).fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFE0E0E0' },
-        };
-        itemsData.forEach((item) => itemsSheet.addRow(item));
-        if (paramsData.length > 0) {
-            const paramsSheet = workbook.addWorksheet('自定义参数');
-            paramsSheet.columns = [
-                { header: '参数名', key: '参数名', width: 30 },
-                { header: '参数值', key: '参数值', width: 40 },
-            ];
-            paramsSheet.getRow(1).font = { bold: true };
-            paramsSheet.getRow(1).fill = {
+        headers.forEach((header, index) => {
+            const cell = worksheet.getCell(6, index + 1);
+            cell.value = header;
+            cell.font = { bold: true };
+            cell.fill = {
                 type: 'pattern',
                 pattern: 'solid',
                 fgColor: { argb: 'FFE0E0E0' },
             };
-            paramsData.forEach((param) => paramsSheet.addRow(param));
-        }
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            };
+        });
+        const columnWidths = [6, 18, 15, 12, 25, 30, 12, 8, 12, 12, 12, 12, 12, 12, 12, 15, 12, 8, 12, 8, 8, 12, 15, 15, 15, 15, 8, 15];
+        columnWidths.forEach((width, index) => {
+            worksheet.getColumn(index + 1).width = width;
+        });
+        order.items.forEach((item, index) => {
+            const rowNumber = 7 + index;
+            const row = worksheet.getRow(rowNumber);
+            row.values = [
+                item.itemNumber || index + 1,
+                item.productSku.productCode,
+                item.customerProductCode || '',
+                item.productImage || '',
+                item.productSku.group.groupNameZh,
+                item.productSpec || '',
+                item.additionalAttributes || '',
+                item.quantity,
+                item.packagingConversion?.toNumber() || '',
+                item.packagingUnit || '',
+                item.weightUnit || '',
+                item.netWeight?.toNumber() || '',
+                item.grossWeight?.toNumber() || '',
+                item.packagingType || '',
+                item.packagingSize || '',
+                item.supplierNote || '',
+                item.expectedDeliveryDate ? item.expectedDeliveryDate.toISOString().split('T')[0] : '',
+                item.price.toNumber(),
+                item.untaxedLocalCurrency?.toNumber() || '',
+                item.packingQuantity || '',
+                item.cartonQuantity || '',
+                item.packagingMethod || '',
+                item.paperCardCode || '',
+                item.washLabelCode || '',
+                item.outerCartonCode || '',
+                item.cartonSpecification || '',
+                item.volume?.toNumber() || '',
+                item.summary || '',
+            ];
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
+            });
+        });
+        const totalRow = 7 + order.items.length + 22;
+        worksheet.getCell(totalRow, 19).value = '自动合计总额';
+        worksheet.getCell(totalRow, 27).value = '自动合计总额';
+        worksheet.getCell(totalRow, 19).font = { bold: true };
+        worksheet.getCell(totalRow, 27).font = { bold: true };
+        const totalUntaxed = order.items.reduce((sum, item) => sum + (item.untaxedLocalCurrency?.toNumber() || 0), 0);
+        const totalVolume = order.items.reduce((sum, item) => sum + (item.volume?.toNumber() || 0), 0);
+        worksheet.getCell(totalRow + 1, 19).value = totalUntaxed;
+        worksheet.getCell(totalRow + 1, 27).value = totalVolume;
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename="Order_${order.orderNumber}.xlsx"`);
+        res.setHeader('Content-Disposition', `attachment; filename="SalesOrder_${order.orderNumber}_${Date.now()}.xlsx"`);
         await workbook.xlsx.write(res);
         res.end();
     }

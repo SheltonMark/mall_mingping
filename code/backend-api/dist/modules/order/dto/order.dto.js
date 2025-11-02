@@ -24,8 +24,32 @@ var CustomerType;
 })(CustomerType || (CustomerType = {}));
 class OrderItemDto {
     productSkuId;
+    itemNumber;
+    customerProductCode;
+    productImage;
+    productSpec;
+    additionalAttributes;
     quantity;
+    packagingConversion;
+    packagingUnit;
+    weightUnit;
+    netWeight;
+    grossWeight;
+    packagingType;
+    packagingSize;
+    supplierNote;
+    expectedDeliveryDate;
     price;
+    untaxedLocalCurrency;
+    packingQuantity;
+    cartonQuantity;
+    packagingMethod;
+    paperCardCode;
+    washLabelCode;
+    outerCartonCode;
+    cartonSpecification;
+    volume;
+    summary;
 }
 __decorate([
     (0, class_validator_1.IsUUID)(),
@@ -34,13 +58,135 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(1),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "itemNumber", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "customerProductCode", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "productImage", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "productSpec", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "additionalAttributes", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], OrderItemDto.prototype, "quantity", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "packagingConversion", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "packagingUnit", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "weightUnit", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "netWeight", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "grossWeight", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "packagingType", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "packagingSize", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "supplierNote", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "expectedDeliveryDate", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], OrderItemDto.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "untaxedLocalCurrency", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "packingQuantity", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "cartonQuantity", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "packagingMethod", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "paperCardCode", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "washLabelCode", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "outerCartonCode", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "cartonSpecification", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "volume", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "summary", void 0);
 class CustomParamDto {
     paramKey;
     paramValue;
@@ -61,6 +207,7 @@ class CreateOrderDto {
     customerType;
     orderType;
     orderDate;
+    companyName;
     status;
     items;
     customParams;
@@ -94,6 +241,11 @@ __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
+], CreateOrderDto.prototype, "companyName", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
 ], CreateOrderDto.prototype, "status", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
@@ -115,6 +267,7 @@ class UpdateOrderDto {
     customerType;
     orderType;
     orderDate;
+    companyName;
     status;
     items;
     customParams;
@@ -150,6 +303,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateOrderDto.prototype, "orderDate", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateOrderDto.prototype, "companyName", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),

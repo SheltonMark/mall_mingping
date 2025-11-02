@@ -9,15 +9,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BatchImportSkuDto = exports.UpdateProductSkuDto = exports.CreateProductSkuDto = exports.UpdateProductGroupDto = exports.CreateProductGroupDto = exports.UpdateMaterialDto = exports.CreateMaterialDto = exports.UpdateCategoryDto = exports.CreateCategoryDto = void 0;
+exports.BatchImportSkuDto = exports.UpdateProductSkuDto = exports.CreateProductSkuDto = exports.UpdateProductGroupDto = exports.CreateProductGroupDto = exports.UpdateCategoryDto = exports.CreateCategoryDto = void 0;
 const class_validator_1 = require("class-validator");
 class CreateCategoryDto {
+    code;
     nameZh;
     nameEn;
-    parentId;
+    icon;
     sortOrder;
+    isAutoCreated;
 }
 exports.CreateCategoryDto = CreateCategoryDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(1),
+    __metadata("design:type", String)
+], CreateCategoryDto.prototype, "code", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MinLength)(1),
@@ -29,23 +36,36 @@ __decorate([
     __metadata("design:type", String)
 ], CreateCategoryDto.prototype, "nameEn", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], CreateCategoryDto.prototype, "parentId", void 0);
+], CreateCategoryDto.prototype, "icon", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateCategoryDto.prototype, "sortOrder", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateCategoryDto.prototype, "isAutoCreated", void 0);
 class UpdateCategoryDto {
+    code;
     nameZh;
     nameEn;
-    parentId;
+    icon;
     sortOrder;
+    isAutoCreated;
     isActive;
 }
 exports.UpdateCategoryDto = UpdateCategoryDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(1),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateCategoryDto.prototype, "code", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MinLength)(1),
@@ -59,10 +79,10 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateCategoryDto.prototype, "nameEn", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], UpdateCategoryDto.prototype, "parentId", void 0);
+], UpdateCategoryDto.prototype, "icon", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
@@ -72,56 +92,31 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
-], UpdateCategoryDto.prototype, "isActive", void 0);
-class CreateMaterialDto {
-    nameZh;
-    nameEn;
-}
-exports.CreateMaterialDto = CreateMaterialDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(1),
-    __metadata("design:type", String)
-], CreateMaterialDto.prototype, "nameZh", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(1),
-    __metadata("design:type", String)
-], CreateMaterialDto.prototype, "nameEn", void 0);
-class UpdateMaterialDto {
-    nameZh;
-    nameEn;
-    isActive;
-}
-exports.UpdateMaterialDto = UpdateMaterialDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(1),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateMaterialDto.prototype, "nameZh", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(1),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateMaterialDto.prototype, "nameEn", void 0);
+], UpdateCategoryDto.prototype, "isAutoCreated", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
-], UpdateMaterialDto.prototype, "isActive", void 0);
+], UpdateCategoryDto.prototype, "isActive", void 0);
 class CreateProductGroupDto {
+    prefix;
     groupNameZh;
     groupNameEn;
     descriptionZh;
     descriptionEn;
     categoryId;
-    materialId;
+    categoryCode;
+    sharedVideo;
+    videoMode;
     isPublished;
-    displayOrder;
+    sortOrder;
 }
 exports.CreateProductGroupDto = CreateProductGroupDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(1),
+    __metadata("design:type", String)
+], CreateProductGroupDto.prototype, "prefix", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MinLength)(1),
@@ -148,10 +143,20 @@ __decorate([
     __metadata("design:type", String)
 ], CreateProductGroupDto.prototype, "categoryId", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], CreateProductGroupDto.prototype, "materialId", void 0);
+], CreateProductGroupDto.prototype, "categoryCode", void 0);
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProductGroupDto.prototype, "sharedVideo", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateProductGroupDto.prototype, "videoMode", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
@@ -161,18 +166,27 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
-], CreateProductGroupDto.prototype, "displayOrder", void 0);
+], CreateProductGroupDto.prototype, "sortOrder", void 0);
 class UpdateProductGroupDto {
+    prefix;
     groupNameZh;
     groupNameEn;
     descriptionZh;
     descriptionEn;
     categoryId;
-    materialId;
+    categoryCode;
+    sharedVideo;
+    videoMode;
     isPublished;
-    displayOrder;
+    sortOrder;
 }
 exports.UpdateProductGroupDto = UpdateProductGroupDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(1),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProductGroupDto.prototype, "prefix", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MinLength)(1),
@@ -201,10 +215,20 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateProductGroupDto.prototype, "categoryId", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], UpdateProductGroupDto.prototype, "materialId", void 0);
+], UpdateProductGroupDto.prototype, "categoryCode", void 0);
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateProductGroupDto.prototype, "sharedVideo", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProductGroupDto.prototype, "videoMode", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
@@ -214,14 +238,21 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
-], UpdateProductGroupDto.prototype, "displayOrder", void 0);
+], UpdateProductGroupDto.prototype, "sortOrder", void 0);
 class CreateProductSkuDto {
     groupId;
     productCode;
+    productName;
+    title;
+    subtitle;
+    brand;
+    specification;
+    productSpec;
+    additionalAttributes;
     price;
-    stock;
-    colorCombination;
-    mainImage;
+    images;
+    video;
+    useSharedVideo;
     status;
 }
 exports.CreateProductSkuDto = CreateProductSkuDto;
@@ -235,26 +266,61 @@ __decorate([
     __metadata("design:type", String)
 ], CreateProductSkuDto.prototype, "productCode", void 0);
 __decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0),
-    __metadata("design:type", Number)
-], CreateProductSkuDto.prototype, "price", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateProductSkuDto.prototype, "stock", void 0);
-__decorate([
-    (0, class_validator_1.IsObject)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
-], CreateProductSkuDto.prototype, "colorCombination", void 0);
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(1),
+    __metadata("design:type", String)
+], CreateProductSkuDto.prototype, "productName", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], CreateProductSkuDto.prototype, "mainImage", void 0);
+], CreateProductSkuDto.prototype, "title", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateProductSkuDto.prototype, "subtitle", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateProductSkuDto.prototype, "brand", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateProductSkuDto.prototype, "specification", void 0);
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProductSkuDto.prototype, "productSpec", void 0);
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProductSkuDto.prototype, "additionalAttributes", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateProductSkuDto.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProductSkuDto.prototype, "images", void 0);
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProductSkuDto.prototype, "video", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateProductSkuDto.prototype, "useSharedVideo", void 0);
 __decorate([
     (0, class_validator_1.IsEnum)(['ACTIVE', 'INACTIVE']),
     (0, class_validator_1.IsOptional)(),
@@ -262,10 +328,17 @@ __decorate([
 ], CreateProductSkuDto.prototype, "status", void 0);
 class UpdateProductSkuDto {
     productCode;
+    productName;
+    title;
+    subtitle;
+    brand;
+    specification;
+    productSpec;
+    additionalAttributes;
     price;
-    stock;
-    colorCombination;
-    mainImage;
+    images;
+    video;
+    useSharedVideo;
     status;
 }
 exports.UpdateProductSkuDto = UpdateProductSkuDto;
@@ -276,27 +349,62 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateProductSkuDto.prototype, "productCode", void 0);
 __decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(1),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProductSkuDto.prototype, "productName", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProductSkuDto.prototype, "title", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProductSkuDto.prototype, "subtitle", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProductSkuDto.prototype, "brand", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateProductSkuDto.prototype, "specification", void 0);
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateProductSkuDto.prototype, "productSpec", void 0);
+__decorate([
+    (0, class_validator_1.IsObject)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateProductSkuDto.prototype, "additionalAttributes", void 0);
+__decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], UpdateProductSkuDto.prototype, "price", void 0);
 __decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.IsArray)(),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateProductSkuDto.prototype, "stock", void 0);
+    __metadata("design:type", Object)
+], UpdateProductSkuDto.prototype, "images", void 0);
 __decorate([
     (0, class_validator_1.IsObject)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
-], UpdateProductSkuDto.prototype, "colorCombination", void 0);
+], UpdateProductSkuDto.prototype, "video", void 0);
 __decorate([
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateProductSkuDto.prototype, "mainImage", void 0);
+    __metadata("design:type", Boolean)
+], UpdateProductSkuDto.prototype, "useSharedVideo", void 0);
 __decorate([
     (0, class_validator_1.IsEnum)(['ACTIVE', 'INACTIVE']),
     (0, class_validator_1.IsOptional)(),

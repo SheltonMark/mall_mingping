@@ -88,6 +88,7 @@ export declare class CustomerService {
             orderType: import("@prisma/client").$Enums.OrderType;
             orderDate: Date;
             status: string;
+            companyName: string | null;
         })[];
         _count: {
             orders: number;

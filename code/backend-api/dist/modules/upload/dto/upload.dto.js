@@ -6,6 +6,7 @@ var UploadType;
     UploadType["IMAGE"] = "image";
     UploadType["DOCUMENT"] = "document";
     UploadType["EXCEL"] = "excel";
+    UploadType["VIDEO"] = "video";
 })(UploadType || (exports.UploadType = UploadType = {}));
 class UploadResponseDto {
     url;

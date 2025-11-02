@@ -1,7 +1,8 @@
 export declare enum UploadType {
     IMAGE = "image",
     DOCUMENT = "document",
-    EXCEL = "excel"
+    EXCEL = "excel",
+    VIDEO = "video"
 }
 export declare class UploadResponseDto {
     url: string;

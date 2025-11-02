@@ -8,8 +8,32 @@ declare enum CustomerType {
 }
 declare class OrderItemDto {
     productSkuId: string;
+    itemNumber?: number;
+    customerProductCode?: string;
+    productImage?: string;
+    productSpec?: string;
+    additionalAttributes?: string;
     quantity: number;
+    packagingConversion?: number;
+    packagingUnit?: string;
+    weightUnit?: string;
+    netWeight?: number;
+    grossWeight?: number;
+    packagingType?: string;
+    packagingSize?: string;
+    supplierNote?: string;
+    expectedDeliveryDate?: string;
     price: number;
+    untaxedLocalCurrency?: number;
+    packingQuantity?: number;
+    cartonQuantity?: number;
+    packagingMethod?: string;
+    paperCardCode?: string;
+    washLabelCode?: string;
+    outerCartonCode?: string;
+    cartonSpecification?: string;
+    volume?: number;
+    summary?: string;
 }
 declare class CustomParamDto {
     paramKey: string;
@@ -22,6 +46,7 @@ export declare class CreateOrderDto {
     customerType: CustomerType;
     orderType: OrderType;
     orderDate: string;
+    companyName?: string;
     status?: string;
     items: OrderItemDto[];
     customParams?: CustomParamDto[];
@@ -33,6 +58,7 @@ export declare class UpdateOrderDto {
     customerType?: CustomerType;
     orderType?: OrderType;
     orderDate?: string;
+    companyName?: string;
     status?: string;
     items?: OrderItemDto[];
     customParams?: CustomParamDto[];

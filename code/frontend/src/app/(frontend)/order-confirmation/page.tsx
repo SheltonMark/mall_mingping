@@ -87,7 +87,11 @@ export default function OrderConfirmationPage() {
               group: {
                 id: group.id,
                 groupNameZh: group.groupNameZh,
-                groupNameEn: group.groupNameEn
+                groupNameEn: group.groupNameEn,
+                prefix: group.prefix || '',
+                isPublished: group.isPublished ?? true,
+                displayOrder: group.displayOrder ?? 0,
+                skus: []
               }
             })
           })

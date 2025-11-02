@@ -45,6 +45,7 @@ let SalespersonController = class SalespersonController {
 exports.SalespersonController = SalespersonController;
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [salesperson_dto_1.CreateSalespersonDto]),
@@ -68,6 +69,7 @@ __decorate([
 ], SalespersonController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -76,6 +78,7 @@ __decorate([
 ], SalespersonController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -83,7 +86,6 @@ __decorate([
 ], SalespersonController.prototype, "remove", null);
 exports.SalespersonController = SalespersonController = __decorate([
     (0, common_1.Controller)('salespersons'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [salesperson_service_1.SalespersonService])
 ], SalespersonController);
 //# sourceMappingURL=salesperson.controller.js.map

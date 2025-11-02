@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { PrismaService } from '../../prisma.service';
 import { ExcelService } from '../../common/services/excel.service';
 import { FileUploadService } from '../../common/services/file-upload.service';
-import { CreateCategoryDto, UpdateCategoryDto, CreateMaterialDto, UpdateMaterialDto, CreateProductGroupDto, UpdateProductGroupDto, CreateProductSkuDto, UpdateProductSkuDto } from './dto/product.dto';
+import { CreateCategoryDto, UpdateCategoryDto, CreateProductGroupDto, UpdateProductGroupDto, CreateProductSkuDto, UpdateProductSkuDto } from './dto/product.dto';
 export declare class ProductService {
     private prisma;
     private excelService;
@@ -11,11 +11,14 @@ export declare class ProductService {
     createCategory(dto: CreateCategoryDto): Promise<{
         id: string;
         createdAt: Date;
+        updatedAt: Date;
         isActive: boolean;
+        sortOrder: number;
+        code: string;
         nameZh: string;
         nameEn: string;
-        parentId: string | null;
-        sortOrder: number;
+        icon: string | null;
+        isAutoCreated: boolean;
     }>;
     findAllCategories(activeOnly?: boolean): Promise<({
         _count: {
@@ -24,11 +27,14 @@ export declare class ProductService {
     } & {
         id: string;
         createdAt: Date;
+        updatedAt: Date;
         isActive: boolean;
+        sortOrder: number;
+        code: string;
         nameZh: string;
         nameEn: string;
-        parentId: string | null;
-        sortOrder: number;
+        icon: string | null;
+        isAutoCreated: boolean;
     })[]>;
     findOneCategory(id: string): Promise<{
         productGroups: ({
@@ -39,129 +45,96 @@ export declare class ProductService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            displayOrder: number;
+            status: string;
+            prefix: string;
             groupNameZh: string;
             groupNameEn: string;
+            categoryId: string | null;
+            categoryCode: string | null;
             descriptionZh: string | null;
             descriptionEn: string | null;
-            categoryId: string | null;
-            materialId: string | null;
+            sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+            videoMode: string;
+            minPrice: import("@prisma/client/runtime/library").Decimal | null;
+            maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+            specCount: number;
+            mainImage: string | null;
             isPublished: boolean;
+            sortOrder: number;
         })[];
     } & {
         id: string;
         createdAt: Date;
+        updatedAt: Date;
         isActive: boolean;
+        sortOrder: number;
+        code: string;
         nameZh: string;
         nameEn: string;
-        parentId: string | null;
-        sortOrder: number;
+        icon: string | null;
+        isAutoCreated: boolean;
     }>;
     updateCategory(id: string, dto: UpdateCategoryDto): Promise<{
         id: string;
         createdAt: Date;
+        updatedAt: Date;
         isActive: boolean;
+        sortOrder: number;
+        code: string;
         nameZh: string;
         nameEn: string;
-        parentId: string | null;
-        sortOrder: number;
+        icon: string | null;
+        isAutoCreated: boolean;
     }>;
     removeCategory(id: string): Promise<{
         id: string;
         createdAt: Date;
+        updatedAt: Date;
         isActive: boolean;
-        nameZh: string;
-        nameEn: string;
-        parentId: string | null;
         sortOrder: number;
-    }>;
-    createMaterial(dto: CreateMaterialDto): Promise<{
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
+        code: string;
         nameZh: string;
         nameEn: string;
-    }>;
-    findAllMaterials(activeOnly?: boolean): Promise<({
-        _count: {
-            productGroups: number;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        nameZh: string;
-        nameEn: string;
-    })[]>;
-    findOneMaterial(id: string): Promise<{
-        productGroups: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            displayOrder: number;
-            groupNameZh: string;
-            groupNameEn: string;
-            descriptionZh: string | null;
-            descriptionEn: string | null;
-            categoryId: string | null;
-            materialId: string | null;
-            isPublished: boolean;
-        }[];
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        nameZh: string;
-        nameEn: string;
-    }>;
-    updateMaterial(id: string, dto: UpdateMaterialDto): Promise<{
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        nameZh: string;
-        nameEn: string;
-    }>;
-    removeMaterial(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        nameZh: string;
-        nameEn: string;
+        icon: string | null;
+        isAutoCreated: boolean;
     }>;
     createProductGroup(dto: CreateProductGroupDto): Promise<{
         category: {
             id: string;
             createdAt: Date;
+            updatedAt: Date;
             isActive: boolean;
-            nameZh: string;
-            nameEn: string;
-            parentId: string | null;
             sortOrder: number;
-        } | null;
-        material: {
-            id: string;
-            createdAt: Date;
-            isActive: boolean;
+            code: string;
             nameZh: string;
             nameEn: string;
+            icon: string | null;
+            isAutoCreated: boolean;
         } | null;
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        displayOrder: number;
+        status: string;
+        prefix: string;
         groupNameZh: string;
         groupNameEn: string;
+        categoryId: string | null;
+        categoryCode: string | null;
         descriptionZh: string | null;
         descriptionEn: string | null;
-        categoryId: string | null;
-        materialId: string | null;
+        sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+        videoMode: string;
+        minPrice: import("@prisma/client/runtime/library").Decimal | null;
+        maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+        specCount: number;
+        mainImage: string | null;
         isPublished: boolean;
+        sortOrder: number;
     }>;
     findAllProductGroups(query?: {
         search?: string;
         categoryId?: string;
-        materialId?: string;
         isPublished?: boolean;
         page?: number;
         limit?: number;
@@ -170,34 +143,48 @@ export declare class ProductService {
             category: {
                 id: string;
                 createdAt: Date;
+                updatedAt: Date;
                 isActive: boolean;
-                nameZh: string;
-                nameEn: string;
-                parentId: string | null;
                 sortOrder: number;
-            } | null;
-            material: {
-                id: string;
-                createdAt: Date;
-                isActive: boolean;
+                code: string;
                 nameZh: string;
                 nameEn: string;
+                icon: string | null;
+                isAutoCreated: boolean;
             } | null;
-            _count: {
-                skus: number;
-            };
+            skus: {
+                id: string;
+                productSpec: import("@prisma/client/runtime/library").JsonValue;
+                additionalAttributes: import("@prisma/client/runtime/library").JsonValue;
+                price: import("@prisma/client/runtime/library").Decimal | null;
+                productCode: string;
+                productName: string;
+                title: string | null;
+                subtitle: string | null;
+                brand: string | null;
+                specification: string | null;
+                images: import("@prisma/client/runtime/library").JsonValue;
+            }[];
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            displayOrder: number;
+            status: string;
+            prefix: string;
             groupNameZh: string;
             groupNameEn: string;
+            categoryId: string | null;
+            categoryCode: string | null;
             descriptionZh: string | null;
             descriptionEn: string | null;
-            categoryId: string | null;
-            materialId: string | null;
+            sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+            videoMode: string;
+            minPrice: import("@prisma/client/runtime/library").Decimal | null;
+            maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+            specCount: number;
+            mainImage: string | null;
             isPublished: boolean;
+            sortOrder: number;
         })[];
         meta: {
             total: number;
@@ -210,129 +197,165 @@ export declare class ProductService {
         category: {
             id: string;
             createdAt: Date;
+            updatedAt: Date;
             isActive: boolean;
-            nameZh: string;
-            nameEn: string;
-            parentId: string | null;
             sortOrder: number;
-        } | null;
-        material: {
-            id: string;
-            createdAt: Date;
-            isActive: boolean;
+            code: string;
             nameZh: string;
             nameEn: string;
+            icon: string | null;
+            isAutoCreated: boolean;
         } | null;
         skus: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.SkuStatus;
-            price: import("@prisma/client/runtime/library").Decimal;
+            productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+            additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+            price: import("@prisma/client/runtime/library").Decimal | null;
             groupId: string;
             productCode: string;
-            stock: number;
-            colorCombination: import("@prisma/client/runtime/library").JsonValue | null;
-            mainImage: string | null;
+            productName: string;
+            title: string | null;
+            subtitle: string | null;
+            brand: string | null;
+            specification: string | null;
+            images: import("@prisma/client/runtime/library").JsonValue | null;
+            video: import("@prisma/client/runtime/library").JsonValue | null;
+            useSharedVideo: boolean;
+            importDate: Date | null;
         }[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        displayOrder: number;
+        status: string;
+        prefix: string;
         groupNameZh: string;
         groupNameEn: string;
+        categoryId: string | null;
+        categoryCode: string | null;
         descriptionZh: string | null;
         descriptionEn: string | null;
-        categoryId: string | null;
-        materialId: string | null;
+        sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+        videoMode: string;
+        minPrice: import("@prisma/client/runtime/library").Decimal | null;
+        maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+        specCount: number;
+        mainImage: string | null;
         isPublished: boolean;
+        sortOrder: number;
     }>;
     updateProductGroup(id: string, dto: UpdateProductGroupDto): Promise<{
         category: {
             id: string;
             createdAt: Date;
+            updatedAt: Date;
             isActive: boolean;
-            nameZh: string;
-            nameEn: string;
-            parentId: string | null;
             sortOrder: number;
-        } | null;
-        material: {
-            id: string;
-            createdAt: Date;
-            isActive: boolean;
+            code: string;
             nameZh: string;
             nameEn: string;
+            icon: string | null;
+            isAutoCreated: boolean;
         } | null;
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        displayOrder: number;
+        status: string;
+        prefix: string;
         groupNameZh: string;
         groupNameEn: string;
+        categoryId: string | null;
+        categoryCode: string | null;
         descriptionZh: string | null;
         descriptionEn: string | null;
-        categoryId: string | null;
-        materialId: string | null;
+        sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+        videoMode: string;
+        minPrice: import("@prisma/client/runtime/library").Decimal | null;
+        maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+        specCount: number;
+        mainImage: string | null;
         isPublished: boolean;
+        sortOrder: number;
     }>;
     removeProductGroup(id: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        displayOrder: number;
+        status: string;
+        prefix: string;
         groupNameZh: string;
         groupNameEn: string;
+        categoryId: string | null;
+        categoryCode: string | null;
         descriptionZh: string | null;
         descriptionEn: string | null;
-        categoryId: string | null;
-        materialId: string | null;
+        sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+        videoMode: string;
+        minPrice: import("@prisma/client/runtime/library").Decimal | null;
+        maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+        specCount: number;
+        mainImage: string | null;
         isPublished: boolean;
+        sortOrder: number;
     }>;
     createProductSku(dto: CreateProductSkuDto): Promise<{
         group: {
             category: {
                 id: string;
                 createdAt: Date;
+                updatedAt: Date;
                 isActive: boolean;
-                nameZh: string;
-                nameEn: string;
-                parentId: string | null;
                 sortOrder: number;
-            } | null;
-            material: {
-                id: string;
-                createdAt: Date;
-                isActive: boolean;
+                code: string;
                 nameZh: string;
                 nameEn: string;
+                icon: string | null;
+                isAutoCreated: boolean;
             } | null;
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            displayOrder: number;
+            status: string;
+            prefix: string;
             groupNameZh: string;
             groupNameEn: string;
+            categoryId: string | null;
+            categoryCode: string | null;
             descriptionZh: string | null;
             descriptionEn: string | null;
-            categoryId: string | null;
-            materialId: string | null;
+            sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+            videoMode: string;
+            minPrice: import("@prisma/client/runtime/library").Decimal | null;
+            maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+            specCount: number;
+            mainImage: string | null;
             isPublished: boolean;
+            sortOrder: number;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
-        price: import("@prisma/client/runtime/library").Decimal;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
-        stock: number;
-        colorCombination: import("@prisma/client/runtime/library").JsonValue | null;
-        mainImage: string | null;
+        productName: string;
+        title: string | null;
+        subtitle: string | null;
+        brand: string | null;
+        specification: string | null;
+        images: import("@prisma/client/runtime/library").JsonValue | null;
+        video: import("@prisma/client/runtime/library").JsonValue | null;
+        useSharedVideo: boolean;
+        importDate: Date | null;
     }>;
     findAllProductSkus(query?: {
         search?: string;
@@ -346,43 +369,55 @@ export declare class ProductService {
                 category: {
                     id: string;
                     createdAt: Date;
+                    updatedAt: Date;
                     isActive: boolean;
-                    nameZh: string;
-                    nameEn: string;
-                    parentId: string | null;
                     sortOrder: number;
-                } | null;
-                material: {
-                    id: string;
-                    createdAt: Date;
-                    isActive: boolean;
+                    code: string;
                     nameZh: string;
                     nameEn: string;
+                    icon: string | null;
+                    isAutoCreated: boolean;
                 } | null;
             } & {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                displayOrder: number;
+                status: string;
+                prefix: string;
                 groupNameZh: string;
                 groupNameEn: string;
+                categoryId: string | null;
+                categoryCode: string | null;
                 descriptionZh: string | null;
                 descriptionEn: string | null;
-                categoryId: string | null;
-                materialId: string | null;
+                sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+                videoMode: string;
+                minPrice: import("@prisma/client/runtime/library").Decimal | null;
+                maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+                specCount: number;
+                mainImage: string | null;
                 isPublished: boolean;
+                sortOrder: number;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.SkuStatus;
-            price: import("@prisma/client/runtime/library").Decimal;
+            productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+            additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+            price: import("@prisma/client/runtime/library").Decimal | null;
             groupId: string;
             productCode: string;
-            stock: number;
-            colorCombination: import("@prisma/client/runtime/library").JsonValue | null;
-            mainImage: string | null;
+            productName: string;
+            title: string | null;
+            subtitle: string | null;
+            brand: string | null;
+            specification: string | null;
+            images: import("@prisma/client/runtime/library").JsonValue | null;
+            video: import("@prisma/client/runtime/library").JsonValue | null;
+            useSharedVideo: boolean;
+            importDate: Date | null;
         })[];
         meta: {
             total: number;
@@ -396,111 +431,153 @@ export declare class ProductService {
             category: {
                 id: string;
                 createdAt: Date;
+                updatedAt: Date;
                 isActive: boolean;
-                nameZh: string;
-                nameEn: string;
-                parentId: string | null;
                 sortOrder: number;
-            } | null;
-            material: {
-                id: string;
-                createdAt: Date;
-                isActive: boolean;
+                code: string;
                 nameZh: string;
                 nameEn: string;
+                icon: string | null;
+                isAutoCreated: boolean;
             } | null;
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            displayOrder: number;
+            status: string;
+            prefix: string;
             groupNameZh: string;
             groupNameEn: string;
+            categoryId: string | null;
+            categoryCode: string | null;
             descriptionZh: string | null;
             descriptionEn: string | null;
-            categoryId: string | null;
-            materialId: string | null;
+            sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+            videoMode: string;
+            minPrice: import("@prisma/client/runtime/library").Decimal | null;
+            maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+            specCount: number;
+            mainImage: string | null;
             isPublished: boolean;
+            sortOrder: number;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
-        price: import("@prisma/client/runtime/library").Decimal;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
-        stock: number;
-        colorCombination: import("@prisma/client/runtime/library").JsonValue | null;
-        mainImage: string | null;
+        productName: string;
+        title: string | null;
+        subtitle: string | null;
+        brand: string | null;
+        specification: string | null;
+        images: import("@prisma/client/runtime/library").JsonValue | null;
+        video: import("@prisma/client/runtime/library").JsonValue | null;
+        useSharedVideo: boolean;
+        importDate: Date | null;
     }>;
     updateProductSku(id: string, dto: UpdateProductSkuDto): Promise<{
         group: {
             category: {
                 id: string;
                 createdAt: Date;
+                updatedAt: Date;
                 isActive: boolean;
-                nameZh: string;
-                nameEn: string;
-                parentId: string | null;
                 sortOrder: number;
-            } | null;
-            material: {
-                id: string;
-                createdAt: Date;
-                isActive: boolean;
+                code: string;
                 nameZh: string;
                 nameEn: string;
+                icon: string | null;
+                isAutoCreated: boolean;
             } | null;
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            displayOrder: number;
+            status: string;
+            prefix: string;
             groupNameZh: string;
             groupNameEn: string;
+            categoryId: string | null;
+            categoryCode: string | null;
             descriptionZh: string | null;
             descriptionEn: string | null;
-            categoryId: string | null;
-            materialId: string | null;
+            sharedVideo: import("@prisma/client/runtime/library").JsonValue | null;
+            videoMode: string;
+            minPrice: import("@prisma/client/runtime/library").Decimal | null;
+            maxPrice: import("@prisma/client/runtime/library").Decimal | null;
+            specCount: number;
+            mainImage: string | null;
             isPublished: boolean;
+            sortOrder: number;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
-        price: import("@prisma/client/runtime/library").Decimal;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
-        stock: number;
-        colorCombination: import("@prisma/client/runtime/library").JsonValue | null;
-        mainImage: string | null;
+        productName: string;
+        title: string | null;
+        subtitle: string | null;
+        brand: string | null;
+        specification: string | null;
+        images: import("@prisma/client/runtime/library").JsonValue | null;
+        video: import("@prisma/client/runtime/library").JsonValue | null;
+        useSharedVideo: boolean;
+        importDate: Date | null;
     }>;
     removeProductSku(id: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
-        price: import("@prisma/client/runtime/library").Decimal;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
-        stock: number;
-        colorCombination: import("@prisma/client/runtime/library").JsonValue | null;
-        mainImage: string | null;
+        productName: string;
+        title: string | null;
+        subtitle: string | null;
+        brand: string | null;
+        specification: string | null;
+        images: import("@prisma/client/runtime/library").JsonValue | null;
+        video: import("@prisma/client/runtime/library").JsonValue | null;
+        useSharedVideo: boolean;
+        importDate: Date | null;
     }>;
     batchImportSkus(skus: CreateProductSkuDto[]): Promise<{
         success: number;
         failed: number;
         errors: any[];
     }>;
+    private extractPrefix;
+    private extractCategoryCode;
+    private ensureCategory;
+    private ensureProductGroup;
     importSkusFromExcel(file: Express.Multer.File): Promise<{
         success: number;
         failed: number;
         errors: any[];
+        autoCreated: {
+            categories: string[];
+            productGroups: string[];
+        };
     } | {
         success: boolean;
-        errors: string[];
+        errors: {
+            error: string;
+        }[];
     }>;
     generateExcelTemplate(res: Response): Promise<void>;
     exportSkusToExcel(groupId: string, res: Response): Promise<void>;

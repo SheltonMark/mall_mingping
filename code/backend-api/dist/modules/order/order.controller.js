@@ -79,6 +79,7 @@ __decorate([
 ], OrderController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Query)('search')),
     __param(1, (0, common_1.Query)('customerId')),
     __param(2, (0, common_1.Query)('salespersonId')),
@@ -94,6 +95,7 @@ __decorate([
 ], OrderController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -101,6 +103,7 @@ __decorate([
 ], OrderController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -109,6 +112,7 @@ __decorate([
 ], OrderController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -116,6 +120,7 @@ __decorate([
 ], OrderController.prototype, "remove", null);
 __decorate([
     (0, common_1.Post)('param-configs'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [order_dto_1.CreateOrderParamConfigDto]),
@@ -123,6 +128,7 @@ __decorate([
 ], OrderController.prototype, "createParamConfig", null);
 __decorate([
     (0, common_1.Get)('param-configs'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Query)('activeOnly')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -130,6 +136,7 @@ __decorate([
 ], OrderController.prototype, "findAllParamConfigs", null);
 __decorate([
     (0, common_1.Get)('param-configs/:id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -137,6 +144,7 @@ __decorate([
 ], OrderController.prototype, "findOneParamConfig", null);
 __decorate([
     (0, common_1.Patch)('param-configs/:id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -145,6 +153,7 @@ __decorate([
 ], OrderController.prototype, "updateParamConfig", null);
 __decorate([
     (0, common_1.Delete)('param-configs/:id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -152,6 +161,7 @@ __decorate([
 ], OrderController.prototype, "removeParamConfig", null);
 __decorate([
     (0, common_1.Get)(':id/export'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -160,6 +170,7 @@ __decorate([
 ], OrderController.prototype, "exportOrder", null);
 __decorate([
     (0, common_1.Post)('export-batch'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)('orderIds')),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -168,7 +179,6 @@ __decorate([
 ], OrderController.prototype, "exportBatch", null);
 exports.OrderController = OrderController = __decorate([
     (0, common_1.Controller)('orders'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [order_service_1.OrderService])
 ], OrderController);
 //# sourceMappingURL=order.controller.js.map
