@@ -266,7 +266,7 @@ export default function ProductDetailPage() {
     )
   }
 
-  const currentImage = images[currentImageIndex] || productGroup.mainImage || '/images/placeholder.jpg'
+  const currentImage = images[currentImageIndex] || (productGroup as any).mainImage || '/images/placeholder.jpg'
 
   return (
     <div className="min-h-screen bg-white pt-32">
@@ -316,8 +316,8 @@ export default function ProductDetailPage() {
                         videoUrl = videoData.url.startsWith('http') ? videoData.url :
                           `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${videoData.url}`;
                       }
-                    } else if (productGroup?.sharedVideo) {
-                      videoUrl = productGroup.sharedVideo;
+                    } else if ((productGroup as any)?.sharedVideo) {
+                      videoUrl = (productGroup as any).sharedVideo;
                     }
 
                     if (videoUrl) {
