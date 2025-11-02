@@ -67,7 +67,7 @@ export default function ProductsPage() {
       sku: defaultSKU.productCode,
       groupName: productGroup.groupNameZh,
       translationKey: '',
-      colorCombination: defaultSKU.colorCombination || {},
+      colorCombination: (defaultSKU as any).colorCombination || {},
       quantity: 1,
       price: defaultSKU.price,
       mainImage: defaultSKU.mainImage || '/images/placeholder.jpg',

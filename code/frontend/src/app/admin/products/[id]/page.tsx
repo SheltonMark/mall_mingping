@@ -238,7 +238,7 @@ export default function EditSkuPage() {
 
       // 如果有新上传的视频文件，先上传视频（使用带认证的API）
       if (videoFile) {
-        const videoResult = await uploadApi.uploadSingle(videoFile, 'video');
+        const videoResult = await uploadApi.uploadSingle(videoFile, 'video' as any);
         updateData.video = { url: videoResult.url, type: videoFile.type }; // ✅ 直接传对象
       } else if (videoPreview && !videoFile) {
         // 保留原有视频
