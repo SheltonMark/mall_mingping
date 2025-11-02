@@ -11,13 +11,16 @@ import { FileUploadService } from '../../common/services/file-upload.service';
 import {
   CreateCategoryDto,
   UpdateCategoryDto,
-  CreateMaterialDto,
-  UpdateMaterialDto,
   CreateProductGroupDto,
   UpdateProductGroupDto,
   CreateProductSkuDto,
   UpdateProductSkuDto,
 } from './dto/product.dto';
+import {
+  parseProductSpec,
+  parseColorAttributes,
+  validateComponentCodes,
+} from '../../common/utils/product-parser';
 
 @Injectable()
 export class ProductService {
@@ -29,13 +32,13 @@ export class ProductService {
 
   // ============ Category Methods ============
   async createCategory(dto: CreateCategoryDto) {
-    if (dto.parentId) {
-      const parent = await this.prisma.category.findUnique({
-        where: { id: dto.parentId },
-      });
-      if (!parent) {
-        throw new BadRequestException('Parent category not found');
-      }
+    // Check if code already exists
+    const existing = await this.prisma.category.findUnique({
+      where: { code: dto.code },
+    });
+
+    if (existing) {
+      throw new ConflictException('Category code already exists');
     }
 
     return this.prisma.category.create({
@@ -119,83 +122,6 @@ export class ProductService {
     });
   }
 
-  // ============ Material Methods ============
-  async createMaterial(dto: CreateMaterialDto) {
-    return this.prisma.material.create({
-      data: dto,
-    });
-  }
-
-  async findAllMaterials(activeOnly = false) {
-    return this.prisma.material.findMany({
-      where: activeOnly ? { isActive: true } : undefined,
-      include: {
-        _count: {
-          select: {
-            productGroups: true,
-          },
-        },
-      },
-    });
-  }
-
-  async findOneMaterial(id: string) {
-    const material = await this.prisma.material.findUnique({
-      where: { id },
-      include: {
-        productGroups: {
-          take: 10,
-        },
-      },
-    });
-
-    if (!material) {
-      throw new NotFoundException('Material not found');
-    }
-
-    return material;
-  }
-
-  async updateMaterial(id: string, dto: UpdateMaterialDto) {
-    const material = await this.prisma.material.findUnique({
-      where: { id },
-    });
-
-    if (!material) {
-      throw new NotFoundException('Material not found');
-    }
-
-    return this.prisma.material.update({
-      where: { id },
-      data: dto,
-    });
-  }
-
-  async removeMaterial(id: string) {
-    const material = await this.prisma.material.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { productGroups: true },
-        },
-      },
-    });
-
-    if (!material) {
-      throw new NotFoundException('Material not found');
-    }
-
-    if (material._count.productGroups > 0) {
-      throw new BadRequestException(
-        'Cannot delete material with associated products',
-      );
-    }
-
-    return this.prisma.material.delete({
-      where: { id },
-    });
-  }
-
   // ============ Product Group Methods ============
   async createProductGroup(dto: CreateProductGroupDto) {
     if (dto.categoryId) {
@@ -207,20 +133,10 @@ export class ProductService {
       }
     }
 
-    if (dto.materialId) {
-      const material = await this.prisma.material.findUnique({
-        where: { id: dto.materialId },
-      });
-      if (!material) {
-        throw new BadRequestException('Material not found');
-      }
-    }
-
     return this.prisma.productGroup.create({
       data: dto,
       include: {
         category: true,
-        material: true,
       },
     });
   }
@@ -228,7 +144,6 @@ export class ProductService {
   async findAllProductGroups(query?: {
     search?: string;
     categoryId?: string;
-    materialId?: string;
     isPublished?: boolean;
     page?: number;
     limit?: number;
@@ -236,7 +151,6 @@ export class ProductService {
     const {
       search,
       categoryId,
-      materialId,
       isPublished,
       page = 1,
       limit = 10,
@@ -256,10 +170,6 @@ export class ProductService {
       where.categoryId = categoryId;
     }
 
-    if (materialId) {
-      where.materialId = materialId;
-    }
-
     if (isPublished !== undefined) {
       where.isPublished = isPublished;
     }
@@ -271,12 +181,25 @@ export class ProductService {
         take: limit,
         include: {
           category: true,
-          material: true,
-          _count: {
-            select: { skus: true },
+          skus: {
+            where: { status: 'ACTIVE' },
+            select: {
+              id: true,
+              productCode: true,
+              productName: true,
+              title: true,
+              subtitle: true,
+              price: true,
+              images: true,
+              brand: true,
+              specification: true,
+              productSpec: true,
+              additionalAttributes: true,
+            },
+            orderBy: { createdAt: 'desc' },
           },
         },
-        orderBy: { displayOrder: 'asc' },
+        orderBy: { sortOrder: 'asc' },
       }),
       this.prisma.productGroup.count({ where }),
     ]);
@@ -297,7 +220,6 @@ export class ProductService {
       where: { id },
       include: {
         category: true,
-        material: true,
         skus: {
           orderBy: { createdAt: 'desc' },
         },
@@ -325,7 +247,6 @@ export class ProductService {
       data: dto,
       include: {
         category: true,
-        material: true,
       },
     });
   }
@@ -380,7 +301,6 @@ export class ProductService {
         group: {
           include: {
             category: true,
-            material: true,
           },
         },
       },
@@ -420,7 +340,6 @@ export class ProductService {
           group: {
             include: {
               category: true,
-              material: true,
             },
           },
         },
@@ -447,7 +366,6 @@ export class ProductService {
         group: {
           include: {
             category: true,
-            material: true,
           },
         },
       },
@@ -461,6 +379,9 @@ export class ProductService {
   }
 
   async updateProductSku(id: string, dto: UpdateProductSkuDto) {
+    console.log('📝 [Update SKU] ID:', id);
+    console.log('📝 [Update SKU] DTO:', JSON.stringify(dto, null, 2));
+
     const sku = await this.prisma.productSku.findUnique({
       where: { id },
     });
@@ -482,18 +403,25 @@ export class ProductService {
       }
     }
 
-    return this.prisma.productSku.update({
+    const result = await this.prisma.productSku.update({
       where: { id },
       data: dto,
       include: {
         group: {
           include: {
             category: true,
-            material: true,
           },
         },
       },
     });
+
+    console.log('✅ [Update SKU] 更新成功');
+    console.log('✅ [Update SKU] images 类型:', typeof result.images);
+    console.log('✅ [Update SKU] images 值:', JSON.stringify(result.images));
+    console.log('✅ [Update SKU] video 类型:', typeof result.video);
+    console.log('✅ [Update SKU] video 值:', JSON.stringify(result.video));
+
+    return result;
   }
 
   async removeProductSku(id: string) {
@@ -535,6 +463,95 @@ export class ProductService {
   }
 
   // ============ Excel Import/Export Methods ============
+
+  /**
+   * 从品名中提取前缀 (使用 - 分隔符)
+   * 例如: "MP007-清洁四件套" → "MP007"
+   * 例如: "TB001-拖把" → "TB001"
+   * 例如: "S002-刷子" → "S002"
+   */
+  private extractPrefix(productName: string): string | null {
+    // 使用 - 分隔符提取前缀
+    if (!productName || typeof productName !== 'string') {
+      return null;
+    }
+    const parts = productName.split('-');
+    return parts.length > 0 && parts[0].trim() ? parts[0].trim() : null;
+  }
+
+  /**
+   * 从前缀中提取分类代码
+   * 例如: "MP007" → "MP"
+   * 例如: "TB001" → "TB"
+   */
+  private extractCategoryCode(prefix: string): string {
+    // 提取字母部分作为分类代码
+    const match = prefix.match(/^([A-Z]+)/);
+    return match ? match[1] : prefix;
+  }
+
+  /**
+   * 自动创建或获取分类
+   * 如果分类不存在,则自动创建
+   */
+  private async ensureCategory(categoryCode: string): Promise<string> {
+    // 先查找是否存在
+    let category = await this.prisma.category.findUnique({
+      where: { code: categoryCode },
+    });
+
+    // 如果不存在,自动创建
+    if (!category) {
+      category = await this.prisma.category.create({
+        data: {
+          code: categoryCode,
+          nameZh: `${categoryCode}类`,
+          nameEn: `${categoryCode} Category`,
+          isAutoCreated: true,
+          isActive: true,
+          sortOrder: 999, // 自动创建的分类排在最后
+        },
+      });
+      console.log(`✓ Auto-created category: ${categoryCode} - ${category.nameZh}`);
+    }
+
+    return category.id;
+  }
+
+  /**
+   * 自动创建或获取产品组
+   * 根据品号前缀自动分组
+   */
+  private async ensureProductGroup(
+    prefix: string,
+    categoryId: string,
+    categoryCode: string,
+  ): Promise<string> {
+    // 先查找是否存在
+    let group = await this.prisma.productGroup.findUnique({
+      where: { prefix },
+    });
+
+    // 如果不存在,自动创建
+    if (!group) {
+      group = await this.prisma.productGroup.create({
+        data: {
+          prefix,
+          groupNameZh: `${prefix}系列`,
+          groupNameEn: `${prefix} Series`,
+          categoryId,
+          categoryCode,
+          isPublished: false,
+          status: 'inactive',
+          videoMode: 'shared',
+        },
+      });
+      console.log(`✓ Auto-created product group: ${prefix} - ${group.groupNameZh}`);
+    }
+
+    return group.id;
+  }
+
   async importSkusFromExcel(file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
@@ -545,81 +562,156 @@ export class ProductService {
 
     // Parse Excel file
     const data = await this.excelService.parseExcelFile(file.buffer);
+    console.log(`📋 [Service] Excel parsed. Rows: ${data.length}`);
+    if (data.length > 0) {
+      console.log('📝 [Service] First row keys:', Object.keys(data[0]).join(', '));
+    }
 
-    // Validate data structure
-    const requiredFields = ['groupId', 'productCode', 'price'];
-    const validation = this.excelService.validateExcelData(
-      data,
-      requiredFields,
-    );
+    // 验证数据：检查每行是否有品号和品名（支持中英文字段名）
+    const validationErrors: string[] = [];
+    data.forEach((row, index) => {
+      const productCode = row.productCode || row['品号'] || row['Product Code'];
+      const productName = row.productName || row['品名'] || row['Product Name'];
 
-    if (!validation.valid) {
+      if (!productCode || productCode.toString().trim() === '') {
+        validationErrors.push(`第${index + 2}行: 缺少品号`);
+      }
+      if (!productName || productName.toString().trim() === '') {
+        validationErrors.push(`第${index + 2}行: 缺少品名`);
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      console.error(`❌ [Service] Validation failed:`, validationErrors);
       return {
         success: false,
-        errors: validation.errors,
+        errors: validationErrors.map(err => ({ error: err })),
       };
     }
 
-    // Transform and import data
-    const skus: CreateProductSkuDto[] = data.map((row) => ({
-      groupId: row.groupId || row['商品组ID'] || row['Group ID'],
-      productCode: row.productCode || row['品号'] || row['Product Code'],
-      price:
-        parseFloat(row.price || row['价格'] || row['Price']) || 0,
-      stock: parseInt(row.stock || row['库存'] || row['Stock']) || 0,
-      colorCombination: row.colorCombination || row['颜色组合']
-        ? JSON.parse(row.colorCombination || row['颜色组合'])
-        : null,
-      mainImage: row.mainImage || row['主图'] || row['Main Image'],
-      status: (row.status || row['状态'] || row['Status'] || 'ACTIVE') as
-        | 'ACTIVE'
-        | 'INACTIVE',
-    }));
+    console.log(`✅ [Service] Validation passed`);
 
-    // Batch import
-    return await this.batchImportSkus(skus);
+    // Transform and import data with auto-grouping (2025-10-31 updated)
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: [] as any[],
+      autoCreated: {
+        categories: [] as string[],
+        productGroups: [] as string[],
+      },
+    };
+
+    for (const row of data) {
+      try {
+        const productCode = row.productCode || row['品号'] || row['Product Code'];
+        const productName = row.productName || row['品名'] || row['Product Name'];
+
+        // 从品名中提取前缀 (如: "MP007-清洁四件套" → "MP007")
+        const prefix = this.extractPrefix(productName);
+        if (!prefix) {
+          throw new Error(`无法从品名中提取前缀: ${productName}`);
+        }
+
+        // 提取分类代码 (如: MP007 → MP)
+        const categoryCode = this.extractCategoryCode(prefix);
+
+        // 自动创建或获取分类
+        const categoryId = await this.ensureCategory(categoryCode);
+        if (results.autoCreated.categories.indexOf(categoryCode) === -1) {
+          results.autoCreated.categories.push(categoryCode);
+        }
+
+        // 自动创建或获取产品组
+        const groupId = await this.ensureProductGroup(prefix, categoryId, categoryCode);
+        if (results.autoCreated.productGroups.indexOf(prefix) === -1) {
+          results.autoCreated.productGroups.push(prefix);
+        }
+
+        // 获取货品规格和附加属性原始文本
+        const rawSpec = row.specification || row['货品规格'] || row['Specification'];
+        const rawAttrs = row.additionalAttributes || row['附加属性（颜色）'] || row['附加属性'];
+
+        // 解析货品规格和附加属性
+        const parsedSpec = parseProductSpec(rawSpec);
+        const parsedColors = parseColorAttributes(rawAttrs);
+
+        // 验证颜色属性的部件编号是否存在于规格中
+        if (parsedSpec.length > 0 && parsedColors.length > 0) {
+          const invalidCodes = validateComponentCodes(parsedSpec, parsedColors);
+          if (invalidCodes.length > 0) {
+            throw new Error(
+              `颜色属性中的部件编号 [${invalidCodes.join(', ')}] 在货品规格中不存在`
+            );
+          }
+        }
+
+        // 构建SKU数据
+        const skuData: CreateProductSkuDto = {
+          groupId,
+          productCode,
+          productName,
+          brand: row.brand || row['商标'] || row['Brand'],
+          specification: rawSpec, // 保存原始文本
+          productSpec: parsedSpec.length > 0 ? parsedSpec : null, // 保存解析后的JSON
+          additionalAttributes: parsedColors.length > 0 ? parsedColors : null, // 保存解析后的JSON
+          price: row.price || row['价格'] || row['Price']
+            ? parseFloat(row.price || row['价格'] || row['Price'])
+            : undefined,
+          images: row.images || row['图片集']
+            ? typeof (row.images || row['图片集']) === 'string'
+              ? JSON.parse(row.images || row['图片集'])
+              : row.images || row['图片集']
+            : null,
+          video: row.video || row['视频']
+            ? typeof (row.video || row['视频']) === 'string'
+              ? JSON.parse(row.video || row['视频'])
+              : row.video || row['视频']
+            : null,
+          useSharedVideo: row.useSharedVideo !== undefined
+            ? row.useSharedVideo
+            : true,
+          status: (row.status || row['状态'] || row['Status'] || 'INACTIVE') as
+            | 'ACTIVE'
+            | 'INACTIVE',
+        };
+
+        // 创建SKU
+        await this.createProductSku(skuData);
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        const errorDetail = {
+          productCode: row.productCode || row['品号'],
+          productName: row.productName || row['品名'],
+          error: error.message,
+        };
+        results.errors.push(errorDetail);
+        console.error(`❌ [Import Error] ${errorDetail.productCode} - ${errorDetail.productName}: ${errorDetail.error}`);
+      }
+    }
+
+    console.log(`\n📊 [Import Summary]`);
+    console.log(`✅ Success: ${results.success}`);
+    console.log(`❌ Failed: ${results.failed}`);
+    console.log(`📁 Auto-created categories: ${results.autoCreated.categories.join(', ') || 'none'}`);
+    console.log(`📦 Auto-created groups: ${results.autoCreated.productGroups.join(', ') || 'none'}`);
+
+    return results;
   }
 
   async generateExcelTemplate(res: Response) {
-    const columns = [
-      {
-        header: '商品组ID (Group ID)',
-        key: 'groupId',
-        width: 40,
-        example: 'uuid-of-product-group',
-      },
-      {
-        header: '品号 (Product Code)',
-        key: 'productCode',
-        width: 20,
-        example: 'PC-001',
-      },
-      { header: '价格 (Price)', key: 'price', width: 15, example: '12.50' },
-      { header: '库存 (Stock)', key: 'stock', width: 15, example: '1000' },
-      {
-        header: '颜色组合 (JSON)',
-        key: 'colorCombination',
-        width: 30,
-        example: '{"main":"red","accent":"blue"}',
-      },
-      {
-        header: '主图 (Image URL)',
-        key: 'mainImage',
-        width: 40,
-        example: 'https://example.com/image.jpg',
-      },
-      {
-        header: '状态 (Status)',
-        key: 'status',
-        width: 15,
-        example: 'ACTIVE',
-      },
-    ];
+    // 直接返回预制的模板文件
+    const fs = require('fs');
+    const path = require('path');
 
-    const buffer = await this.excelService.createTemplateFile(
-      columns,
-      'Product_SKU_Import_Template.xlsx',
-    );
+    const templatePath = path.join(__dirname, '..', '..', '..', '产品导入模板_最终版.xlsx');
+
+    if (!fs.existsSync(templatePath)) {
+      throw new NotFoundException('Template file not found');
+    }
+
+    const buffer = fs.readFileSync(templatePath);
 
     res.setHeader(
       'Content-Type',
@@ -627,7 +719,7 @@ export class ProductService {
     );
     res.setHeader(
       'Content-Disposition',
-      'attachment; filename="Product_SKU_Import_Template.xlsx"',
+      'attachment; filename="产品导入模板_最终版.xlsx"',
     );
     res.send(buffer);
   }
@@ -641,7 +733,6 @@ export class ProductService {
         group: {
           include: {
             category: true,
-            material: true,
           },
         },
       },
@@ -649,22 +740,20 @@ export class ProductService {
 
     const data = skus.map((sku) => ({
       productCode: sku.productCode,
+      productName: sku.productName,
       groupName: sku.group.groupNameZh,
       category: sku.group.category?.nameZh || '-',
-      material: sku.group.material?.nameZh || '-',
-      price: sku.price.toNumber(),
-      stock: sku.stock,
+      price: sku.price?.toNumber() || 0,
       status: sku.status,
       createdAt: sku.createdAt.toISOString().split('T')[0],
     }));
 
     const columns = [
       { header: '品号', key: 'productCode', width: 20 },
+      { header: '品名', key: 'productName', width: 30 },
       { header: '商品组', key: 'groupName', width: 25 },
       { header: '分类', key: 'category', width: 20 },
-      { header: '材料', key: 'material', width: 20 },
       { header: '价格', key: 'price', width: 15 },
-      { header: '库存', key: 'stock', width: 15 },
       { header: '状态', key: 'status', width: 15 },
       { header: '创建日期', key: 'createdAt', width: 15 },
     ];

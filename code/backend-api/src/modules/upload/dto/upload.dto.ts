@@ -4,6 +4,7 @@ export enum UploadType {
   IMAGE = 'image',
   DOCUMENT = 'document',
   EXCEL = 'excel',
+  VIDEO = 'video',
 }
 
 export class UploadResponseDto {

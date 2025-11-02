@@ -1,4 +1,9 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+// API配置 - 使用环境变量，支持开发和生产环境
+const API_SERVER_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = API_SERVER_URL.replace('/api', '/api'); // 保持与原来一致
+
+// 导出服务器基础URL（用于图片等静态资源）
+export const getServerUrl = () => API_SERVER_URL.replace('/api', '');
 
 // 获取token
 const getToken = () => {
@@ -124,36 +129,46 @@ export const customerApi = {
 };
 
 // ============ 订单管理 ============
+// 注意：订单创建只能在前台业务员页面（/order-confirmation）进行
+// 管理后台只能查看、编辑、导出订单，不能创建订单
 export const orderApi = {
+  // 获取订单列表 - ✅ 管理后台可用
   getAll: (params?: any) => {
     const query = new URLSearchParams(params).toString();
     return request<any>(`/orders${query ? `?${query}` : ''}`);
   },
 
+  // 获取单个订单 - ✅ 管理后台可用
   getOne: (id: string) => request<any>(`/orders/${id}`),
 
+  // 创建订单 - ⚠️ 仅供前台业务员使用（在 /order-confirmation 页面）
+  // 管理后台不应调用此接口创建订单
   create: (data: any) =>
     request<any>('/orders', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
+  // 更新订单 - ✅ 管理后台可用
   update: (id: string, data: any) =>
     request<any>(`/orders/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
+  // 删除订单 - ❌ 系统不允许删除订单（保留接口但不应使用）
   delete: (id: string) =>
     request<any>(`/orders/${id}`, {
       method: 'DELETE',
     }),
 
+  // 导出单个订单 - ✅ 管理后台可用
   exportOne: (id: string) => {
     const token = getToken();
     window.open(`${API_BASE_URL}/orders/${id}/export?token=${token}`, '_blank');
   },
 
+  // 批量导出订单 - ✅ 管理后台可用
   exportBatch: (orderIds: string[]) =>
     request<any>('/orders/export-batch', {
       method: 'POST',

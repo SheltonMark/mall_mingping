@@ -25,6 +25,11 @@ export class UploadService {
         maxSize = 5 * 1024 * 1024; // 5MB
         subDir = 'images';
         break;
+      case UploadType.VIDEO:
+        allowedExtensions = ['.mp4', '.mov', '.avi', '.wmv', '.flv', '.webm'];
+        maxSize = 50 * 1024 * 1024; // 50MB
+        subDir = 'videos';
+        break;
       case UploadType.DOCUMENT:
         allowedExtensions = ['.pdf', '.doc', '.docx', '.txt'];
         maxSize = 10 * 1024 * 1024; // 10MB

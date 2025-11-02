@@ -84,6 +84,7 @@ model Order {
   orderType       OrderType @map("order_type")
   orderDate       DateTime @map("order_date")
   status          String   @default("pending")
+  companyName     String?  @map("company_name") // 公司名称 (如: 东阳市铭品日用品有限公司)
   totalAmount     Decimal? @map("total_amount")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -120,13 +121,37 @@ model OrderCustomParam {
 // 订单明细表
 // ========================================
 model OrderItem {
-  id              String   @id @default(uuid())
-  orderId         String   @map("order_id")
-  productSkuId    String   @map("product_sku_id")
-  quantity        Int
-  price           Decimal 
-  subtotal        Decimal 
-  createdAt       DateTime @default(now()) @map("created_at")
+  id                    String   @id @default(uuid())
+  orderId               String   @map("order_id")
+  productSkuId          String   @map("product_sku_id")
+  itemNumber            Int      @default(1) @map("item_number") // 项次序号
+  customerProductCode   String?  @map("customer_product_code") // 客户料号
+  productImage          String?  @map("product_image") // 货品图片
+  productSpec           String?  @map("product_spec") // 货品规格
+  additionalAttributes  String?  @map("additional_attributes") // 附加属性
+  quantity              Int
+  packagingConversion   Decimal? @map("packaging_conversion") // 包装换算
+  packagingUnit         String?  @map("packaging_unit") // 包装单位 (如: 125箱)
+  weightUnit            String?  @map("weight_unit") // 重量单位
+  netWeight             Decimal? @map("net_weight") // 包装净重
+  grossWeight           Decimal? @map("gross_weight") // 包装毛重
+  packagingType         String?  @map("packaging_type") // 包装类型
+  packagingSize         String?  @map("packaging_size") // 包装大小
+  supplierNote          String?  @map("supplier_note") // 厂商备注
+  expectedDeliveryDate  DateTime? @map("expected_delivery_date") // 预交日
+  price                 Decimal
+  untaxedLocalCurrency  Decimal? @map("untaxed_local_currency") // 未税本位币
+  packingQuantity       Int?     @map("packing_quantity") // 装箱数
+  cartonQuantity        Int?     @map("carton_quantity") // 箱数
+  packagingMethod       String?  @map("packaging_method") // 包装方式
+  paperCardCode         String?  @map("paper_card_code") // 纸卡编码
+  washLabelCode         String?  @map("wash_label_code") // 水洗标编码
+  outerCartonCode       String?  @map("outer_carton_code") // 外箱编码
+  cartonSpecification   String?  @map("carton_specification") // 箱规
+  volume                Decimal? // 体积
+  summary               String?  // 摘要
+  subtotal              Decimal
+  createdAt             DateTime @default(now()) @map("created_at")
 
   order           Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productSku      ProductSku @relation(fields: [productSkuId], references: [id])
@@ -161,16 +186,19 @@ enum ParamFieldType {
 }
 
 // ========================================
-// 分类表
+// 分类表 (2025-10-31 更新: 增加分类代码和自动创建标识)
 // ========================================
 model Category {
-  id            String   @id @default(uuid())
-  nameZh        String   @map("name_zh")
-  nameEn        String   @map("name_en")
-  parentId      String?  @map("parent_id")
-  sortOrder     Int      @default(0) @map("sort_order")
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid())
+  code            String   @unique // 分类代码 (如: MP, TB, T, B, S, CG, CD, MB, QC, CW, W)
+  nameZh          String   @map("name_zh") // 中文名称 (如: 组合套装, 拖把类)
+  nameEn          String   @map("name_en") // 英文名称 (如: Combo Sets, Mops)
+  icon            String? // 图标URL
+  sortOrder       Int      @default(0) @map("sort_order")
+  isAutoCreated   Boolean  @default(false) @map("is_auto_created") // 是否自动创建
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   productGroups ProductGroup[]
 
@@ -178,57 +206,108 @@ model Category {
 }
 
 // ========================================
-// 材料表
+// 材料表 (已废弃 - 新需求不使用材料筛选)
 // ========================================
-model Material {
-  id        String   @id @default(uuid())
-  nameZh    String   @map("name_zh")
-  nameEn    String   @map("name_en")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  productGroups ProductGroup[]
-
-  @@map("materials")
-}
+// model Material {
+//   id        String   @id @default(uuid())
+//   nameZh    String   @map("name_zh")
+//   nameEn    String   @map("name_en")
+//   isActive  Boolean  @default(true) @map("is_active")
+//   createdAt DateTime @default(now()) @map("created_at")
+//
+//   @@map("materials")
+// }
 
 // ========================================
-// 商品组表
+// 商品组表 (2025-10-31 更新: 品号前缀分组 + 视频复用 + 计算字段)
 // ========================================
 model ProductGroup {
   id              String   @id @default(uuid())
-  groupNameZh     String   @map("group_name_zh")
-  groupNameEn     String   @map("group_name_en")
-  descriptionZh   String?  @map("description_zh")
-  descriptionEn   String?  @map("description_en")
-  categoryId      String?  @map("category_id")
-  materialId      String?  @map("material_id")
-  isPublished     Boolean  @default(false) @map("is_published")
-  displayOrder    Int      @default(0) @map("display_order")
+  prefix          String   @unique // 品号前缀 (如: MP007, TB001) - 唯一标识
+  groupNameZh     String   @map("group_name_zh") // SKU组名称-中文 (如: MP007系列)
+  groupNameEn     String   @map("group_name_en") // SKU组名称-英文 (如: MP007 Series)
+  categoryId      String?  @map("category_id") // 关联分类
+  categoryCode    String?  @map("category_code") // 冗余存储分类代码 (如: MP, TB)
+  descriptionZh   String?  @map("description_zh") // 产品描述-中文
+  descriptionEn   String?  @map("description_en") // 产品描述-英文
+
+  // 视频复用功能
+  sharedVideo     Json?    @map("shared_video") // SKU组共用视频 (JSON: {url, size, duration, thumbnail})
+  videoMode       String   @default("shared") @map("video_mode") // 视频模式: shared/individual
+
+  // 计算字段 (从SKU规格中自动计算)
+  minPrice        Decimal? @map("min_price") // 最低价
+  maxPrice        Decimal? @map("max_price") // 最高价
+  specCount       Int      @default(0) @map("spec_count") // 规格数量
+  mainImage       String?  @map("main_image") // 主图 (第一个规格的第一张图片)
+
+  isPublished     Boolean  @default(false) @map("is_published") // 是否上架
+  sortOrder       Int      @default(0) @map("sort_order") // 排序权重
+  status          String   @default("inactive") // active/inactive
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   category        Category? @relation(fields: [categoryId], references: [id])
-  material        Material? @relation(fields: [materialId], references: [id])
   skus            ProductSku[]
+  featuredSpots   HomepageFeatured[]
 
   @@map("product_groups")
 }
 
 // ========================================
-// 品号SKU表 (Product Code)
+// 品号SKU表 (2025-10-31 更新: 货品规格 + 图片集 + 视频)
 // ========================================
 model ProductSku {
-  id                String   @id @default(uuid())
-  groupId           String   @map("group_id")
-  productCode       String   @unique @map("product_code") // 品号
-  price             Decimal 
-  stock             Int      @default(0)
-  colorCombination  Json?    @map("color_combination") // 颜色组合
-  mainImage         String?  @map("main_image")
-  status            SkuStatus @default(ACTIVE)
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(uuid())
+  groupId               String   @map("group_id") // 所属SKU组
+  productCode           String   @unique @map("product_code") // 品号/SKU编码 (如: C10.01.0013)
+  productName           String   @map("product_name") // 品名 (如: MP007-清洁四件套)
+
+  // 主标题和副标题 (后台可编辑)
+  title                 String?  // 主标题 (显示在规格选择器第一行，默认为productName)
+  subtitle              String?  // 副标题 (显示在主标题下方，可选)
+
+  brand                 String? // 商标
+
+  // 规格信息 (从Excel导入) - 2025-11-01 更新: 支持部件化规格
+  specification         String?  // 货品规格原始文本 (Excel原始内容)
+  productSpec           Json?    @map("product_spec") // 解析后的部件规格 (JSON数组)
+  /*
+  productSpec 格式:
+  [
+    {
+      "code": "A",
+      "name": "伸缩铁杆",
+      "spec": "φ19/22*0.27mm*1200mm",
+      "description": "意标螺纹"
+    }
+  ]
+  */
+
+  additionalAttributes  Json?    @map("additional_attributes") // 解析后的颜色属性 (JSON数组)
+  /*
+  additionalAttributes 格式:
+  [
+    {
+      "componentCode": "A",
+      "colors": [
+        { "part": "喷塑", "color": "3C冷灰" },
+        { "part": "塑件", "color": "10C冷灰" }
+      ]
+    }
+  ]
+  */
+
+  // 价格和图片视频 (后台配置)
+  price                 Decimal? // 销售单价 (后台填写)
+  images                Json?    // 图片集 (JSON数组: [{url, order, size, width, height}])
+  video                 Json?    // 独立视频 (JSON: {url, size, duration, thumbnail})
+  useSharedVideo        Boolean  @default(true) @map("use_shared_video") // 是否使用SKU组共用视频
+
+  importDate            DateTime? @map("import_date") // 导入时间
+  status                SkuStatus @default(INACTIVE) // active/inactive (默认未上架)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
   group             ProductGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   orderItems        OrderItem[]
@@ -239,6 +318,27 @@ model ProductSku {
 enum SkuStatus {
   ACTIVE   @map("active")
   INACTIVE @map("inactive")
+}
+
+// ========================================
+// 首页精选系列展示位表 (2025-10-31 新增)
+// ========================================
+model HomepageFeatured {
+  id              String   @id @default(uuid())
+  groupId         String   @map("group_id") // 关联的SKU组ID
+  featuredImage   String   @map("featured_image") // 展示图片URL
+  titleZh         String   @map("title_zh") // 标题-中文
+  titleEn         String   @map("title_en") // 标题-英文
+  descriptionZh   String?  @map("description_zh") // 描述-中文
+  descriptionEn   String?  @map("description_en") // 描述-英文
+  sortOrder       Int      @map("sort_order") // 排序 (1-4)
+  status          String   @default("active") // active/inactive
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  group           ProductGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("homepage_featured")
 }
 
 // ========================================
