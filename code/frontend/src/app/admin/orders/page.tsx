@@ -7,13 +7,21 @@ interface Order {
   id: string;
   orderNumber: string;
   customerId: string;
+  salespersonId: string;
   customer: {
     id: string;
     name: string;
-    type: string;
   };
+  salesperson: {
+    id: string;
+    chineseName: string;
+    englishName: string;
+  };
+  customerType: 'NEW' | 'OLD';
+  orderType: 'FORMAL' | 'INTENTION';
+  orderDate: string;
   totalAmount: number;
-  status: 'PENDING' | 'CONFIRMED' | 'PRODUCTION' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  status: 'pending' | 'confirmed' | 'production' | 'shipped' | 'delivered' | 'cancelled';
   notes?: string;
   items?: any[];
   createdAt: string;
@@ -27,33 +35,34 @@ interface Customer {
 }
 
 const statusLabels = {
-  PENDING: { label: '待确认', color: 'bg-yellow-100 text-yellow-800' },
-  CONFIRMED: { label: '已确认', color: 'bg-blue-100 text-blue-800' },
-  PRODUCTION: { label: '生产中', color: 'bg-indigo-100 text-indigo-800' },
-  SHIPPED: { label: '已发货', color: 'bg-purple-100 text-purple-800' },
-  DELIVERED: { label: '已送达', color: 'bg-green-100 text-green-800' },
-  CANCELLED: { label: '已取消', color: 'bg-red-100 text-red-800' },
+  pending: { label: '待确认', color: 'bg-yellow-100 text-yellow-800' },
+  confirmed: { label: '已确认', color: 'bg-blue-100 text-blue-800' },
+  production: { label: '生产中', color: 'bg-indigo-100 text-indigo-800' },
+  shipped: { label: '已发货', color: 'bg-purple-100 text-purple-800' },
+  delivered: { label: '已送达', color: 'bg-green-100 text-green-800' },
+  cancelled: { label: '已取消', color: 'bg-red-100 text-red-800' },
+};
+
+const customerTypeLabels = {
+  NEW: '新客户',
+  OLD: '老客户',
+};
+
+const orderTypeLabels = {
+  FORMAL: '正式单',
+  INTENTION: '意向单',
 };
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    customerId: '',
-    status: 'PENDING' as keyof typeof statusLabels,
-    notes: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
+  const [orderTypeFilter, setOrderTypeFilter] = useState<string>('');
 
   useEffect(() => {
     loadOrders();
-    loadCustomers();
-  }, [searchTerm, statusFilter]);
+  }, [searchTerm, statusFilter, orderTypeFilter]);
 
   const loadOrders = async () => {
     try {
@@ -61,6 +70,7 @@ export default function OrdersPage() {
       const response = await orderApi.getAll({
         search: searchTerm || undefined,
         status: statusFilter || undefined,
+        orderType: orderTypeFilter || undefined,
       });
       setOrders(Array.isArray(response) ? response : response.data || []);
     } catch (error) {
@@ -71,37 +81,8 @@ export default function OrdersPage() {
     }
   };
 
-  const loadCustomers = async () => {
-    try {
-      const response = await customerApi.getAll();
-      setCustomers(Array.isArray(response) ? response : response.data || []);
-    } catch (error) {
-      console.error('Failed to load customers:', error);
-    }
-  };
-
-  const handleAdd = () => {
-    setEditingId(null);
-    setFormData({
-      customerId: '',
-      status: 'PENDING',
-      notes: '',
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (order: Order) => {
-    setEditingId(order.id);
-    setFormData({
-      customerId: order.customerId,
-      status: order.status,
-      notes: order.notes || '',
-    });
-    setIsModalOpen(true);
-  };
-
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个订单吗？')) return;
+    if (!confirm('确定要删除这个订单吗？此操作不可撤销。')) return;
 
     try {
       await orderApi.delete(id);
@@ -117,46 +98,29 @@ export default function OrdersPage() {
     orderApi.exportOne(id);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    if (!confirm(`确定要将订单状态更改为"${statusLabels[newStatus as keyof typeof statusLabels]?.label}"吗？`)) return;
 
     try {
-      if (editingId) {
-        await orderApi.update(editingId, formData);
-        alert('更新成功');
-      } else {
-        await orderApi.create(formData);
-        alert('创建成功');
-      }
-      setIsModalOpen(false);
+      await orderApi.update(id, { status: newStatus });
+      alert('状态更新成功');
       loadOrders();
-    } catch (error: any) {
-      console.error('Failed to save order:', error);
-      alert(error.message || '保存失败');
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('状态更新失败');
     }
   };
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">订单管理</h1>
-          <p className="text-gray-600 mt-1">管理所有客户订单和状态</p>
-        </div>
-        <button
-          onClick={handleAdd}
-          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-        >
-          ➕ 创建订单
-        </button>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">订单管理</h1>
+        <p className="text-gray-600 mt-1">查看和管理所有业务员创建的订单</p>
       </div>
 
       {/* 搜索和筛选栏 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input
             type="text"
             placeholder="搜索订单（订单号、客户名称）..."
@@ -172,6 +136,16 @@ export default function OrdersPage() {
             <option value="">全部状态</option>
             {Object.entries(statusLabels).map(([key, value]) => (
               <option key={key} value={key}>{value.label}</option>
+            ))}
+          </select>
+          <select
+            value={orderTypeFilter}
+            onChange={(e) => setOrderTypeFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="">全部订单类型</option>
+            {Object.entries(orderTypeLabels).map(([key, value]) => (
+              <option key={key} value={key}>{value}</option>
             ))}
           </select>
         </div>
@@ -195,10 +169,12 @@ export default function OrdersPage() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">订单号</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务员</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">订单类型</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户类型</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">订单日期</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">总金额</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
                 </tr>
               </thead>
@@ -211,34 +187,55 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {order.customer?.name || '-'}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {order.salesperson?.chineseName || '-'}
+                      <div className="text-xs text-gray-500">{order.salesperson?.englishName || ''}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        order.orderType === 'FORMAL' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {orderTypeLabels[order.orderType] || order.orderType}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        order.customerType === 'NEW' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'
+                      }`}>
+                        {customerTypeLabels[order.customerType] || order.customerType}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {order.customer?.type || '-'}
+                      {new Date(order.orderDate).toLocaleDateString('zh-CN')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                       ¥{order.totalAmount?.toLocaleString() || '0.00'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        statusLabels[order.status]?.color || 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {statusLabels[order.status]?.label || order.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(order.createdAt).toLocaleDateString('zh-CN')}
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border-0 cursor-pointer ${
+                          statusLabels[order.status]?.color || 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {Object.entries(statusLabels).map(([key, value]) => (
+                          <option key={key} value={key}>{value.label}</option>
+                        ))}
+                      </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => window.location.href = `/admin/orders/${order.id}`}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        查看
+                      </button>
                       <button
                         onClick={() => handleExport(order.id)}
                         className="text-green-600 hover:text-green-800"
                       >
                         导出
-                      </button>
-                      <button
-                        onClick={() => handleEdit(order)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        编辑
                       </button>
                       <button
                         onClick={() => handleDelete(order.id)}
@@ -254,93 +251,6 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
-
-      {/* 添加/编辑模态框 */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {editingId ? '编辑订单' : '创建订单'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  客户 <span className="text-red-500">*</span>
-                </label>
-                <select
-                  required
-                  value={formData.customerId}
-                  onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  disabled={!!editingId}
-                >
-                  <option value="">请选择客户</option>
-                  {customers.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name} ({customer.type})
-                    </option>
-                  ))}
-                </select>
-                {editingId && (
-                  <p className="text-xs text-gray-500 mt-1">订单创建后不能更改客户</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  订单状态 <span className="text-red-500">*</span>
-                </label>
-                <select
-                  required
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  {Object.entries(statusLabels).map(([key, value]) => (
-                    <option key={key} value={key}>{value.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  备注
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="请输入订单备注信息"
-                />
-              </div>
-
-              {!editingId && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-                  💡 订单产品明细可在创建后通过订单详情页面添加
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-                >
-                  {submitting ? '保存中...' : '保存'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
