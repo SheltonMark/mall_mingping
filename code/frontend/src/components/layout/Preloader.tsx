@@ -1,12 +1,30 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function Preloader() {
+  const pathname = usePathname()
   const [isLoaded, setIsLoaded] = useState(false)
   const [showBreathing, setShowBreathing] = useState(false)
+  const [shouldShow, setShouldShow] = useState(false)
 
   useEffect(() => {
+    // 只在首页且首次访问时显示
+    const hasSeenPreloader = sessionStorage.getItem('hasSeenPreloader')
+    const isHomePage = pathname === '/'
+
+    // 如果不是首页，或者已经看过preloader，直接跳过
+    if (!isHomePage || hasSeenPreloader) {
+      setIsLoaded(true)
+      setShouldShow(false)
+      return
+    }
+
+    // 标记已经看过preloader
+    sessionStorage.setItem('hasSeenPreloader', 'true')
+    setShouldShow(true)
+
     // 所有字母飞入后开始呼吸动画
     const breathingTimer = setTimeout(() => {
       setShowBreathing(true)
@@ -21,7 +39,12 @@ export default function Preloader() {
       clearTimeout(breathingTimer)
       clearTimeout(exitTimer)
     }
-  }, [])
+  }, [pathname])
+
+  // 如果不需要显示，直接返回null
+  if (!shouldShow) {
+    return null
+  }
 
   return (
     <div
