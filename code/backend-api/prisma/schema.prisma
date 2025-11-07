@@ -47,22 +47,29 @@ model Salesperson {
 }
 
 // ========================================
-// 客户表
+// 客户表（外网版本 - 支持注册登录）
 // ========================================
 model Customer {
   id              String   @id @default(uuid())
-  name            String
+  email           String   @unique // 外网版：邮箱唯一，用于登录
+  password        String?  // 外网版：密码哈希（bcrypt）
+  name            String   // 公司名称或客户名称
   contactPerson   String?  @map("contact_person")
-  email           String?
   phone           String?
-  address         String? 
+  address         String?
+  country         String?  // 国家/地区
+
+  // 内网版字段（外网不使用，但保留兼容性）
   salespersonId   String?  @map("salesperson_id")
   customerType    CustomerType @default(NEW) @map("customer_type")
+
+  status          String   @default("active") // active/disabled
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   salesperson     Salesperson? @relation(fields: [salespersonId], references: [id])
   orders          Order[]
+  orderForms      OrderForm[] // 外网版：订单表单关系
 
   @@map("customers")
 }
@@ -431,4 +438,53 @@ enum CertCategory {
   PATENT  @map("patent")
   HONOR   @map("honor")
   OTHER   @map("other")
+}
+
+// ========================================
+// 订单表单表（外网版本 - 仅收集订单咨询信息）
+// ========================================
+model OrderForm {
+  id              String   @id @default(uuid())
+  formNumber      String   @unique @map("form_number") // 表单编号，如: OF2025-001
+  customerId      String   @map("customer_id")
+
+  // 联系信息
+  contactName     String   @map("contact_name")
+  phone           String
+  email           String
+  address         String
+  notes           String?  // 备注
+
+  // 商品信息（JSON格式存储）
+  items           Json     // 购物车内容：产品+配置+数量
+  /*
+  items 格式:
+  [
+    {
+      "product_id": "123",
+      "product_code": "MP007-BLU-WHT",
+      "product_name": "Rotating Mop Set",
+      "quantity": 2,
+      "unit_price": 299.00,
+      "configuration": {
+        "base": { "color": "Blue" },
+        "handle": { "color": "White" }
+      }
+    }
+  ]
+  */
+
+  totalAmount     String   @map("total_amount") // 总金额（仅参考）
+
+  // 状态（固定为submitted）
+  status          String   @default("submitted")
+
+  // 时间戳
+  submittedAt     DateTime @map("submitted_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  customer        Customer @relation(fields: [customerId], references: [id])
+
+  @@map("order_forms")
 }

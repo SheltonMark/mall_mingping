@@ -1,0 +1,108 @@
+bash /root/debug-images-full.sh
+========== 1. 详细检查图片访问权限和路径 ==========
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Host www.lemopx.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 8.141.127.26
+*   Trying 8.141.127.26:443...
+* Connected to www.lemopx.com (8.141.127.26) port 443
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [25 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [2055 bytes data]
+
+========== 2. 检查Nginx错误日志 ==========
+2025/11/02 23:40:28 [error] 17818#17818: *596 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll4_1762097150244_bdxetu.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll4_1762097150244_bdxetu.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:40:28 [error] 17818#17818: *599 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll1_1762097149978_vty2yf.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll1_1762097149978_vty2yf.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:40:28 [error] 17818#17818: *591 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll3_1762097150167_vhnf7f.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll3_1762097150167_vhnf7f.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:40:28 [error] 17818#17818: *592 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762097150082_7fey64.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762097150082_7fey64.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:40:33 [error] 17818#17818: *616 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll1_1762097149978_vty2yf.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll1_1762097149978_vty2yf.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products"
+2025/11/02 23:41:21 [error] 18411#18411: *1 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll1_1762097149978_vty2yf.png" failed (13: Permission denied), client: 8.141.127.26, server: www.lemopx.com, request: "HEAD /uploads/images/image_coll1_1762097149978_vty2yf.png HTTP/1.1", host: "www.lemopx.com"
+2025/11/02 23:41:31 [error] 18411#18411: *9 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll1_1762097149978_vty2yf.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll1_1762097149978_vty2yf.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products"
+2025/11/02 23:41:36 [error] 18412#18412: *2 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll1_1762097149978_vty2yf.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll1_1762097149978_vty2yf.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:41:36 [error] 18411#18411: *9 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762097150082_7fey64.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762097150082_7fey64.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:41:36 [error] 18411#18411: *7 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll3_1762097150167_vhnf7f.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll3_1762097150167_vhnf7f.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:41:36 [error] 18411#18411: *3 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll4_1762097150244_bdxetu.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll4_1762097150244_bdxetu.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:42:05 [error] 18411#18411: *32 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll3_1762098125606_07zhf4.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll3_1762098125606_07zhf4.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/admin/products/82963df0-2da2-4a16-a9b8-cae786ad14c7"
+2025/11/02 23:42:11 [error] 18411#18411: *60 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762098131415_viwman.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762098131415_viwman.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/admin/products/82963df0-2da2-4a16-a9b8-cae786ad14c7"
+2025/11/02 23:42:13 [error] 18411#18411: *60 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762098131415_viwman.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762098131415_viwman.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/admin/products/82963df0-2da2-4a16-a9b8-cae786ad14c7"
+2025/11/02 23:42:17 [error] 18411#18411: *65 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762098131415_viwman.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762098131415_viwman.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:42:23 [error] 18412#18412: *88 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762098131415_viwman.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762098131415_viwman.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products"
+2025/11/02 23:43:11 [error] 18412#18412: *98 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762098131415_viwman.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762098131415_viwman.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products"
+2025/11/02 23:43:16 [error] 18412#18412: *93 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762098131415_viwman.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762098131415_viwman.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:43:21 [error] 18412#18412: *107 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll2_1762098131415_viwman.png" failed (13: Permission denied), client: 60.176.156.154, server: www.lemopx.com, request: "GET /uploads/images/image_coll2_1762098131415_viwman.png HTTP/1.1", host: "www.lemopx.com", referrer: "https://www.lemopx.com/products/22d8f238-bdd8-4ff9-88a0-a9ab064e950e"
+2025/11/02 23:43:31 [error] 18412#18412: *108 open() "/root/mall_mingping/code/backend-api/uploads/images/image_coll1_1762097149978_vty2yf.png" failed (13: Permission denied), client: 8.141.127.26, server: www.lemopx.com, request: "GET /uploads/images/image_coll1_1762097149978_vty2yf.png HTTP/1.1", host: "www.lemopx.com"
+
+========== 3. 检查完整的Nginx配置 ==========
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # 上传文件访问
+    location /uploads/ {
+        alias /root/mall_mingping/code/backend-api/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # 前端 - 放在最后作为默认路由
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+
+========== 4. 测试直接文件访问 ==========
+文件存在
+-rwxr-xr-x 1 www-data www-data 294369 Nov  2 23:25 /root/mall_mingping/code/backend-api/uploads/images/image_coll1_1762097149978_vty2yf.png
+
+========== 5. 检查TEST-003的完整数据 ==========
+*************************** 1. row ***************************
+          id: 022a608b-bb0c-422b-ad53-9ffdbe6dd1e5
+product_code: TEST-003
+      images: ["/uploads/images/image_coll1_1762097149978_vty2yf.png"]
+
+========== 6. 测试后端API返回TEST-003的数据 ==========
+mysql: [Warning] Using a password on the command line interface can be insecure.
+{"id":"022a608b-bb0c-422b-ad53-9ffdbe6dd1e5","groupId":"6dce9ba6-e46f-4c48-92d6-2977731e062a","productCode":"TEST-003","productName":"测试清洁套装-三件套","title":null,"subtitle":null,"brand":null,"specification":"[A] 拖把 | 平板拖把 | 40cm宽\n[B] 扫把 | 软毛扫把 | 标准款\n[C] 垃圾铲 | 加厚款 | 带盖设计","productSpec":[{"code":"A","name":"拖把","spec":"平板拖把","description":"40cm宽"},{"code":"B","name":"扫把","spec":"软毛扫把","description":"标准款"},{"code":"C","name":"垃圾铲","spec":"加厚款","description":"带盖设计"}],"additionalAttributes":[{"colorOptions":[{"id":"option1","colors":[{"part":"杆件","color":"银色"},{"part":"拖布","color":"蓝色"}]}],"componentCode":"A"},{"colorOptions":[{"id":"option1","colors":[{"part":"杆件","color":"银色"},{"part":"刷毛","color":"绿色"}]}],"componentCode":"B"},{"colorOptions":[{"id":"option1","colors":[{"part":"塑料","color":"白色"},{"part":"边缘","color":"黑色"}]}],"componentCode":"C"}],"price":null,"images":["/uploads/images/image_coll1_1762097149978_vty2yf.png"],"video":null,"useSharedVideo":true,"importDate":null,"status":"INACTIVE","createdAt":"2025-11-02T15:24:27.321Z","updatedAt":"2025-11-02T15:24:27.321Z","group":{"id":"6dce9ba6-e46f-4c48-92d6-2977731e062a","prefix":"测试清洁套装","groupNameZh":"测试清洁套装系列","groupNameEn":"测试清洁套装 Series","categoryId":"6df031b8-92cd-42db-b9b7-fc390aa7d4eb","categoryCode":"测试清洁套装","descriptionZh":null,"descriptionEn":null,"sharedVideo":null,"videoMode":"shared","minPrice":null,"maxPrice":null,"specCount":0,"mainImage":null,"isPublished":false,"sortOrder":0,"status":"inactive","createdAt":"2025-11-02T15:24:27.301Z","updatedAt":"2025-11-02T15:24:27.301Z","category":{"id":"6df031b8-92cd-42db-b9b7-fc390aa7d4eb","code":"测试清洁套装","nameZh":"测试清洁套装类","nameEn":"测试清洁套装 Category","icon":null,"sortOrder":999,"isAutoCreated":true,"isActive":true,"createdAt":"2025-11-02T15:24:27.288Z","updatedAt":"2025-11-02T15:24:27.288Z"}}}
+========== 7. 查看后端最新日志 ==========
+
+0|lemopx-b |   "subtitle": null,
+0|lemopx-b |   "specification": "[A] 桶身 | PP材质 | 容量12L\n[B] 旋转篮 | 不锈钢 | 防锈涂层",
+0|lemopx-b |   "price": 88,
+0|lemopx-b |   "images": [],
+0|lemopx-b |   "video": null,
+0|lemopx-b |   "status": "ACTIVE"
+0|lemopx-b | }
+0|lemopx-b | ? [Update SKU] 更新成功
+0|lemopx-b | ? [Update SKU] images 类型: object
+0|lemopx-b | ? [Update SKU] images 值: []
+0|lemopx-b | ? [Update SKU] video 类型: object
+0|lemopx-b | ? [Update SKU] video 值: null
+0|lemopx-b | ?? [Update SKU] ID: 82963df0-2da2-4a16-a9b8-cae786ad14c7
+0|lemopx-b | ?? [Update SKU] DTO: {
+0|lemopx-b |   "title": null,
+0|lemopx-b |   "subtitle": null,
+0|lemopx-b |   "specification": "[A] 桶身 | PP材质 | 容量12L\n[B] 旋转篮 | 不锈钢 | 防锈涂层",
+0|lemopx-b |   "price": 88,
+0|lemopx-b |   "images": [
+0|lemopx-b |     "/uploads/images/image_coll2_1762098131415_viwman.png"
+0|lemopx-b |   ],
+0|lemopx-b |   "video": null,
+0|lemopx-b |   "status": "ACTIVE"
+0|lemopx-b | }
+0|lemopx-b | ? [Update SKU] 更新成功
+0|lemopx-b | ? [Update SKU] images 类型: object
+0|lemopx-b | ? [Update SKU] images 值: ["/uploads/images/image_coll2_1762098131415_viwman.png"]
+0|lemopx-b | ? [Update SKU] video 类型: object
+0|lemopx-b | ? [Update SKU] video 值: null

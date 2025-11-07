@@ -94,7 +94,16 @@
       "Bash(timeout 2 bash:*)",
       "Bash(timeout 30 bash:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git rm:*)",
+      "Bash(tree:*)",
+      "Bash(rm:*)",
+      "Bash(rm -rf (frontend)/checkout)",
+      "Bash(rm -rf (frontend)/order-confirmation)",
+      "Bash(rm -rf (frontend)/order-view)",
+      "Bash(rm -rf (frontend)/profile)",
+      "Bash(rm -rf (frontend)/customer-management)",
+      "Bash(rm -rf (frontend)/customer-profile)"
     ],
     "deny": [],
     "ask": []
