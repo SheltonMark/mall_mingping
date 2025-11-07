@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { orderApi, customerApi } from '@/lib/adminApi';
+import { useToast } from '@/components/common/ToastContainer';
 
 interface Order {
   id: string;
@@ -54,11 +55,12 @@ const orderTypeLabels = {
 };
 
 export default function OrdersPage() {
+  const toast = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [orderTypeFilter, setOrderTypeFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [orderTypeFilter, setOrderTypeFilter] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     loadOrders();
@@ -69,13 +71,13 @@ export default function OrdersPage() {
       setLoading(true);
       const response = await orderApi.getAll({
         search: searchTerm || undefined,
-        status: statusFilter || undefined,
-        orderType: orderTypeFilter || undefined,
+        status: statusFilter,
+        orderType: orderTypeFilter,
       });
       setOrders(Array.isArray(response) ? response : response.data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load orders:', error);
-      alert('加载订单列表失败');
+      toast.error(error.message || '加载订单列表失败');
     } finally {
       setLoading(false);
     }
@@ -86,11 +88,11 @@ export default function OrdersPage() {
 
     try {
       await orderApi.delete(id);
-      alert('删除成功');
+      toast.success('删除成功');
       loadOrders();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete order:', error);
-      alert('删除失败');
+      toast.error(error.message || '删除失败');
     }
   };
 
@@ -103,11 +105,11 @@ export default function OrdersPage() {
 
     try {
       await orderApi.update(id, { status: newStatus });
-      alert('状态更新成功');
+      toast.success('状态更新成功');
       loadOrders();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update status:', error);
-      alert('状态更新失败');
+      toast.error(error.message || '状态更新失败');
     }
   };
 
