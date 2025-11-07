@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { CustomerAuthModule } from './modules/customer-auth/customer-auth.module';
 import { SalespersonModule } from './modules/salesperson/salesperson.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { OrderModule } from './modules/order/order.module';
@@ -19,6 +20,7 @@ import { PartnershipModule } from './modules/partnership/partnership.module';
       envFilePath: '.env',
     }),
     AuthModule,
+    CustomerAuthModule, // External site: Customer authentication
     SalespersonModule,
     CustomerModule,
     OrderModule,
