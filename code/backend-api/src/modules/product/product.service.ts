@@ -265,15 +265,24 @@ export class ProductService {
       throw new NotFoundException('Product group not found');
     }
 
+    // 先删除该产品组下的所有SKU，再删除产品组
+    console.log(`🗑️ [Delete Group] Deleting group ${id} with ${group._count.skus} SKUs`);
+
+    // 删除所有关联的SKU
     if (group._count.skus > 0) {
-      throw new BadRequestException(
-        'Cannot delete product group with existing SKUs',
-      );
+      await this.prisma.productSku.deleteMany({
+        where: { groupId: id },
+      });
+      console.log(`✅ [Delete Group] Deleted ${group._count.skus} SKUs`);
     }
 
-    return this.prisma.productGroup.delete({
+    // 删除产品组
+    const result = await this.prisma.productGroup.delete({
       where: { id },
     });
+
+    console.log(`✅ [Delete Group] Deleted group ${id}`);
+    return result;
   }
 
   // ============ Product SKU Methods ============
