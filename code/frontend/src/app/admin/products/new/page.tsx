@@ -28,7 +28,6 @@ export default function NewProductSkuPage() {
     productName: '',
     title: '',
     subtitle: '',
-    brand: '',
     specification: '',
     price: '',
     status: 'ACTIVE',
@@ -203,20 +202,6 @@ export default function NewProductSkuPage() {
                   value={formData.subtitle}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                   placeholder="产品副标题（可选）"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                />
-              </div>
-
-              {/* 品牌 */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  品牌
-                </label>
-                <input
-                  type="text"
-                  value={formData.brand}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  placeholder="产品品牌（可选）"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 />
               </div>
