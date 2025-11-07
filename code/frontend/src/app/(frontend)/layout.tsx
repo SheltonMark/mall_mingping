@@ -2,6 +2,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Preloader from '@/components/layout/Preloader'
 import { CartProvider } from '@/context/CartContext'
+import { AuthProvider } from '@/context/AuthContext'
 
 export default function FrontendLayout({
   children,
@@ -9,15 +10,17 @@ export default function FrontendLayout({
   children: React.ReactNode
 }) {
   return (
-    <CartProvider>
-      <Preloader />
-      <div className="relative flex h-auto min-h-screen w-full flex-col">
-        <div className="layout-container flex h-full grow flex-col">
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+    <AuthProvider>
+      <CartProvider>
+        <Preloader />
+        <div className="relative flex h-auto min-h-screen w-full flex-col">
+          <div className="layout-container flex h-full grow flex-col">
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </div>
         </div>
-      </div>
-    </CartProvider>
+      </CartProvider>
+    </AuthProvider>
   )
 }

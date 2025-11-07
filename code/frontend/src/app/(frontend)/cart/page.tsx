@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useToast } from '@/components/common/ToastContainer'
 
@@ -12,54 +13,31 @@ export default function CartPage() {
   const router = useRouter()
   const toast = useToast()
   const { items, removeItem, updateQuantity } = useCart()
+  const { isAuthenticated, isLoading } = useAuth()
   const { t } = useLanguage()
 
-  // Mock login state - in real app, this would come from auth context/state management
-  const [isLoggedIn, setIsLoggedIn] = useState(true) // TODO: Replace with real auth state
-  const [isChecking, setIsChecking] = useState(true)
-
-  useEffect(() => {
-    // Check login status
-    // TODO: Replace with real auth check
-    const checkAuth = () => {
-      const loggedIn = true // Mock: Replace with real auth check
-
-      if (!loggedIn) {
-        toast.warning('请先登录')
-        router.push('/') // Redirect to login or home page
-      }
-      setIsLoggedIn(loggedIn)
-      setIsChecking(false)
+  const handleCheckout = () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast.warning(t('auth.login'))
+      router.push('/login')
+      return
     }
 
-    checkAuth()
-  }, [router, toast])
+    // If cart is empty, show warning
+    if (items.length === 0) {
+      toast.warning(t('cart.empty'))
+      return
+    }
 
-  const handleCheckout = () => {
-    // 将购物车商品转换为订单商品格式
-    const orderItems = items.map(item => ({
-      skuId: item.skuId,
-      sku: item.sku,
-      productName: item.groupName,
-      translationKey: item.translationKey,
-      colorCombination: item.colorCombination,
-      quantity: item.quantity,
-      unitPrice: item.price,
-      totalPrice: item.price * item.quantity,
-      mainImage: item.mainImage,
-    }))
-
-    // 保存到localStorage
-    localStorage.setItem('orderItems', JSON.stringify(orderItems))
-
-    // 跳转到订单确认页
-    router.push('/order-confirmation')
+    // Redirect to order form page (not checkout, as we don't have payment)
+    router.push('/order-form')
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-  // Show loading or nothing while checking auth
-  if (isChecking) {
+  // Show loading while checking auth
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
