@@ -9,11 +9,11 @@ export declare class PartnershipController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        message: string | null;
         phone: string | null;
         status: import("@prisma/client").$Enums.PartnershipStatus;
-        company: string | null;
-        message: string | null;
         notes: string | null;
+        company: string | null;
     }>;
     findAll(status?: string, search?: string, page?: string, limit?: string): Promise<{
         data: {
@@ -22,11 +22,11 @@ export declare class PartnershipController {
             createdAt: Date;
             updatedAt: Date;
             name: string;
+            message: string | null;
             phone: string | null;
             status: import("@prisma/client").$Enums.PartnershipStatus;
-            company: string | null;
-            message: string | null;
             notes: string | null;
+            company: string | null;
         }[];
         meta: {
             total: number;
@@ -48,11 +48,11 @@ export declare class PartnershipController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        message: string | null;
         phone: string | null;
         status: import("@prisma/client").$Enums.PartnershipStatus;
-        company: string | null;
-        message: string | null;
         notes: string | null;
+        company: string | null;
     }>;
     update(id: string, updatePartnershipDto: UpdatePartnershipDto): Promise<{
         email: string;
@@ -60,11 +60,11 @@ export declare class PartnershipController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        message: string | null;
         phone: string | null;
         status: import("@prisma/client").$Enums.PartnershipStatus;
-        company: string | null;
-        message: string | null;
         notes: string | null;
+        company: string | null;
     }>;
     remove(id: string): Promise<{
         email: string;
@@ -72,10 +72,10 @@ export declare class PartnershipController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        message: string | null;
         phone: string | null;
         status: import("@prisma/client").$Enums.PartnershipStatus;
-        company: string | null;
-        message: string | null;
         notes: string | null;
+        company: string | null;
     }>;
 }

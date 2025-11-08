@@ -211,12 +211,18 @@ let ProductService = class ProductService {
         if (!group) {
             throw new common_1.NotFoundException('Product group not found');
         }
+        console.log(`🗑️ [Delete Group] Deleting group ${id} with ${group._count.skus} SKUs`);
         if (group._count.skus > 0) {
-            throw new common_1.BadRequestException('Cannot delete product group with existing SKUs');
+            await this.prisma.productSku.deleteMany({
+                where: { groupId: id },
+            });
+            console.log(`✅ [Delete Group] Deleted ${group._count.skus} SKUs`);
         }
-        return this.prisma.productGroup.delete({
+        const result = await this.prisma.productGroup.delete({
             where: { id },
         });
+        console.log(`✅ [Delete Group] Deleted group ${id}`);
+        return result;
     }
     async createProductSku(dto) {
         const group = await this.prisma.productGroup.findUnique({

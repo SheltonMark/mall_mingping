@@ -12,24 +12,20 @@ export declare class OrderController {
             englishName: string;
         };
         customer: {
-            email: string | null;
+            password: string | null;
+            email: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            phone: string | null;
-            salespersonId: string | null;
             contactPerson: string | null;
+            phone: string | null;
             address: string | null;
+            country: string | null;
+            salespersonId: string | null;
             customerType: import("@prisma/client").$Enums.CustomerType;
+            status: string;
         };
-        customParams: {
-            id: string;
-            createdAt: Date;
-            paramKey: string;
-            paramValue: string | null;
-            orderId: string;
-        }[];
         items: ({
             productSku: {
                 group: {
@@ -106,18 +102,25 @@ export declare class OrderController {
             subtotal: import("@prisma/client/runtime/library").Decimal;
             orderId: string;
         })[];
+        customParams: {
+            id: string;
+            createdAt: Date;
+            paramKey: string;
+            paramValue: string | null;
+            orderId: string;
+        }[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         salespersonId: string;
-        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
-        orderNumber: string;
+        status: string;
+        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerId: string;
+        orderNumber: string;
         orderType: import("@prisma/client").$Enums.OrderType;
         orderDate: Date;
-        status: string;
         companyName: string | null;
     }>;
     findAll(search?: string, customerId?: string, salespersonId?: string, orderType?: string, status?: string, startDate?: string, endDate?: string, page?: string, limit?: string): Promise<{
@@ -141,13 +144,13 @@ export declare class OrderController {
             createdAt: Date;
             updatedAt: Date;
             salespersonId: string;
-            totalAmount: import("@prisma/client/runtime/library").Decimal | null;
             customerType: import("@prisma/client").$Enums.CustomerType;
-            orderNumber: string;
+            status: string;
+            totalAmount: import("@prisma/client/runtime/library").Decimal | null;
             customerId: string;
+            orderNumber: string;
             orderType: import("@prisma/client").$Enums.OrderType;
             orderDate: Date;
-            status: string;
             companyName: string | null;
         })[];
         meta: {
@@ -161,30 +164,26 @@ export declare class OrderController {
         salesperson: {
             email: string | null;
             id: string;
+            phone: string | null;
             accountId: string;
             chineseName: string;
             englishName: string;
-            phone: string | null;
         };
         customer: {
-            email: string | null;
+            password: string | null;
+            email: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            phone: string | null;
-            salespersonId: string | null;
             contactPerson: string | null;
+            phone: string | null;
             address: string | null;
+            country: string | null;
+            salespersonId: string | null;
             customerType: import("@prisma/client").$Enums.CustomerType;
+            status: string;
         };
-        customParams: {
-            id: string;
-            createdAt: Date;
-            paramKey: string;
-            paramValue: string | null;
-            orderId: string;
-        }[];
         items: ({
             productSku: {
                 group: {
@@ -274,18 +273,25 @@ export declare class OrderController {
             subtotal: import("@prisma/client/runtime/library").Decimal;
             orderId: string;
         })[];
+        customParams: {
+            id: string;
+            createdAt: Date;
+            paramKey: string;
+            paramValue: string | null;
+            orderId: string;
+        }[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         salespersonId: string;
-        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
-        orderNumber: string;
+        status: string;
+        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerId: string;
+        orderNumber: string;
         orderType: import("@prisma/client").$Enums.OrderType;
         orderDate: Date;
-        status: string;
         companyName: string | null;
     }>;
     update(id: string, updateOrderDto: UpdateOrderDto): Promise<{
@@ -296,24 +302,20 @@ export declare class OrderController {
             englishName: string;
         };
         customer: {
-            email: string | null;
+            password: string | null;
+            email: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             name: string;
-            phone: string | null;
-            salespersonId: string | null;
             contactPerson: string | null;
+            phone: string | null;
             address: string | null;
+            country: string | null;
+            salespersonId: string | null;
             customerType: import("@prisma/client").$Enums.CustomerType;
+            status: string;
         };
-        customParams: {
-            id: string;
-            createdAt: Date;
-            paramKey: string;
-            paramValue: string | null;
-            orderId: string;
-        }[];
         items: ({
             productSku: {
                 group: {
@@ -390,18 +392,25 @@ export declare class OrderController {
             subtotal: import("@prisma/client/runtime/library").Decimal;
             orderId: string;
         })[];
+        customParams: {
+            id: string;
+            createdAt: Date;
+            paramKey: string;
+            paramValue: string | null;
+            orderId: string;
+        }[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         salespersonId: string;
-        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
-        orderNumber: string;
+        status: string;
+        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerId: string;
+        orderNumber: string;
         orderType: import("@prisma/client").$Enums.OrderType;
         orderDate: Date;
-        status: string;
         companyName: string | null;
     }>;
     remove(id: string): Promise<{
@@ -409,13 +418,13 @@ export declare class OrderController {
         createdAt: Date;
         updatedAt: Date;
         salespersonId: string;
-        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
-        orderNumber: string;
+        status: string;
+        totalAmount: import("@prisma/client/runtime/library").Decimal | null;
         customerId: string;
+        orderNumber: string;
         orderType: import("@prisma/client").$Enums.OrderType;
         orderDate: Date;
-        status: string;
         companyName: string | null;
     }>;
     createParamConfig(dto: CreateOrderParamConfigDto): Promise<{

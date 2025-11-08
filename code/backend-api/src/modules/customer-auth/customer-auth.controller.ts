@@ -45,7 +45,7 @@ export class CustomerAuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Request() req: any) {
-    return this.customerAuthService.getProfile(req.user.sub);
+    return this.customerAuthService.getProfile(req.user.id);
   }
 
   /**
@@ -59,6 +59,6 @@ export class CustomerAuthController {
     @Request() req: any,
     @Body() updateDto: UpdateCustomerProfileDto,
   ) {
-    return this.customerAuthService.updateProfile(req.user.sub, updateDto);
+    return this.customerAuthService.updateProfile(req.user.id, updateDto);
   }
 }

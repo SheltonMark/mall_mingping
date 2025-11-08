@@ -8,28 +8,28 @@ export declare class SalespersonController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        phone: string | null;
         accountId: string;
         chineseName: string;
         englishName: string;
-        phone: string | null;
         hireDate: Date;
         avatar: string | null;
     }>;
     findAll(search?: string, page?: string, limit?: string): Promise<{
         data: ({
             _count: {
-                customers: number;
                 orders: number;
+                customers: number;
             };
         } & {
             email: string | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            phone: string | null;
             accountId: string;
             chineseName: string;
             englishName: string;
-            phone: string | null;
             hireDate: Date;
             avatar: string | null;
         })[];
@@ -44,57 +44,63 @@ export declare class SalespersonController {
         stats: {
             totalSales: number | import("@prisma/client/runtime/library").Decimal;
         };
-        customers: {
-            email: string | null;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            name: string;
-            phone: string | null;
-            salespersonId: string | null;
-            contactPerson: string | null;
-            address: string | null;
-            customerType: import("@prisma/client").$Enums.CustomerType;
-        }[];
         orders: ({
             customer: {
-                email: string | null;
+                password: string | null;
+                email: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
-                phone: string | null;
-                salespersonId: string | null;
                 contactPerson: string | null;
+                phone: string | null;
                 address: string | null;
+                country: string | null;
+                salespersonId: string | null;
                 customerType: import("@prisma/client").$Enums.CustomerType;
+                status: string;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             salespersonId: string;
-            totalAmount: import("@prisma/client/runtime/library").Decimal | null;
             customerType: import("@prisma/client").$Enums.CustomerType;
-            orderNumber: string;
+            status: string;
+            totalAmount: import("@prisma/client/runtime/library").Decimal | null;
             customerId: string;
+            orderNumber: string;
             orderType: import("@prisma/client").$Enums.OrderType;
             orderDate: Date;
-            status: string;
             companyName: string | null;
         })[];
         _count: {
-            customers: number;
             orders: number;
+            customers: number;
         };
+        customers: {
+            password: string | null;
+            email: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            contactPerson: string | null;
+            phone: string | null;
+            address: string | null;
+            country: string | null;
+            salespersonId: string | null;
+            customerType: import("@prisma/client").$Enums.CustomerType;
+            status: string;
+        }[];
         email: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        phone: string | null;
         accountId: string;
         chineseName: string;
         englishName: string;
-        phone: string | null;
         hireDate: Date;
         avatar: string | null;
     }>;
@@ -103,10 +109,10 @@ export declare class SalespersonController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        phone: string | null;
         accountId: string;
         chineseName: string;
         englishName: string;
-        phone: string | null;
         hireDate: Date;
         avatar: string | null;
     }>;
@@ -115,10 +121,10 @@ export declare class SalespersonController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        phone: string | null;
         accountId: string;
         chineseName: string;
         englishName: string;
-        phone: string | null;
         hireDate: Date;
         avatar: string | null;
     }>;

@@ -5,7 +5,7 @@ declare enum CustomerType {
 export declare class CreateCustomerDto {
     name: string;
     contactPerson?: string;
-    email?: string;
+    email: string;
     phone?: string;
     address?: string;
     salespersonId?: string;

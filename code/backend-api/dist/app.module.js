@@ -13,6 +13,8 @@ const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const prisma_service_1 = require("./prisma.service");
 const auth_module_1 = require("./modules/auth/auth.module");
+const customer_auth_module_1 = require("./modules/customer-auth/customer-auth.module");
+const order_form_module_1 = require("./modules/order-form/order-form.module");
 const salesperson_module_1 = require("./modules/salesperson/salesperson.module");
 const customer_module_1 = require("./modules/customer/customer.module");
 const order_module_1 = require("./modules/order/order.module");
@@ -31,6 +33,8 @@ exports.AppModule = AppModule = __decorate([
                 envFilePath: '.env',
             }),
             auth_module_1.AuthModule,
+            customer_auth_module_1.CustomerAuthModule,
+            order_form_module_1.OrderFormModule,
             salesperson_module_1.SalespersonModule,
             customer_module_1.CustomerModule,
             order_module_1.OrderModule,

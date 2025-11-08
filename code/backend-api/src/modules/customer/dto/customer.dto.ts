@@ -22,8 +22,7 @@ export class CreateCustomerDto {
   contactPerson?: string;
 
   @IsEmail()
-  @IsOptional()
-  email?: string;
+  email: string;
 
   @IsString()
   @IsOptional()

@@ -18,7 +18,7 @@ let CustomerService = class CustomerService {
         this.prisma = prisma;
     }
     async create(createCustomerDto) {
-        const { salespersonId, ...rest } = createCustomerDto;
+        const { salespersonId, name, contactPerson, email, phone, address, customerType } = createCustomerDto;
         if (salespersonId) {
             const salesperson = await this.prisma.salesperson.findUnique({
                 where: { id: salespersonId },
@@ -29,8 +29,13 @@ let CustomerService = class CustomerService {
         }
         return this.prisma.customer.create({
             data: {
-                ...rest,
-                salespersonId,
+                name,
+                email,
+                ...(contactPerson && { contactPerson }),
+                ...(phone && { phone }),
+                ...(address && { address }),
+                ...(salespersonId && { salespersonId }),
+                ...(customerType && { customerType }),
             },
             include: {
                 salesperson: {

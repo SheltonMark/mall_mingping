@@ -11,7 +11,7 @@ export class CustomerService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCustomerDto: CreateCustomerDto) {
-    const { salespersonId, ...rest } = createCustomerDto;
+    const { salespersonId, name, contactPerson, email, phone, address, customerType } = createCustomerDto;
 
     // Verify salesperson exists if provided
     if (salespersonId) {
@@ -25,8 +25,13 @@ export class CustomerService {
 
     return this.prisma.customer.create({
       data: {
-        ...rest,
-        salespersonId,
+        name,
+        email,
+        ...(contactPerson && { contactPerson }),
+        ...(phone && { phone }),
+        ...(address && { address }),
+        ...(salespersonId && { salespersonId }),
+        ...(customerType && { customerType }),
       },
       include: {
         salesperson: {
