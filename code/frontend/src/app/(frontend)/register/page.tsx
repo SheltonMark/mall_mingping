@@ -14,11 +14,6 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    name: '',
-    contactPerson: '',
-    phone: '',
-    address: '',
-    country: '',
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,7 +28,7 @@ export default function RegisterPage() {
     setError('')
 
     // Validation
-    if (!formData.email || !formData.password || !formData.name) {
+    if (!formData.email || !formData.password) {
       setError(t('auth.required_field'))
       return
     }
@@ -54,11 +49,6 @@ export default function RegisterPage() {
       await register({
         email: formData.email,
         password: formData.password,
-        name: formData.name,
-        contactPerson: formData.contactPerson || undefined,
-        phone: formData.phone || undefined,
-        address: formData.address || undefined,
-        country: formData.country || undefined,
       })
     } catch (err: any) {
       setError(err.message || t('auth.registration_failed'))
@@ -68,7 +58,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-28 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
@@ -97,7 +87,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t('auth.email_placeholder')}
               />
             </div>
@@ -113,9 +103,11 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
+                minLength={6}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t('auth.password_placeholder')}
               />
+              <p className="mt-1 text-xs text-gray-500">至少6个字符</p>
             </div>
 
             {/* Confirm Password */}
@@ -129,84 +121,8 @@ export default function RegisterPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t('auth.confirm_password_placeholder')}
-              />
-            </div>
-
-            {/* Company Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.company_name')} *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
-                placeholder={t('auth.company_name_placeholder')}
-              />
-            </div>
-
-            {/* Contact Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.contact_name')}
-              </label>
-              <input
-                type="text"
-                name="contactPerson"
-                value={formData.contactPerson}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
-                placeholder={t('auth.contact_name_placeholder')}
-              />
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.phone')}
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
-                placeholder={t('auth.phone_placeholder')}
-              />
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.address')}
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
-                placeholder={t('auth.address_placeholder')}
-              />
-            </div>
-
-            {/* Country */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.country')}
-              </label>
-              <input
-                type="text"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition"
-                placeholder={t('auth.country_placeholder')}
               />
             </div>
 
@@ -214,7 +130,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/30"
             >
               {loading ? t('common.loading') : t('auth.register_button')}
             </button>
@@ -224,7 +140,7 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               {t('auth.already_have_account')}{' '}
-              <Link href="/login" className="text-black font-medium hover:underline">
+              <Link href="/login" className="text-primary font-medium hover:underline">
                 {t('auth.sign_in_here')}
               </Link>
             </p>

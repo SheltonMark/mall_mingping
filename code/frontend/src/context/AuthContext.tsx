@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 interface Customer {
   id: string
   email: string
-  name: string
+  name?: string
   contactPerson?: string
   phone?: string
   address?: string
@@ -28,11 +28,6 @@ interface AuthContextType {
 interface RegisterData {
   email: string
   password: string
-  name: string
-  contactPerson?: string
-  phone?: string
-  address?: string
-  country?: string
 }
 
 interface UpdateProfileData {
@@ -107,8 +102,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('customer_token', result.access_token)
       setCustomer(result.customer)
 
-      // Redirect to products page
-      router.push('/products')
+      // Check if there's a saved redirect URL
+      const redirectUrl = sessionStorage.getItem('redirect_after_login')
+      if (redirectUrl) {
+        sessionStorage.removeItem('redirect_after_login')
+        router.push(redirectUrl)
+      } else {
+        // Default redirect to products page
+        router.push('/products')
+      }
     } catch (error: any) {
       throw error
     }
@@ -135,8 +137,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('customer_token', result.access_token)
       setCustomer(result.customer)
 
-      // Redirect to products page
-      router.push('/products')
+      // Check if there's a saved redirect URL
+      const redirectUrl = sessionStorage.getItem('redirect_after_login')
+      if (redirectUrl) {
+        sessionStorage.removeItem('redirect_after_login')
+        router.push(redirectUrl)
+      } else {
+        // Default redirect to products page
+        router.push('/products')
+      }
     } catch (error: any) {
       throw error
     }

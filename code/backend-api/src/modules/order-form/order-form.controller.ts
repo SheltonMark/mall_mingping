@@ -6,10 +6,12 @@ import {
   Param,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { OrderFormService } from './order-form.service';
 import { CreateOrderFormDto } from './dto/order-form.dto';
 import { JwtAuthGuard } from '../customer-auth/jwt-customer.guard';
+import { JwtAuthGuard as AdminJwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller('order-forms')
 export class OrderFormController {
@@ -27,14 +29,14 @@ export class OrderFormController {
   }
 
   /**
-   * Get all order forms for current customer
-   * GET /order-forms
-   * Requires customer authentication
+   * Get all order forms for admin
+   * GET /order-forms/admin/all
+   * Requires admin authentication
    */
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  async findAll(@Request() req: any) {
-    return this.orderFormService.findAllByCustomer(req.user.id);
+  @UseGuards(AdminJwtAuthGuard)
+  @Get('admin/all')
+  async findAllForAdmin() {
+    return this.orderFormService.findAll();
   }
 
   /**
@@ -57,5 +59,16 @@ export class OrderFormController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Request() req: any) {
     return this.orderFormService.findOne(id, req.user.id);
+  }
+
+  /**
+   * Get all order forms for current customer
+   * GET /order-forms
+   * Requires customer authentication
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async findAll(@Request() req: any) {
+    return this.orderFormService.findAllByCustomer(req.user.id);
   }
 }

@@ -6,42 +6,42 @@ export declare class SystemService {
     getConfig(configKey: string): Promise<{
         configValue: any;
         id: string;
-        updatedAt: Date;
         configKey: string;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }>;
     getConfigs(configKeys?: string[]): Promise<{
         configValue: any;
         id: string;
-        updatedAt: Date;
         configKey: string;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }[]>;
     getAllConfigs(): Promise<{
         configValue: any;
         id: string;
-        updatedAt: Date;
         configKey: string;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }[]>;
     updateConfig(dto: UpdateSystemConfigDto): Promise<{
         id: string;
-        updatedAt: Date;
         configKey: string;
         configValue: string | null;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }>;
     deleteConfig(configKey: string): Promise<{
         id: string;
-        updatedAt: Date;
         configKey: string;
         configValue: string | null;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }>;
     getHomepageConfig(): Promise<any>;
     updateHomepageConfig(data: any): Promise<{

@@ -4,17 +4,19 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export default function OrderFormPage() {
   const { customer, isAuthenticated } = useAuth()
-  const { cart, clearCart } = useCart()
+  const { items: cart, clearCart } = useCart()
   const { t } = useLanguage()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
+  const [orderItems, setOrderItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -27,12 +29,46 @@ export default function OrderFormPage() {
     notes: '',
   })
 
-  // Redirect if not authenticated
+  // Load order items from cart or localStorage FIRST, then check authentication
+  useEffect(() => {
+    const orderType = searchParams.get('type')
+
+    if (orderType === 'buy-now') {
+      // 从立即购买来的数据 - 先加载数据，不管是否登录
+      const pendingOrder = localStorage.getItem('pendingOrder')
+      if (pendingOrder) {
+        try {
+          const data = JSON.parse(pendingOrder)
+          setOrderItems(data.items || [])
+          // 不要在这里清除 localStorage - 等登录后再清除
+        } catch (e) {
+          console.error('Failed to parse pending order:', e)
+          setError('订单数据加载失败')
+        }
+      }
+    } else {
+      // 从购物车来的数据
+      if (cart && cart.length > 0) {
+        setOrderItems(cart)
+      }
+    }
+  }, [searchParams, cart])
+
+  // Check authentication and redirect if needed
   useEffect(() => {
     if (!isAuthenticated) {
+      // Save the current URL for redirect after login
+      sessionStorage.setItem('redirect_after_login', window.location.pathname + window.location.search)
       router.push('/login')
+    } else {
+      // User is authenticated, now we can safely clear the pending order
+      const orderType = searchParams.get('type')
+      if (orderType === 'buy-now') {
+        // 登录后清除 localStorage
+        localStorage.removeItem('pendingOrder')
+      }
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, router, searchParams])
 
   // Pre-fill form with customer data
   useEffect(() => {
@@ -47,8 +83,15 @@ export default function OrderFormPage() {
     }
   }, [customer])
 
+  // Scroll to top when success screen is shown
+  useEffect(() => {
+    if (success) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [success])
+
   // Calculate total
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const totalAmount = orderItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -66,8 +109,8 @@ export default function OrderFormPage() {
       return
     }
 
-    if (cart.length === 0) {
-      setError('Cart is empty')
+    if (orderItems.length === 0) {
+      setError('订单为空')
       return
     }
 
@@ -80,10 +123,10 @@ export default function OrderFormPage() {
       }
 
       // Prepare items data
-      const items = cart.map((item) => ({
-        product_id: item.productId,
-        product_code: item.productCode,
-        product_name: item.productName,
+      const items = orderItems.map((item) => ({
+        product_id: item.skuId,
+        product_code: item.sku,
+        product_name: item.groupName,
         quantity: item.quantity,
         unit_price: item.price,
         configuration: item.colorCombination || {},
@@ -112,7 +155,12 @@ export default function OrderFormPage() {
       // Success!
       setFormNumber(result.formNumber)
       setSuccess(true)
-      clearCart()
+
+      // 只有从购物车来的才清空购物车
+      const orderType = searchParams.get('type')
+      if (orderType !== 'buy-now') {
+        clearCart()
+      }
     } catch (err: any) {
       setError(err.message || t('order_form.submit_error'))
     } finally {
@@ -123,7 +171,7 @@ export default function OrderFormPage() {
   // Success screen
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 pt-36 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             {/* Success Icon */}
@@ -146,13 +194,13 @@ export default function OrderFormPage() {
             <div className="flex gap-4 justify-center mt-8">
               <Link
                 href="/account"
-                className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
+                className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition shadow-lg shadow-primary/30"
               >
                 {t('order_form.view_inquiries')}
               </Link>
               <Link
                 href="/products"
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                className="px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition"
               >
                 {t('order_form.continue_shopping')}
               </Link>
@@ -165,13 +213,13 @@ export default function OrderFormPage() {
 
   // Form screen
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 pt-36 pb-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-8 text-white">
+          {/* Header with Brand Color */}
+          <div className="bg-gradient-to-r from-primary to-primary-dark p-8 text-white">
             <h1 className="text-3xl font-bold">{t('order_form.title')}</h1>
-            <p className="mt-2 text-gray-300">{t('order_form.subtitle')}</p>
+            <p className="mt-2 text-white/90">{t('order_form.subtitle')}</p>
           </div>
 
           <div className="p-8">
@@ -197,7 +245,7 @@ export default function OrderFormPage() {
                       value={formData.contactName}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                       placeholder={t('order_form.contact_name_placeholder')}
                     />
                   </div>
@@ -211,7 +259,7 @@ export default function OrderFormPage() {
                       value={formData.phone}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                       placeholder={t('order_form.phone_placeholder')}
                     />
                   </div>
@@ -225,7 +273,7 @@ export default function OrderFormPage() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                       placeholder={t('order_form.email_placeholder')}
                     />
                   </div>
@@ -239,7 +287,7 @@ export default function OrderFormPage() {
                       value={formData.address}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                       placeholder={t('order_form.address_placeholder')}
                     />
                   </div>
@@ -253,7 +301,7 @@ export default function OrderFormPage() {
                     value={formData.notes}
                     onChange={handleChange}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     placeholder={t('order_form.notes_placeholder')}
                   />
                 </div>
@@ -264,24 +312,29 @@ export default function OrderFormPage() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">{t('order_form.products')}</h2>
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
                   <div className="max-h-96 overflow-y-auto">
-                    {cart.map((item, index) => (
+                    {orderItems.map((item, index) => (
                       <div key={index} className="flex items-center gap-4 p-4 border-b border-gray-200">
+                        <img
+                          src={item.mainImage}
+                          alt={item.groupName}
+                          className="w-20 h-20 object-cover rounded"
+                        />
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">{item.productName}</p>
-                          <p className="text-sm text-gray-600">{item.productCode}</p>
+                          <p className="font-medium text-gray-900">{item.groupName}</p>
+                          <p className="text-sm text-gray-600">{item.sku}</p>
                           {item.colorCombination && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <div className="flex flex-wrap gap-2 mt-1">
                               {Object.entries(item.colorCombination).map(([key, value]: [string, any]) => (
-                                <span key={key} className="mr-2">
+                                <span key={key} className="text-xs text-gray-500">
                                   {key}: {value.name || value}
                                 </span>
                               ))}
-                            </p>
+                            </div>
                           )}
                         </div>
                         <div className="text-right">
                           <p className="text-gray-600">x{item.quantity}</p>
-                          <p className="font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-medium text-gray-900">￥{((item.price || 0) * (item.quantity || 0)).toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
@@ -289,7 +342,7 @@ export default function OrderFormPage() {
                   <div className="bg-gray-50 p-4">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold text-gray-900">{t('order_form.total_amount')}</span>
-                      <span className="text-2xl font-bold text-gray-900">${totalAmount.toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-primary">￥{totalAmount.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -299,14 +352,14 @@ export default function OrderFormPage() {
               <div className="flex gap-4">
                 <Link
                   href="/cart"
-                  className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition text-center"
+                  className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-700 font-medium rounded-lg hover:border-primary hover:text-primary transition text-center"
                 >
                   {t('order_form.back_to_cart')}
                 </Link>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 py-3 px-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+                  className="flex-1 py-3 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition disabled:opacity-50 shadow-lg shadow-primary/30"
                 >
                   {loading ? t('order_form.submitting') : t('order_form.submit')}
                 </button>

@@ -165,31 +165,37 @@ export class SystemService {
   // About Us config
   async getAboutUsConfig() {
     const keys = [
-      // 中文字段
-      'about_company_name_zh',
-      'about_company_intro_zh',
-      'about_mission_zh',
-      'about_vision_zh',
-      'about_history_zh',
-      'about_team_zh',
-      'about_certifications_zh',
-      // 英文字段
-      'about_company_name_en',
-      'about_company_intro_en',
-      'about_mission_en',
-      'about_vision_en',
-      'about_history_en',
-      'about_team_en',
-      'about_certifications_en',
-      // 图片字段
+      // Hero区域
       'about_hero_image',
-      'about_story_image_1',
-      'about_story_image_2',
-      'about_factory_images', // JSON array
-      // 联系方式（不需要分语言）
+      'about_hero_title_line1_en',
+      'about_hero_title_line1_zh',
+      'about_hero_title_line2_en',
+      'about_hero_title_line2_zh',
+      'about_hero_subtitle_en',
+      'about_hero_subtitle_zh',
+      // 品牌故事 - 第一组
+      'about_story1_image',
+      'about_story1_title_en',
+      'about_story1_title_zh',
+      'about_story1_desc1_en',
+      'about_story1_desc1_zh',
+      'about_story1_desc2_en',
+      'about_story1_desc2_zh',
+      // 品牌故事 - 第二组
+      'about_story2_image',
+      'about_story2_title_en',
+      'about_story2_title_zh',
+      'about_story2_desc1_en',
+      'about_story2_desc1_zh',
+      'about_story2_desc2_en',
+      'about_story2_desc2_zh',
+      // 工厂展示区 (支持视频/图片)
+      'about_factory_carousel', // JSON array
+      // 联系方式
       'about_contact_email',
       'about_contact_phone',
-      'about_contact_address',
+      'about_contact_address_en',
+      'about_contact_address_zh',
     ];
 
     const configs = await this.getConfigs(keys);
@@ -223,13 +229,7 @@ export class SystemService {
   // General site config
   async getSiteConfig() {
     const keys = [
-      'site_name',
-      'site_logo',
-      'site_favicon',
-      'site_footer_text',
-      'site_copyright',
-      'site_social_media',
-      'site_navigation',
+      'site_social_media', // JSON object: { facebook, twitter, instagram, linkedin, youtube, email }
     ];
 
     const configs = await this.getConfigs(keys);

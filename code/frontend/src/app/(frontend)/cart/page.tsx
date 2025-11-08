@@ -15,6 +15,12 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity } = useCart()
   const { isAuthenticated, isLoading } = useAuth()
   const { t } = useLanguage()
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
+
+  // Initialize all items as selected
+  useEffect(() => {
+    setSelectedItems(items.map(item => item.skuId))
+  }, [items])
 
   const handleCheckout = () => {
     // Check if user is authenticated
@@ -30,11 +36,44 @@ export default function CartPage() {
       return
     }
 
+    // Check if any items are selected
+    if (selectedItems.length === 0) {
+      toast.warning('请选择至少一个商品')
+      return
+    }
+
     // Redirect to order form page (not checkout, as we don't have payment)
     router.push('/order-form')
   }
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const toggleSelectAll = () => {
+    if (selectedItems.length === items.length) {
+      setSelectedItems([])
+    } else {
+      setSelectedItems(items.map(item => item.skuId))
+    }
+  }
+
+  const toggleItemSelection = (skuId: string) => {
+    if (selectedItems.includes(skuId)) {
+      setSelectedItems(selectedItems.filter(id => id !== skuId))
+    } else {
+      setSelectedItems([...selectedItems, skuId])
+    }
+  }
+
+  const handleDeleteSelected = () => {
+    if (selectedItems.length === 0) {
+      toast.warning('请先选择要删除的商品')
+      return
+    }
+    selectedItems.forEach(skuId => removeItem(skuId))
+    setSelectedItems([])
+  }
+
+  const subtotal = items
+    .filter(item => selectedItems.includes(item.skuId))
+    .reduce((sum, item) => sum + (Number(item.price) || 0) * item.quantity, 0)
 
   // Show loading while checking auth
   if (isLoading) {
@@ -49,19 +88,26 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32 pb-8">
-      <div className="max-w-[1440px] mx-auto px-6 py-12">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
-            <ShoppingBag className="w-10 h-10 text-primary" />
-            {t('cart.title')}
-          </h1>
-          <p className="mt-2 text-gray-600">
-            {items.length > 0 ? `${items.length} ${items.length > 1 ? t('cart.items') : t('cart.item')}` : t('cart.empty')}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      {/* Hero Section */}
+      <div className="bg-white border-b border-gray-100 pt-36 pb-8">
+        <div className="max-w-[1440px] mx-auto px-6">
+          {/* Page Header */}
+          <div className="mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100">
+                <ShoppingBag className="w-7 h-7 text-primary" />
+              </div>
+              {t('cart.title')}
+            </h1>
+            <p className="mt-3 text-gray-600 ml-15">
+              {items.length > 0 ? `${items.length} ${items.length > 1 ? t('cart.items') : t('cart.item')}` : t('cart.empty')}
+            </p>
+          </div>
         </div>
+      </div>
 
+      <div className="max-w-[1440px] mx-auto px-6 pb-12 -mt-4">
         {items.length === 0 ? (
           /* Empty Cart */
           <div className="bg-white rounded-2xl shadow-sm p-16 text-center">
@@ -86,12 +132,49 @@ export default function CartPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
+              {/* Select All and Bulk Actions */}
+              <div className="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.length === items.length}
+                    onChange={toggleSelectAll}
+                    className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    全选 ({selectedItems.length}/{items.length})
+                  </span>
+                </div>
+                <button
+                  onClick={handleDeleteSelected}
+                  disabled={selectedItems.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  删除选中
+                </button>
+              </div>
+
               {items.map((item) => (
                 <div
                   key={item.skuId}
-                  className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                  className={`bg-white rounded-xl shadow-sm p-6 transition-all ${
+                    selectedItems.includes(item.skuId)
+                      ? 'ring-2 ring-primary ring-opacity-50'
+                      : 'hover:shadow-md'
+                  }`}
                 >
                   <div className="flex gap-6">
+                    {/* Checkbox */}
+                    <div className="flex items-start pt-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(item.skuId)}
+                        onChange={() => toggleItemSelection(item.skuId)}
+                        className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
+                      />
+                    </div>
+
                     {/* Product Image */}
                     <div className="w-32 h-32 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center border border-gray-200"
                          style={{
@@ -164,10 +247,10 @@ export default function CartPage() {
 
                         <div className="text-right">
                           <div className="text-2xl font-bold text-primary">
-                            ￥{(item.price * item.quantity).toFixed(2)}
+                            ￥{((Number(item.price) || 0) * item.quantity).toFixed(2)}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {t('cart.unit_price')} ￥{item.price.toFixed(2)}
+                            {t('cart.unit_price')} ￥{(Number(item.price) || 0).toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -188,8 +271,13 @@ export default function CartPage() {
                     <span className="font-semibold">￥{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>{t('cart.total_items')}</span>
-                    <span className="font-semibold">{items.reduce((sum, item) => sum + item.quantity, 0)}</span>
+                    <span>已选商品</span>
+                    <span className="font-semibold">
+                      {selectedItems.reduce((sum, skuId) => {
+                        const item = items.find(i => i.skuId === skuId)
+                        return sum + (item?.quantity || 0)
+                      }, 0)} 件
+                    </span>
                   </div>
 
                   <div className="pt-4 border-t border-gray-200">
@@ -204,7 +292,8 @@ export default function CartPage() {
 
                 <button
                   onClick={handleCheckout}
-                  className="block w-full h-14 bg-primary text-white font-bold text-lg rounded-xl hover:bg-primary-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+                  disabled={selectedItems.length === 0}
+                  className="block w-full h-14 bg-primary text-white font-bold text-lg rounded-xl hover:bg-primary-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {t('cart.proceed_to_confirm')}
                   <ArrowRight className="w-5 h-5" />

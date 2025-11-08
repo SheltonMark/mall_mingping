@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingCart, Check, Play, Image as ImageIcon, FileText } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -54,8 +54,9 @@ type ViewMode = 'gallery' | 'video' | 'params'
 
 export default function ProductDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const productId = params.id as string
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { addItem } = useCart()
   const toast = useToast()
 
@@ -65,6 +66,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [addedToCart, setAddedToCart] = useState(false)
+  const [showSpecHint, setShowSpecHint] = useState(false) // 显示规格提示
 
   // 图片状态
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -233,13 +235,25 @@ export default function ProductDetailPage() {
       return
     }
 
-    // 先加入购物车
-    handleAddToCart()
+    // 准备订单数据 - 使用与购物车相同的 CartItem 结构
+    const orderData = {
+      items: [{
+        skuId: selectedSku.id,
+        sku: selectedSku.sku,
+        groupName: language === 'zh' ? productGroup.groupNameZh : productGroup.groupNameEn,
+        translationKey: productGroup.translationKey,
+        colorCombination: selectedSku.colorCombination,
+        quantity: quantity,
+        price: selectedSku.price,
+        mainImage: images[0] || '/images/placeholder.jpg'
+      }]
+    }
 
-    // 跳转到购物车页面
-    setTimeout(() => {
-      window.location.href = '/cart'
-    }, 500)
+    // 使用 localStorage 临时存储订单数据（比 sessionStorage 更可靠）
+    localStorage.setItem('pendingOrder', JSON.stringify(orderData))
+
+    // 使用 router.push 代替 window.location.href 避免状态丢失
+    router.push('/order-form?type=buy-now')
   }
 
   if (loading) {
@@ -642,36 +656,58 @@ export default function ProductDetailPage() {
               </div>
 
               {/* 加入购物车按钮 */}
-              <button
-                onClick={handleAddToCart}
-                disabled={!selectedSku || addedToCart}
-                className={`w-full h-14 rounded-xl font-bold text-white text-lg transition-all flex items-center justify-center gap-3 ${
-                  addedToCart
-                    ? 'bg-green-500'
-                    : 'bg-primary hover:bg-primary-dark'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {addedToCart ? (
-                  <>
-                    <Check size={24} />
-                    已加入购物车
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart size={24} />
-                    加入购物车
-                  </>
+              <div className="relative">
+                <button
+                  onClick={handleAddToCart}
+                  onMouseEnter={() => {
+                    if (!selectedSku && !addedToCart) {
+                      setShowSpecHint(true)
+                      setTimeout(() => setShowSpecHint(false), 2000)
+                    }
+                  }}
+                  disabled={!selectedSku || addedToCart}
+                  className={`w-full h-14 rounded-xl font-bold text-white text-lg transition-all flex items-center justify-center gap-3 ${
+                    addedToCart
+                      ? 'bg-green-500'
+                      : 'bg-primary hover:bg-primary-dark'
+                  } disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
+                >
+                  {addedToCart ? (
+                    <>
+                      <Check size={24} />
+                      已加入购物车
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart size={24} />
+                      加入购物车
+                    </>
+                  )}
+                </button>
+                {showSpecHint && (
+                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg">
+                    请先选择规格
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-neutral-900"></div>
+                  </div>
                 )}
-              </button>
+              </div>
 
               {/* 立即购买按钮 */}
-              <button
-                onClick={handleBuyNow}
-                disabled={!selectedSku}
-                className="w-full h-14 rounded-xl font-bold text-primary text-lg transition-all flex items-center justify-center gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                立即购买
-              </button>
+              <div className="relative">
+                <button
+                  onClick={handleBuyNow}
+                  onMouseEnter={() => {
+                    if (!selectedSku) {
+                      setShowSpecHint(true)
+                      setTimeout(() => setShowSpecHint(false), 2000)
+                    }
+                  }}
+                  disabled={!selectedSku}
+                  className={`w-full h-14 rounded-xl font-bold text-primary text-lg transition-all flex items-center justify-center gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
+                >
+                  立即购买
+                </button>
+              </div>
             </div>
           </div>
         </div>

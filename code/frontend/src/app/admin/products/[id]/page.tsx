@@ -17,6 +17,8 @@ import {
   Plus,
   Edit2,
 } from 'lucide-react';
+import { useConfirm } from '@/hooks/useConfirm';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 interface ProductSku {
   id: string;
@@ -64,6 +66,7 @@ export default function EditSkuPage() {
   const params = useParams();
   const skuId = params.id as string;
   const toast = useToast();
+  const { confirm, isOpen, options, handleConfirm, handleClose } = useConfirm();
 
   const [sku, setSku] = useState<ProductSku | null>(null);
   const [loading, setLoading] = useState(true);
@@ -309,12 +312,17 @@ export default function EditSkuPage() {
     toast.success('组件已保存');
   };
 
-  const handleDeleteComponent = (code: string) => {
-    if (confirm('确定要删除这个组件吗?')) {
-      setComponents(components.filter(c => c.code !== code));
-      setComponentColors(componentColors.filter(cc => cc.componentCode !== code));
-      toast.success('组件已删除');
-    }
+  const handleDeleteComponent = async (code: string) => {
+    const confirmed = await confirm({
+      title: '确认删除',
+      message: '确定要删除这个组件吗?',
+      type: 'danger',
+    });
+    if (!confirmed) return;
+
+    setComponents(components.filter(c => c.code !== code));
+    setComponentColors(componentColors.filter(cc => cc.componentCode !== code));
+    toast.success('组件已删除');
   };
 
   // 配色管理函数
@@ -356,11 +364,16 @@ export default function EditSkuPage() {
     toast.success('配色已保存');
   };
 
-  const handleDeleteColor = (componentCode: string) => {
-    if (confirm('确定要删除这个配色方案吗?')) {
-      setComponentColors(componentColors.filter(cc => cc.componentCode !== componentCode));
-      toast.success('配色方案已删除');
-    }
+  const handleDeleteColor = async (componentCode: string) => {
+    const confirmed = await confirm({
+      title: '确认删除',
+      message: '确定要删除这个配色方案吗?',
+      type: 'danger',
+    });
+    if (!confirmed) return;
+
+    setComponentColors(componentColors.filter(cc => cc.componentCode !== componentCode));
+    toast.success('配色方案已删除');
   };
 
   const handleAddColorPart = () => {
@@ -1154,6 +1167,17 @@ export default function EditSkuPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        onConfirm={handleConfirm}
+        title={options.title}
+        message={options.message}
+        confirmText={options.confirmText}
+        cancelText={options.cancelText}
+        type={options.type}
+      />
     </div>
   );
 }

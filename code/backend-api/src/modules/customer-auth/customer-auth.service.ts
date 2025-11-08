@@ -21,11 +21,10 @@ export class CustomerAuthService {
   ) {}
 
   /**
-   * Customer Registration - No approval needed, automatically activated
+   * Customer Registration - Requires admin approval
    */
   async register(registerDto: CustomerRegisterDto) {
-    const { email, password, name, contactPerson, phone, address, country } =
-      registerDto;
+    const { email, password } = registerDto;
 
     // Check if email already exists
     const existingCustomer = await this.prisma.customer.findUnique({
@@ -39,17 +38,13 @@ export class CustomerAuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create customer with status='active' (auto-approved)
+    // Create customer with status='active' (auto-activated)
     const customer = await this.prisma.customer.create({
       data: {
         email,
         password: hashedPassword,
-        name,
-        contactPerson,
-        phone,
-        address,
-        country,
-        status: 'active', // Automatically activated
+        name: email.split('@')[0], // Use email prefix as default name
+        status: 'active', // Auto-activated
       },
       select: {
         id: true,
@@ -70,6 +65,7 @@ export class CustomerAuthService {
     return {
       customer,
       access_token: token,
+      message: 'Registration successful. Welcome!',
     };
   }
 
@@ -88,16 +84,16 @@ export class CustomerAuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Check if customer is active
-    if (customer.status !== 'active') {
-      throw new UnauthorizedException('Your account has been disabled');
-    }
-
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, customer.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Check if customer is disabled (not pending or active)
+    if (customer.status === 'inactive') {
+      throw new UnauthorizedException('Your account has been disabled');
     }
 
     // Generate JWT token
@@ -206,7 +202,7 @@ export class CustomerAuthService {
       throw new UnauthorizedException('Customer not found');
     }
 
-    if (customer.status !== 'active') {
+    if (customer.status === 'inactive') {
       throw new UnauthorizedException('Your account has been disabled');
     }
 

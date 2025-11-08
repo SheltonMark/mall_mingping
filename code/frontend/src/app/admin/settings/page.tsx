@@ -25,48 +25,59 @@ interface HomepageConfig {
 }
 
 interface AboutConfig {
-  title?: string;
-  content?: string;
-  mission?: string;
-  vision?: string;
-  values?: string[];
-  images?: string[];
-  // 图片字段
+  // Hero区域
   hero_image?: string;
-  story_image_1?: string;
-  story_image_2?: string;
-  factory_images?: string[] | string;
-  // 中英文字段
-  company_name_zh?: string;
-  company_name_en?: string;
-  company_intro_zh?: string;
-  company_intro_en?: string;
-  mission_zh?: string;
-  mission_en?: string;
-  vision_zh?: string;
-  vision_en?: string;
-  history_zh?: string;
-  history_en?: string;
-  team_zh?: string;
-  team_en?: string;
-  certifications_zh?: string;
-  certifications_en?: string;
+  hero_title_line1_en?: string;
+  hero_title_line1_zh?: string;
+  hero_title_line2_en?: string;
+  hero_title_line2_zh?: string;
+  hero_subtitle_en?: string;
+  hero_subtitle_zh?: string;
+
+  // 品牌故事 - 第一组
+  story1_image?: string;
+  story1_title_en?: string;
+  story1_title_zh?: string;
+  story1_desc1_en?: string;
+  story1_desc1_zh?: string;
+  story1_desc2_en?: string;
+  story1_desc2_zh?: string;
+
+  // 品牌故事 - 第二组
+  story2_image?: string;
+  story2_title_en?: string;
+  story2_title_zh?: string;
+  story2_desc1_en?: string;
+  story2_desc1_zh?: string;
+  story2_desc2_en?: string;
+  story2_desc2_zh?: string;
+
+  // 工厂展示区 (支持视频/图片)
+  factory_carousel?: Array<{
+    media_type: 'image' | 'video';
+    media_url: string;
+    label_en: string;
+    label_zh: string;
+    video_autoplay?: boolean;
+    video_loop?: boolean;
+    video_muted?: boolean;
+  }> | string;
+
+  // 联系方式
   contact_email?: string;
   contact_phone?: string;
-  contact_address?: string;
+  contact_address_en?: string;
+  contact_address_zh?: string;
 }
 
 interface SiteConfig {
-  siteName?: string;
-  siteDescription?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  address?: string;
   socialMedia?: {
     facebook?: string;
     twitter?: string;
     linkedin?: string;
     instagram?: string;
+    youtube?: string;
+    email?: string;
   };
 }
 
@@ -335,32 +346,6 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
       <div className="border-b border-gray-200 pb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 首屏区域</h3>
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              首页标题
-            </label>
-            <input
-              type="text"
-              value={config.heroTitle || ''}
-              onChange={(e) => setConfig({ ...config, heroTitle: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="欢迎来到LEMOPX"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              首页副标题
-            </label>
-            <input
-              type="text"
-              value={config.heroSubtitle || ''}
-              onChange={(e) => setConfig({ ...config, heroSubtitle: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="专业的B2B电商解决方案"
-            />
-          </div>
-
           {/* Hero Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -565,20 +550,31 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
   );
 }
 
-// 关于我们配置组件
+// 关于我们配置组件 - 新版本
 function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (config: AboutConfig) => void }) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
 
-  // 处理图片上传
+  // 通用图片上传处理
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: keyof AboutConfig) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('请上传图片文件');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('图片大小不能超过5MB');
+      return;
+    }
 
     try {
       setUploading(true);
       const result = await uploadApi.uploadSingle(file, 'image');
       setConfig({ ...config, [fieldName]: result.url });
+      toast.success('图片上传成功');
     } catch (error: any) {
       console.error('Upload failed:', error);
       toast.error(error.message || '图片上传失败');
@@ -587,50 +583,49 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
     }
   };
 
-  // 处理多图片上传（工厂图片）
-  const handleMultiImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  // 通用视频上传处理
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>, carouselIndex: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('video/')) {
+      toast.error('请上传视频文件');
+      return;
+    }
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('视频大小不能超过50MB');
+      return;
+    }
 
     try {
       setUploading(true);
-      const result = await uploadApi.uploadMultiple(Array.from(files), 'image');
-      const urls = result.urls || [];
+      const result = await uploadApi.uploadSingle(file, 'video');
 
-      const currentImages = Array.isArray(config.factory_images)
-        ? config.factory_images
-        : config.factory_images
-          ? JSON.parse(config.factory_images as string)
-          : [];
-
-      setConfig({ ...config, factory_images: [...currentImages, ...urls] });
+      const carousel = getFactoryCarousel();
+      carousel[carouselIndex] = {
+        ...carousel[carouselIndex],
+        media_type: 'video',
+        media_url: result.url,
+      };
+      setConfig({ ...config, factory_carousel: carousel });
+      toast.success('视频上传成功');
     } catch (error: any) {
       console.error('Upload failed:', error);
-      toast.error(error.message || '图片上传失败');
+      toast.error(error.message || '视频上传失败');
     } finally {
       setUploading(false);
     }
   };
 
-  // 删除工厂图片
-  const handleRemoveFactoryImage = (index: number) => {
-    const currentImages = Array.isArray(config.factory_images)
-      ? config.factory_images
-      : config.factory_images
-        ? JSON.parse(config.factory_images as string)
-        : [];
-    const newImages = currentImages.filter((_: string, i: number) => i !== index);
-    setConfig({ ...config, factory_images: newImages });
-  };
-
-  // 获取工厂图片数组
-  const getFactoryImages = () => {
-    if (Array.isArray(config.factory_images)) {
-      return config.factory_images;
+  // 获取工厂轮播数组
+  const getFactoryCarousel = () => {
+    if (Array.isArray(config.factory_carousel)) {
+      return config.factory_carousel;
     }
-    if (typeof config.factory_images === 'string') {
+    if (typeof config.factory_carousel === 'string') {
       try {
-        return JSON.parse(config.factory_images);
+        return JSON.parse(config.factory_carousel);
       } catch {
         return [];
       }
@@ -638,361 +633,631 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
     return [];
   };
 
+  // 添加轮播项
+  const addCarouselItem = () => {
+    const carousel = getFactoryCarousel();
+    if (carousel.length >= 6) {
+      toast.warning('最多支持6个轮播项');
+      return;
+    }
+    carousel.push({
+      media_type: 'image',
+      media_url: '',
+      label_en: '',
+      label_zh: '',
+      video_autoplay: true,
+      video_loop: true,
+      video_muted: true,
+    });
+    setConfig({ ...config, factory_carousel: carousel });
+  };
+
+  // 删除轮播项
+  const removeCarouselItem = (index: number) => {
+    const carousel = getFactoryCarousel();
+    carousel.splice(index, 1);
+    setConfig({ ...config, factory_carousel: carousel });
+  };
+
+  // 更新轮播项
+  const updateCarouselItem = (index: number, field: string, value: any) => {
+    const carousel = getFactoryCarousel();
+    carousel[index] = { ...carousel[index], [field]: value };
+    setConfig({ ...config, factory_carousel: carousel });
+  };
+
   return (
-    <div className="space-y-8">
-      {/* 中文内容区 */}
+    <div className="space-y-8 max-h-[calc(100vh-300px)] overflow-y-auto pr-2">
+      {/* Hero区域配置 */}
       <div className="border-b border-gray-200 pb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">🇨🇳 中文内容</h3>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">公司名称（中文）</label>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">📍 1. Hero区域配置</h3>
+
+        {/* Hero背景图 */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Hero背景图</label>
+          {config.hero_image ? (
+            <div className="relative">
+              <img
+                src={config.hero_image.startsWith('http') ? config.hero_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${config.hero_image}`}
+                alt="Hero"
+                className="w-full h-48 object-cover rounded-lg"
+              />
+              <button
+                onClick={() => setConfig({ ...config, hero_image: '' })}
+                className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600"
+              >
+                删除
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-white">
+              <div className="text-center">
+                <div className="text-4xl mb-2">📷</div>
+                <div className="text-sm text-gray-600">{uploading ? '上传中...' : '点击上传背景图'}</div>
+                <div className="text-xs text-gray-500 mt-1">建议尺寸: 1920x1080</div>
+              </div>
               <input
-                type="text"
-                value={config.company_name_zh || ''}
-                onChange={(e) => setConfig({ ...config, company_name_zh: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="例：乐模科技"
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, 'hero_image')}
+                className="hidden"
+                disabled={uploading}
               />
-            </div>
-          </div>
+            </label>
+          )}
+        </div>
 
+        {/* 主标题第一行 */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">公司简介（中文）</label>
-            <textarea
-              value={config.company_intro_zh || ''}
-              onChange={(e) => setConfig({ ...config, company_intro_zh: e.target.value })}
-              rows={4}
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 主标题第一行 (English)</label>
+            <input
+              type="text"
+              value={config.hero_title_line1_en || ''}
+              onChange={(e) => setConfig({ ...config, hero_title_line1_en: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="介绍公司的历史、业务范围等..."
+              placeholder="Crafting Tomorrow's"
             />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">公司使命（中文）</label>
-              <textarea
-                value={config.mission_zh || ''}
-                onChange={(e) => setConfig({ ...config, mission_zh: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="我们的使命是..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">公司愿景（中文）</label>
-              <textarea
-                value={config.vision_zh || ''}
-                onChange={(e) => setConfig({ ...config, vision_zh: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="我们的愿景是..."
-              />
-            </div>
-          </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">发展历程（中文）</label>
-            <textarea
-              value={config.history_zh || ''}
-              onChange={(e) => setConfig({ ...config, history_zh: e.target.value })}
-              rows={4}
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 主标题第一行 (中文)</label>
+            <input
+              type="text"
+              value={config.hero_title_line1_zh || ''}
+              onChange={(e) => setConfig({ ...config, hero_title_line1_zh: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="公司发展历程..."
+              placeholder="匠心打造"
             />
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">团队介绍（中文）</label>
-              <textarea
-                value={config.team_zh || ''}
-                onChange={(e) => setConfig({ ...config, team_zh: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="团队介绍..."
-              />
-            </div>
+        {/* 主标题第二行 (金色斜体) */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 主标题第二行 (金色斜体)</label>
+            <input
+              type="text"
+              value={config.hero_title_line2_en || ''}
+              onChange={(e) => setConfig({ ...config, hero_title_line2_en: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Cleaning Solutions"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 主标题第二行 (金色斜体)</label>
+            <input
+              type="text"
+              value={config.hero_title_line2_zh || ''}
+              onChange={(e) => setConfig({ ...config, hero_title_line2_zh: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="清洁方案"
+            />
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">资质认证（中文）</label>
-              <textarea
-                value={config.certifications_zh || ''}
-                onChange={(e) => setConfig({ ...config, certifications_zh: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="资质认证..."
-              />
-            </div>
+        {/* 副标题 */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 副标题</label>
+            <input
+              type="text"
+              value={config.hero_subtitle_en || ''}
+              onChange={(e) => setConfig({ ...config, hero_subtitle_en: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Professional cleaning tools manufacturer"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 副标题</label>
+            <input
+              type="text"
+              value={config.hero_subtitle_zh || ''}
+              onChange={(e) => setConfig({ ...config, hero_subtitle_zh: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="专业清洁工具制造商"
+            />
           </div>
         </div>
       </div>
 
-      {/* 英文内容区 */}
+      {/* 品牌故事区配置 */}
       <div className="border-b border-gray-200 pb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">🇬🇧 English Content</h3>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">📍 2. 品牌故事区配置</h3>
+
+        {/* 第一组 */}
+        <div className="bg-gray-50 p-6 rounded-lg mb-6">
+          <h4 className="font-semibold text-gray-900 mb-4">第一组 - 工匠精神</h4>
+
+          {/* 配图 */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">配图</label>
+            {config.story1_image ? (
+              <div className="relative">
+                <img
+                  src={config.story1_image.startsWith('http') ? config.story1_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${config.story1_image}`}
+                  alt="Story 1"
+                  className="w-full h-40 object-cover rounded-lg"
+                />
+                <button
+                  onClick={() => setConfig({ ...config, story1_image: '' })}
+                  className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600"
+                >
+                  删除
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-white">
+                <div className="text-center">
+                  <div className="text-3xl mb-1">📷</div>
+                  <div className="text-sm text-gray-600">{uploading ? '上传中...' : '点击上传'}</div>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'story1_image')}
+                  className="hidden"
+                  disabled={uploading}
+                />
+              </label>
+            )}
+          </div>
+
+          {/* 标题 */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Name (EN)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 标题</label>
               <input
                 type="text"
-                value={config.company_name_en || ''}
-                onChange={(e) => setConfig({ ...config, company_name_en: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., LEMOPX Technology"
+                value={config.story1_title_en || ''}
+                onChange={(e) => setConfig({ ...config, story1_title_en: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Craftsmanship Excellence"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 标题</label>
+              <input
+                type="text"
+                value={config.story1_title_zh || ''}
+                onChange={(e) => setConfig({ ...config, story1_title_zh: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="工匠精神"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Company Introduction (EN)</label>
-            <textarea
-              value={config.company_intro_en || ''}
-              onChange={(e) => setConfig({ ...config, company_intro_en: e.target.value })}
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Company history, business scope, etc..."
-            />
+          {/* 介绍段落1 */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 介绍段落1</label>
+              <textarea
+                value={config.story1_desc1_en || ''}
+                onChange={(e) => setConfig({ ...config, story1_desc1_en: e.target.value })}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Since 1995..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 介绍段落1</label>
+              <textarea
+                value={config.story1_desc1_zh || ''}
+                onChange={(e) => setConfig({ ...config, story1_desc1_zh: e.target.value })}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="自1995年以来..."
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 介绍段落2 */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Mission (EN)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 介绍段落2</label>
               <textarea
-                value={config.mission_en || ''}
-                onChange={(e) => setConfig({ ...config, mission_en: e.target.value })}
+                value={config.story1_desc2_en || ''}
+                onChange={(e) => setConfig({ ...config, story1_desc2_en: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Our mission is..."
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Vision (EN)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 介绍段落2</label>
               <textarea
-                value={config.vision_en || ''}
-                onChange={(e) => setConfig({ ...config, vision_en: e.target.value })}
+                value={config.story1_desc2_zh || ''}
+                onChange={(e) => setConfig({ ...config, story1_desc2_zh: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Our vision is..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="我们的使命是..."
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 第二组 - 同样的结构 */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h4 className="font-semibold text-gray-900 mb-4">第二组 - 工厂直供</h4>
+
+          {/* 配图 */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">配图</label>
+            {config.story2_image ? (
+              <div className="relative">
+                <img
+                  src={config.story2_image.startsWith('http') ? config.story2_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${config.story2_image}`}
+                  alt="Story 2"
+                  className="w-full h-40 object-cover rounded-lg"
+                />
+                <button
+                  onClick={() => setConfig({ ...config, story2_image: '' })}
+                  className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600"
+                >
+                  删除
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-white">
+                <div className="text-center">
+                  <div className="text-3xl mb-1">📷</div>
+                  <div className="text-sm text-gray-600">{uploading ? '上传中...' : '点击上传'}</div>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'story2_image')}
+                  className="hidden"
+                  disabled={uploading}
+                />
+              </label>
+            )}
+          </div>
+
+          {/* 标题 */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 标题</label>
+              <input
+                type="text"
+                value={config.story2_title_en || ''}
+                onChange={(e) => setConfig({ ...config, story2_title_en: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Factory Direct Supply"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 标题</label>
+              <input
+                type="text"
+                value={config.story2_title_zh || ''}
+                onChange={(e) => setConfig({ ...config, story2_title_zh: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="工厂直供"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">History (EN)</label>
-            <textarea
-              value={config.history_en || ''}
-              onChange={(e) => setConfig({ ...config, history_en: e.target.value })}
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Company development history..."
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 介绍段落1 */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Team (EN)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 介绍段落1</label>
               <textarea
-                value={config.team_en || ''}
-                onChange={(e) => setConfig({ ...config, team_en: e.target.value })}
+                value={config.story2_desc1_en || ''}
+                onChange={(e) => setConfig({ ...config, story2_desc1_en: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Team introduction..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Direct from factory..."
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Certifications (EN)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 介绍段落1</label>
               <textarea
-                value={config.certifications_en || ''}
-                onChange={(e) => setConfig({ ...config, certifications_en: e.target.value })}
+                value={config.story2_desc1_zh || ''}
+                onChange={(e) => setConfig({ ...config, story2_desc1_zh: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Certifications..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="直接从工厂..."
+              />
+            </div>
+          </div>
+
+          {/* 介绍段落2 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 介绍段落2</label>
+              <textarea
+                value={config.story2_desc2_en || ''}
+                onChange={(e) => setConfig({ ...config, story2_desc2_en: e.target.value })}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="We provide..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 介绍段落2</label>
+              <textarea
+                value={config.story2_desc2_zh || ''}
+                onChange={(e) => setConfig({ ...config, story2_desc2_zh: e.target.value })}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="我们提供..."
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* 图片配置区 */}
+      {/* 工厂展示区配置 (支持视频/图片) */}
       <div className="border-b border-gray-200 pb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📸 图片配置</h3>
-        <div className="space-y-6">
-          {/* Hero Image */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              首屏大图 (Hero Image)
-            </label>
-            <div className="flex items-start gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={config.hero_image || ''}
-                  onChange={(e) => setConfig({ ...config, hero_image: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="图片URL或路径"
-                />
-              </div>
-              <label className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors">
-                {uploading ? '上传中...' : '上传图片'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, 'hero_image')}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
-            </div>
-            {config.hero_image && (
-              <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
-                <img src={config.hero_image} alt="Hero" className="w-full h-48 object-cover" />
-              </div>
-            )}
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">📍 3. 工厂展示区配置 (轮播图)</h3>
+          <button
+            onClick={addCarouselItem}
+            disabled={getFactoryCarousel().length >= 6}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            + 添加轮播项 ({getFactoryCarousel().length}/6)
+          </button>
+        </div>
 
-          {/* Story Image 1 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              故事图片 1 (Story Image 1)
-            </label>
-            <div className="flex items-start gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={config.story_image_1 || ''}
-                  onChange={(e) => setConfig({ ...config, story_image_1: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="图片URL或路径"
-                />
+        <div className="space-y-4">
+          {getFactoryCarousel().map((item: any, index: number) => (
+            <div key={index} className="bg-gray-50 p-6 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-semibold text-gray-900">轮播项 {index + 1}</h4>
+                <button
+                  onClick={() => removeCarouselItem(index)}
+                  className="text-red-600 hover:text-red-700 text-sm"
+                >
+                  删除
+                </button>
               </div>
-              <label className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors">
-                {uploading ? '上传中...' : '上传图片'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, 'story_image_1')}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
-            </div>
-            {config.story_image_1 && (
-              <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
-                <img src={config.story_image_1} alt="Story 1" className="w-full h-48 object-cover" />
-              </div>
-            )}
-          </div>
 
-          {/* Story Image 2 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              故事图片 2 (Story Image 2)
-            </label>
-            <div className="flex items-start gap-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={config.story_image_2 || ''}
-                  onChange={(e) => setConfig({ ...config, story_image_2: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="图片URL或路径"
-                />
+              {/* 媒体类型选择 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">媒体类型</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={item.media_type === 'image'}
+                      onChange={() => updateCarouselItem(index, 'media_type', 'image')}
+                      className="mr-2"
+                    />
+                    <span>图片</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={item.media_type === 'video'}
+                      onChange={() => updateCarouselItem(index, 'media_type', 'video')}
+                      className="mr-2"
+                    />
+                    <span>视频</span>
+                  </label>
+                </div>
               </div>
-              <label className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors">
-                {uploading ? '上传中...' : '上传图片'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, 'story_image_2')}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
-            </div>
-            {config.story_image_2 && (
-              <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
-                <img src={config.story_image_2} alt="Story 2" className="w-full h-48 object-cover" />
-              </div>
-            )}
-          </div>
 
-          {/* Factory Images */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              工厂图片轮播 (Factory Images)
-            </label>
-            <div className="flex items-center gap-4 mb-3">
-              <label className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors">
-                {uploading ? '上传中...' : '+ 添加图片'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleMultiImageUpload}
-                  className="hidden"
-                  disabled={uploading}
-                />
-              </label>
-              <span className="text-sm text-gray-500">可同时选择多张图片上传</span>
-            </div>
-            {getFactoryImages().length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {getFactoryImages().map((img: string, index: number) => (
-                  <div key={index} className="relative border border-gray-200 rounded-lg overflow-hidden group">
-                    <img src={img} alt={`Factory ${index + 1}`} className="w-full h-32 object-cover" />
+              {/* 媒体文件上传 */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">媒体文件</label>
+                {item.media_url ? (
+                  <div className="relative">
+                    {item.media_type === 'video' ? (
+                      <video
+                        src={item.media_url.startsWith('http') ? item.media_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.media_url}`}
+                        className="w-full h-40 object-cover rounded-lg"
+                        controls
+                      />
+                    ) : (
+                      <img
+                        src={item.media_url.startsWith('http') ? item.media_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.media_url}`}
+                        alt={`Carousel ${index + 1}`}
+                        className="w-full h-40 object-cover rounded-lg"
+                      />
+                    )}
                     <button
-                      onClick={() => handleRemoveFactoryImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white w-6 h-6 rounded-full hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => updateCarouselItem(index, 'media_url', '')}
+                      className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600"
                     >
-                      ×
+                      删除
                     </button>
                   </div>
-                ))}
+                ) : (
+                  <div className="flex gap-2">
+                    <label className="flex-1 flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-white">
+                      <div className="text-center">
+                        <div className="text-3xl mb-1">📷</div>
+                        <div className="text-sm text-gray-600">{uploading ? '上传中...' : '上传图片'}</div>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            setUploading(true);
+                            const result = await uploadApi.uploadSingle(file, 'image');
+                            updateCarouselItem(index, 'media_url', result.url);
+                            updateCarouselItem(index, 'media_type', 'image');
+                            toast.success('图片上传成功');
+                          } catch (error: any) {
+                            toast.error(error.message || '上传失败');
+                          } finally {
+                            setUploading(false);
+                          }
+                        }}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
+                    <label className="flex-1 flex flex-col items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-white">
+                      <div className="text-center">
+                        <div className="text-3xl mb-1">🎬</div>
+                        <div className="text-sm text-gray-600">{uploading ? '上传中...' : '上传视频'}</div>
+                      </div>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => handleVideoUpload(e, index)}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* 视频设置 (仅视频模式显示) */}
+              {item.media_type === 'video' && (
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">🎬 视频设置</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={item.video_autoplay !== false}
+                        onChange={(e) => updateCarouselItem(index, 'video_autoplay', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">自动播放</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={item.video_loop !== false}
+                        onChange={(e) => updateCarouselItem(index, 'video_loop', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">循环播放</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={item.video_muted !== false}
+                        onChange={(e) => updateCarouselItem(index, 'video_muted', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">静音</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* 标签文字 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 标签文字</label>
+                  <input
+                    type="text"
+                    value={item.label_en || ''}
+                    onChange={(e) => updateCarouselItem(index, 'label_en', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Production Line A"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 标签文字</label>
+                  <input
+                    type="text"
+                    value={item.label_zh || ''}
+                    onChange={(e) => updateCarouselItem(index, 'label_zh', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="生产线A"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {getFactoryCarousel().length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              暂无轮播项，点击上方按钮添加
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <span className="text-blue-600 text-lg">ℹ️</span>
+            <div className="text-sm text-blue-800">
+              <p className="font-semibold mb-1">提示:</p>
+              <ul className="list-disc list-inside space-y-1 text-blue-700">
+                <li>图片格式支持: JPG, PNG, WEBP (最大5MB)</li>
+                <li>视频格式支持: MP4, WEBM (最大50MB)</li>
+                <li>建议图片尺寸: 1200x800 像素</li>
+                <li>最多支持6个轮播项</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 联系方式配置 */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📞 联系方式</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">📍 4. 联系方式配置</h3>
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">联系邮箱</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">邮箱</label>
             <input
               type="email"
               value={config.contact_email || ''}
               onChange={(e) => setConfig({ ...config, contact_email: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="contact@example.com"
+              placeholder="XXL7702@163.com"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">联系电话</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">电话</label>
             <input
               type="tel"
               value={config.contact_phone || ''}
               onChange={(e) => setConfig({ ...config, contact_phone: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="+86 123-4567-8901"
+              placeholder="+86 13806777702"
             />
           </div>
-
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">联系地址</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇬🇧 地址</label>
             <input
               type="text"
-              value={config.contact_address || ''}
-              onChange={(e) => setConfig({ ...config, contact_address: e.target.value })}
+              value={config.contact_address_en || ''}
+              onChange={(e) => setConfig({ ...config, contact_address_en: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="公司地址"
+              placeholder="Dongyang, Zhejiang, China"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">🇨🇳 地址</label>
+            <input
+              type="text"
+              value={config.contact_address_zh || ''}
+              onChange={(e) => setConfig({ ...config, contact_address_zh: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="浙江省东阳市"
             />
           </div>
         </div>
@@ -1000,81 +1265,23 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
     </div>
   );
 }
-
 // 站点设置组件
 function SiteTab({ config, setConfig }: { config: SiteConfig; setConfig: (config: SiteConfig) => void }) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            站点名称
-          </label>
-          <input
-            type="text"
-            value={config.siteName || ''}
-            onChange={(e) => setConfig({ ...config, siteName: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="LEMOPX"
-          />
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="flex items-start gap-2">
+          <span className="text-blue-600 text-lg">ℹ️</span>
+          <div className="text-sm text-blue-800">
+            <p className="font-semibold mb-1">说明</p>
+            <p>配置社交媒体链接后，将在网站页脚显示对应的图标链接。</p>
+          </div>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            联系电话
-          </label>
-          <input
-            type="tel"
-            value={config.contactPhone || ''}
-            onChange={(e) => setConfig({ ...config, contactPhone: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="+86 123-4567-8901"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            联系邮箱
-          </label>
-          <input
-            type="email"
-            value={config.contactEmail || ''}
-            onChange={(e) => setConfig({ ...config, contactEmail: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="contact@lemopx.com"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          站点描述
-        </label>
-        <textarea
-          value={config.siteDescription || ''}
-          onChange={(e) => setConfig({ ...config, siteDescription: e.target.value })}
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="专业的B2B电商平台..."
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          公司地址
-        </label>
-        <textarea
-          value={config.address || ''}
-          onChange={(e) => setConfig({ ...config, address: e.target.value })}
-          rows={2}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="中国广东省深圳市..."
-        />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          社交媒体链接
+          🌐 社交媒体链接
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -1087,11 +1294,11 @@ function SiteTab({ config, setConfig }: { config: SiteConfig; setConfig: (config
                 socialMedia: { ...config.socialMedia, facebook: e.target.value }
               })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://facebook.com/..."
+              placeholder="https://facebook.com/lemopx"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Twitter</label>
+            <label className="block text-xs text-gray-600 mb-1">Twitter / X</label>
             <input
               type="url"
               value={config.socialMedia?.twitter || ''}
@@ -1100,20 +1307,7 @@ function SiteTab({ config, setConfig }: { config: SiteConfig; setConfig: (config
                 socialMedia: { ...config.socialMedia, twitter: e.target.value }
               })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://twitter.com/..."
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">LinkedIn</label>
-            <input
-              type="url"
-              value={config.socialMedia?.linkedin || ''}
-              onChange={(e) => setConfig({
-                ...config,
-                socialMedia: { ...config.socialMedia, linkedin: e.target.value }
-              })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://linkedin.com/..."
+              placeholder="https://twitter.com/lemopx"
             />
           </div>
           <div>
@@ -1126,7 +1320,46 @@ function SiteTab({ config, setConfig }: { config: SiteConfig; setConfig: (config
                 socialMedia: { ...config.socialMedia, instagram: e.target.value }
               })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="https://instagram.com/..."
+              placeholder="https://instagram.com/lemopx"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">LinkedIn</label>
+            <input
+              type="url"
+              value={config.socialMedia?.linkedin || ''}
+              onChange={(e) => setConfig({
+                ...config,
+                socialMedia: { ...config.socialMedia, linkedin: e.target.value }
+              })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="https://linkedin.com/company/lemopx"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">YouTube</label>
+            <input
+              type="url"
+              value={config.socialMedia?.youtube || ''}
+              onChange={(e) => setConfig({
+                ...config,
+                socialMedia: { ...config.socialMedia, youtube: e.target.value }
+              })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="https://youtube.com/@lemopx"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Email</label>
+            <input
+              type="email"
+              value={config.socialMedia?.email || ''}
+              onChange={(e) => setConfig({
+                ...config,
+                socialMedia: { ...config.socialMedia, email: e.target.value }
+              })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="contact@lemopx.com"
             />
           </div>
         </div>

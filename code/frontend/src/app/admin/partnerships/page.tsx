@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { partnershipApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
+import { useConfirm } from '@/hooks/useConfirm';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 interface Partnership {
   id: string;
@@ -26,6 +28,7 @@ const statusLabels = {
 
 export default function PartnershipsPage() {
   const toast = useToast();
+  const { confirm, isOpen, options, handleConfirm, handleClose } = useConfirm();
   const [partnerships, setPartnerships] = useState<Partnership[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,7 +87,13 @@ export default function PartnershipsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个合作申请吗？此操作不可撤销。')) return;
+    const confirmed = await confirm({
+      title: '确认删除',
+      message: '确定要删除这个合作申请吗？此操作不可撤销。',
+      type: 'danger',
+    });
+
+    if (!confirmed) return;
 
     try {
       await partnershipApi.delete(id);
@@ -313,6 +322,18 @@ export default function PartnershipsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        onConfirm={handleConfirm}
+        title={options.title}
+        message={options.message}
+        confirmText={options.confirmText}
+        cancelText={options.cancelText}
+        type={options.type}
+      />
     </div>
   );
 }

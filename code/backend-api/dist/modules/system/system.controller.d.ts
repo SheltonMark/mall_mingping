@@ -6,34 +6,34 @@ export declare class SystemController {
     getConfig(key: string): Promise<{
         configValue: any;
         id: string;
-        updatedAt: Date;
         configKey: string;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }>;
     getConfigs(keys?: string): Promise<{
         configValue: any;
         id: string;
-        updatedAt: Date;
         configKey: string;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }[]>;
     updateConfig(dto: UpdateSystemConfigDto): Promise<{
         id: string;
-        updatedAt: Date;
         configKey: string;
         configValue: string | null;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }>;
     deleteConfig(key: string): Promise<{
         id: string;
-        updatedAt: Date;
         configKey: string;
         configValue: string | null;
         configType: string | null;
         description: string | null;
+        updatedAt: Date;
     }>;
     getHomepageConfig(): Promise<any>;
     updateHomepageConfig(data: any): Promise<{

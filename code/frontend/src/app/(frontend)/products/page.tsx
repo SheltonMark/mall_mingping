@@ -66,16 +66,17 @@ export default function ProductsPage() {
       skuId: defaultSKU.id,
       sku: defaultSKU.productCode,
       groupName: productGroup.groupNameZh,
-      translationKey: '',
+      translationKey: productGroup.translationKey || '',
       colorCombination: (defaultSKU as any).colorCombination || {},
       quantity: 1,
-      price: defaultSKU.price,
+      price: Number(defaultSKU.price) || 0,
       mainImage: defaultSKU.mainImage || '/images/placeholder.jpg',
     })
 
     // Show feedback
     setAddedItem(productGroup.id)
     setTimeout(() => setAddedItem(null), 2000)
+    toast.success(t('products.added_message'))
   }
 
   // Filter product groups by selected category

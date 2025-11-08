@@ -12,31 +12,48 @@ interface ScrollElement {
 }
 
 interface AboutConfig {
-  // 中文字段
-  company_name_zh?: string
-  company_intro_zh?: string
-  mission_zh?: string
-  vision_zh?: string
-  history_zh?: string
-  team_zh?: string
-  certifications_zh?: string
-  // 英文字段
-  company_name_en?: string
-  company_intro_en?: string
-  mission_en?: string
-  vision_en?: string
-  history_en?: string
-  team_en?: string
-  certifications_en?: string
-  // 图片字段
+  // Hero区域
   hero_image?: string
-  story_image_1?: string
-  story_image_2?: string
-  factory_images?: string[] | string
+  hero_title_line1_en?: string
+  hero_title_line1_zh?: string
+  hero_title_line2_en?: string
+  hero_title_line2_zh?: string
+  hero_subtitle_en?: string
+  hero_subtitle_zh?: string
+  // 品牌故事第一组
+  story1_image?: string
+  story1_title_en?: string
+  story1_title_zh?: string
+  story1_desc1_en?: string
+  story1_desc1_zh?: string
+  story1_desc2_en?: string
+  story1_desc2_zh?: string
+  // 品牌故事第二组
+  story2_image?: string
+  story2_title_en?: string
+  story2_title_zh?: string
+  story2_desc1_en?: string
+  story2_desc1_zh?: string
+  story2_desc2_en?: string
+  story2_desc2_zh?: string
+  // 工厂展示区
+  factory_carousel?: Array<{
+    type: 'image' | 'video'
+    url: string
+    label_en?: string
+    label_zh?: string
+    thumbnail?: string
+    settings?: {
+      autoplay?: boolean
+      loop?: boolean
+      muted?: boolean
+    }
+  }> | string
   // 联系方式
   contact_email?: string
   contact_phone?: string
-  contact_address?: string
+  contact_address_en?: string
+  contact_address_zh?: string
 }
 
 export default function AboutPage() {
@@ -55,7 +72,17 @@ export default function AboutPage() {
     message: ''
   })
 
-  const totalSlides = 3
+  // 获取工厂轮播数据
+  const getFactoryCarousel = () => {
+    if (!aboutConfig.factory_carousel) return []
+    if (Array.isArray(aboutConfig.factory_carousel)) {
+      return aboutConfig.factory_carousel
+    }
+    return []
+  }
+
+  const factoryCarousel = getFactoryCarousel()
+  const totalSlides = factoryCarousel.length > 0 ? factoryCarousel.length : 3 // 默认3个占位
 
   // 根据当前语言获取对应字段的辅助函数
   const getLocalizedField = (fieldName: string) => {
@@ -75,12 +102,13 @@ export default function AboutPage() {
       try {
         const config = await publicApi.system.getAbout()
 
-        // 如果 factory_images 是字符串，解析为数组
-        if (config.factory_images && typeof config.factory_images === 'string') {
+        // 如果 factory_carousel 是字符串，解析为数组
+        if (config.factory_carousel && typeof config.factory_carousel === 'string') {
           try {
-            config.factory_images = JSON.parse(config.factory_images)
+            config.factory_carousel = JSON.parse(config.factory_carousel)
           } catch (e) {
-            console.error('Failed to parse factory_images:', e)
+            console.error('Failed to parse factory_carousel:', e)
+            config.factory_carousel = []
           }
         }
 
@@ -174,7 +202,7 @@ export default function AboutPage() {
 
         {/* Hero Image with Overlay */}
         <img
-          src={aboutConfig.hero_image || "https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI"}
+          src={aboutConfig.hero_image?.startsWith('http') ? aboutConfig.hero_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.hero_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI"}
           className="absolute top-0 left-0 w-full h-full object-cover opacity-30"
           alt="Factory"
         />
@@ -209,10 +237,10 @@ export default function AboutPage() {
               animationFillMode: 'forwards'
             }}
           >
-            {t('about.hero_title_1')}
+            {getLocalizedField('hero_title_line1') || t('about.hero_title_1')}
             <br />
             <span className="text-primary italic" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}>
-              {t('about.hero_title_2')}
+              {getLocalizedField('hero_title_line2') || t('about.hero_title_2')}
             </span>
           </h1>
           <p
@@ -222,7 +250,7 @@ export default function AboutPage() {
               animationFillMode: 'forwards'
             }}
           >
-            {t('about.hero_subtitle')}
+            {getLocalizedField('hero_subtitle') || t('about.hero_subtitle')}
           </p>
         </div>
       </section>
@@ -257,18 +285,18 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-2 items-center gap-0">
           <div className="p-12 md:p-16 transition-all duration-700" data-scroll-id="story-1-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
-              {getLocalizedField('company_name') || t('about.craftsmanship_title')}
+              {getLocalizedField('story1_title') || t('about.craftsmanship_title')}
             </h3>
             <p className="text-lg md:text-2xl text-gray-600 mb-5">
-              {getLocalizedField('company_intro') || t('about.craftsmanship_desc_1')}
+              {getLocalizedField('story1_desc1') || t('about.craftsmanship_desc_1')}
             </p>
             <p className="text-lg md:text-2xl text-gray-600">
-              {getLocalizedField('mission') || t('about.craftsmanship_desc_2')}
+              {getLocalizedField('story1_desc2') || t('about.craftsmanship_desc_2')}
             </p>
           </div>
           <div className="h-96 md:h-auto aspect-video overflow-hidden transition-all duration-700" data-scroll-id="story-1-image">
             <img
-              src={aboutConfig.story_image_1 || "https://lh3.googleusercontent.com/aida-public/AB6AXuBfi1K58Srl81ZITOYuNmNL-H9Pjd-C1kWaLRJPCoJZ-jYYqOFcGoYZQP69NgzaY-yqU5h-8Bp-kWdtJGVHveeKt7P2pBYIQvaCbEQ1xW0Sn4ryEboi7EftPzrRvQ1DddRFioFynEpqDDrQApQTeV78224hX1hyWju2WhrDBOtUY1XjABYDRnh3lbTGTnTbmxSplwI2MbWJNUVb2ivKnIDZlnbOgnP0-Fez2ei6nvbZHyBMM13PPY-PM1OW0jKaPGJL5JioexDR0MZJ"}
+              src={aboutConfig.story1_image?.startsWith('http') ? aboutConfig.story1_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.story1_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuBfi1K58Srl81ZITOYuNmNL-H9Pjd-C1kWaLRJPCoJZ-jYYqOFcGoYZQP69NgzaY-yqU5h-8Bp-kWdtJGVHveeKt7P2pBYIQvaCbEQ1xW0Sn4ryEboi7EftPzrRvQ1DddRFioFynEpqDDrQApQTeV78224hX1hyWju2WhrDBOtUY1XjABYDRnh3lbTGTnTbmxSplwI2MbWJNUVb2ivKnIDZlnbOgnP0-Fez2ei6nvbZHyBMM13PPY-PM1OW0jKaPGJL5JioexDR0MZJ"}
               alt="Craftsmanship"
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-600"
             />
@@ -278,15 +306,21 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-2 items-center gap-0">
           <div className="h-96 md:h-auto aspect-video overflow-hidden order-2 md:order-1 transition-all duration-700" data-scroll-id="story-2-image">
             <img
-              src={aboutConfig.story_image_2 || "https://lh3.googleusercontent.com/aida-public/AB6AXuCwU9EPbCeWtPXd3LnWWxDR3m0NWwkvRXgwA6Ydjbwd_q39jNDNsSuLz7gTVDC9E3moGGwTQ8gDJ-qeenFCorzD6oeFBTXpqffoWd0usjGwznRbQkT8R8_cW-9EntOyzc2E2JlfiZj4q0Tc2VGaTL4ugwPQqFCSqa44CdgnV7dp7k41NenFhCRk1uQ6gr8MlDM8aifbSFgRvsDUHFTiQMyCyNHUlj6Q64AqfpSBsWtw0FHFGDOujY-kWQ-8fKO6NI11mJ9enoREtIPe"}
+              src={aboutConfig.story2_image?.startsWith('http') ? aboutConfig.story2_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.story2_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuCwU9EPbCeWtPXd3LnWWxDR3m0NWwkvRXgwA6Ydjbwd_q39jNDNsSuLz7gTVDC9E3moGGwTQ8gDJ-qeenFCorzD6oeFBTXpqffoWd0usjGwznRbQkT8R8_cW-9EntOyzc2E2JlfiZj4q0Tc2VGaTL4ugwPQqFCSqa44CdgnV7dp7k41NenFhCRk1uQ6gr8MlDM8aifbSFgRvsDUHFTiQMyCyNHUlj6Q64AqfpSBsWtw0FHFGDOujY-kWQ-8fKO6NI11mJ9enoREtIPe"}
               alt="Factory Direct"
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-600"
             />
           </div>
           <div className="p-12 md:p-16 order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
-            <h3 className="text-4xl md:text-5xl font-bold mb-6">{t('about.factory_supply_title')}</h3>
-            <p className="text-lg md:text-2xl text-gray-600 mb-5">{t('about.factory_supply_desc_1')}</p>
-            <p className="text-lg md:text-2xl text-gray-600">{t('about.factory_supply_desc_2')}</p>
+            <h3 className="text-4xl md:text-5xl font-bold mb-6">
+              {getLocalizedField('story2_title') || t('about.factory_supply_title')}
+            </h3>
+            <p className="text-lg md:text-2xl text-gray-600 mb-5">
+              {getLocalizedField('story2_desc1') || t('about.factory_supply_desc_1')}
+            </p>
+            <p className="text-lg md:text-2xl text-gray-600">
+              {getLocalizedField('story2_desc2') || t('about.factory_supply_desc_2')}
+            </p>
           </div>
         </div>
       </section>
@@ -364,22 +398,64 @@ export default function AboutPage() {
                 className="flex transition-transform duration-500 ease-out"
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
-                {[
-                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbiIeS_8I9cg8G2DxKoNSd2c4etQEF_eM1nrAXWr0fMOS5V9nIi-7waq9GJ1zVBS5CYwejTNYxnqdeDa6f7z6akHTU1fzmm-Q_XaSUWF7VQO5JuN63-WE_ThhDV89_hq72MKk950Cc_D8dtl4HYUhmfjPrRMzJsjFq_Ks1gB91gY6MMk8Eg-k2cmp5lX_lowkNXZ6iyx-ZtZrlq-9CriHkS0R0EN-sm3Yg_0lwz4K3nZIj9F-zDq3e9qRP6QOMxfY_827bfXZ4pJWt', label: t('about.production_line_a') },
-                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: t('about.quality_control') },
-                  { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: t('about.rd_center') }
-                ].map((item, idx) => (
-                  <div key={idx} className="min-w-full aspect-video">
-                    <div className="relative h-full overflow-hidden">
-                      <img src={item.img} alt={item.label} className="w-full h-full object-cover transition-transform duration-600 hover:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                      <div className="absolute bottom-12 left-12 text-white">
-                        <div className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-2">Facility</div>
-                        <div className="text-4xl md:text-5xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>{item.label}</div>
+                {factoryCarousel.length > 0 ? (
+                  factoryCarousel.map((item, idx) => {
+                    const label = language === 'zh' ? (item.label_zh || item.label_en) : (item.label_en || item.label_zh)
+                    const mediaUrl = item.url?.startsWith('http') ? item.url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.url}`
+
+                    return (
+                      <div key={idx} className="min-w-full aspect-video">
+                        <div className="relative h-full overflow-hidden">
+                          {item.type === 'video' ? (
+                            <video
+                              src={mediaUrl}
+                              className="w-full h-full object-cover"
+                              autoPlay={item.settings?.autoplay}
+                              loop={item.settings?.loop}
+                              muted={item.settings?.muted}
+                              playsInline
+                            />
+                          ) : (
+                            <img
+                              src={mediaUrl}
+                              alt={label || 'Factory'}
+                              className="w-full h-full object-cover transition-transform duration-600 hover:scale-105"
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                          {label && (
+                            <div className="absolute bottom-12 left-12 text-white">
+                              <div className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-2">
+                                {item.type === 'video' ? 'Video' : 'Facility'}
+                              </div>
+                              <div className="text-4xl md:text-5xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
+                                {label}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  // 默认占位内容（如果没有配置）
+                  [
+                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbiIeS_8I9cg8G2DxKoNSd2c4etQEF_eM1nrAXWr0fMOS5V9nIi-7waq9GJ1zVBS5CYwejTNYxnqdeDa6f7z6akHTU1fzmm-Q_XaSUWF7VQO5JuN63-WE_ThhDV89_hq72MKk950Cc_D8dtl4HYUhmfjPrRMzJsjFq_Ks1gB91gY6MMk8Eg-k2cmp5lX_lowkNXZ6iyx-ZtZrlq-9CriHkS0R0EN-sm3Yg_0lwz4K3nZIj9F-zDq3e9qRP6QOMxfY_827bfXZ4pJWt', label: t('about.production_line_a') },
+                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: t('about.quality_control') },
+                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: t('about.rd_center') }
+                  ].map((item, idx) => (
+                    <div key={idx} className="min-w-full aspect-video">
+                      <div className="relative h-full overflow-hidden">
+                        <img src={item.img} alt={item.label} className="w-full h-full object-cover transition-transform duration-600 hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <div className="absolute bottom-12 left-12 text-white">
+                          <div className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-2">Facility</div>
+                          <div className="text-4xl md:text-5xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>{item.label}</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 
@@ -441,7 +517,7 @@ export default function AboutPage() {
               {
                 icon: MapPin,
                 title: t('about.contact_address'),
-                content: aboutConfig.contact_address || 'Dongyang, Zhejiang, China',
+                content: getLocalizedField('contact_address') || 'Dongyang, Zhejiang, China',
                 href: '#'
               }
             ].map((contact, idx) => {

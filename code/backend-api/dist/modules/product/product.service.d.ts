@@ -10,15 +10,15 @@ export declare class ProductService {
     constructor(prisma: PrismaService, excelService: ExcelService, fileUploadService: FileUploadService);
     createCategory(dto: CreateCategoryDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        sortOrder: number;
         code: string;
         nameZh: string;
         nameEn: string;
         icon: string | null;
-        sortOrder: number;
         isAutoCreated: boolean;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     findAllCategories(activeOnly?: boolean): Promise<({
         _count: {
@@ -26,15 +26,15 @@ export declare class ProductService {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        sortOrder: number;
         code: string;
         nameZh: string;
         nameEn: string;
         icon: string | null;
-        sortOrder: number;
         isAutoCreated: boolean;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findOneCategory(id: string): Promise<{
         productGroups: ({
@@ -43,9 +43,9 @@ export declare class ProductService {
             };
         } & {
             id: string;
-            sortOrder: number;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             prefix: string;
             groupNameZh: string;
             groupNameEn: string;
@@ -60,62 +60,62 @@ export declare class ProductService {
             specCount: number;
             mainImage: string | null;
             isPublished: boolean;
-            status: string;
+            sortOrder: number;
         })[];
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        sortOrder: number;
         code: string;
         nameZh: string;
         nameEn: string;
         icon: string | null;
-        sortOrder: number;
         isAutoCreated: boolean;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateCategory(id: string, dto: UpdateCategoryDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        sortOrder: number;
         code: string;
         nameZh: string;
         nameEn: string;
         icon: string | null;
-        sortOrder: number;
         isAutoCreated: boolean;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     removeCategory(id: string): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        sortOrder: number;
         code: string;
         nameZh: string;
         nameEn: string;
         icon: string | null;
-        sortOrder: number;
         isAutoCreated: boolean;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     createProductGroup(dto: CreateProductGroupDto): Promise<{
         category: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            sortOrder: number;
             code: string;
             nameZh: string;
             nameEn: string;
             icon: string | null;
-            sortOrder: number;
             isAutoCreated: boolean;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         } | null;
     } & {
         id: string;
-        sortOrder: number;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         prefix: string;
         groupNameZh: string;
         groupNameEn: string;
@@ -130,7 +130,7 @@ export declare class ProductService {
         specCount: number;
         mainImage: string | null;
         isPublished: boolean;
-        status: string;
+        sortOrder: number;
     }>;
     findAllProductGroups(query?: {
         search?: string;
@@ -142,34 +142,34 @@ export declare class ProductService {
         data: ({
             category: {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                sortOrder: number;
                 code: string;
                 nameZh: string;
                 nameEn: string;
                 icon: string | null;
-                sortOrder: number;
                 isAutoCreated: boolean;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             } | null;
             skus: {
                 id: string;
+                productSpec: import("@prisma/client/runtime/library").JsonValue;
+                additionalAttributes: import("@prisma/client/runtime/library").JsonValue;
+                price: import("@prisma/client/runtime/library").Decimal | null;
                 productCode: string;
                 productName: string;
                 title: string | null;
                 subtitle: string | null;
                 brand: string | null;
                 specification: string | null;
-                productSpec: import("@prisma/client/runtime/library").JsonValue;
-                additionalAttributes: import("@prisma/client/runtime/library").JsonValue;
-                price: import("@prisma/client/runtime/library").Decimal | null;
                 images: import("@prisma/client/runtime/library").JsonValue;
             }[];
         } & {
             id: string;
-            sortOrder: number;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             prefix: string;
             groupNameZh: string;
             groupNameEn: string;
@@ -184,7 +184,7 @@ export declare class ProductService {
             specCount: number;
             mainImage: string | null;
             isPublished: boolean;
-            status: string;
+            sortOrder: number;
         })[];
         meta: {
             total: number;
@@ -196,21 +196,24 @@ export declare class ProductService {
     findOneProductGroup(id: string): Promise<{
         category: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            sortOrder: number;
             code: string;
             nameZh: string;
             nameEn: string;
             icon: string | null;
-            sortOrder: number;
             isAutoCreated: boolean;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         } | null;
         skus: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.SkuStatus;
+            productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+            additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+            price: import("@prisma/client/runtime/library").Decimal | null;
             groupId: string;
             productCode: string;
             productName: string;
@@ -218,9 +221,6 @@ export declare class ProductService {
             subtitle: string | null;
             brand: string | null;
             specification: string | null;
-            productSpec: import("@prisma/client/runtime/library").JsonValue | null;
-            additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
-            price: import("@prisma/client/runtime/library").Decimal | null;
             images: import("@prisma/client/runtime/library").JsonValue | null;
             video: import("@prisma/client/runtime/library").JsonValue | null;
             useSharedVideo: boolean;
@@ -228,9 +228,9 @@ export declare class ProductService {
         }[];
     } & {
         id: string;
-        sortOrder: number;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         prefix: string;
         groupNameZh: string;
         groupNameEn: string;
@@ -245,26 +245,26 @@ export declare class ProductService {
         specCount: number;
         mainImage: string | null;
         isPublished: boolean;
-        status: string;
+        sortOrder: number;
     }>;
     updateProductGroup(id: string, dto: UpdateProductGroupDto): Promise<{
         category: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            sortOrder: number;
             code: string;
             nameZh: string;
             nameEn: string;
             icon: string | null;
-            sortOrder: number;
             isAutoCreated: boolean;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         } | null;
     } & {
         id: string;
-        sortOrder: number;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         prefix: string;
         groupNameZh: string;
         groupNameEn: string;
@@ -279,13 +279,13 @@ export declare class ProductService {
         specCount: number;
         mainImage: string | null;
         isPublished: boolean;
-        status: string;
+        sortOrder: number;
     }>;
     removeProductGroup(id: string): Promise<{
         id: string;
-        sortOrder: number;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
         prefix: string;
         groupNameZh: string;
         groupNameEn: string;
@@ -300,27 +300,27 @@ export declare class ProductService {
         specCount: number;
         mainImage: string | null;
         isPublished: boolean;
-        status: string;
+        sortOrder: number;
     }>;
     createProductSku(dto: CreateProductSkuDto): Promise<{
         group: {
             category: {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                sortOrder: number;
                 code: string;
                 nameZh: string;
                 nameEn: string;
                 icon: string | null;
-                sortOrder: number;
                 isAutoCreated: boolean;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             } | null;
         } & {
             id: string;
-            sortOrder: number;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             prefix: string;
             groupNameZh: string;
             groupNameEn: string;
@@ -335,13 +335,16 @@ export declare class ProductService {
             specCount: number;
             mainImage: string | null;
             isPublished: boolean;
-            status: string;
+            sortOrder: number;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
         productName: string;
@@ -349,9 +352,6 @@ export declare class ProductService {
         subtitle: string | null;
         brand: string | null;
         specification: string | null;
-        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
-        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
-        price: import("@prisma/client/runtime/library").Decimal | null;
         images: import("@prisma/client/runtime/library").JsonValue | null;
         video: import("@prisma/client/runtime/library").JsonValue | null;
         useSharedVideo: boolean;
@@ -368,21 +368,21 @@ export declare class ProductService {
             group: {
                 category: {
                     id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    sortOrder: number;
                     code: string;
                     nameZh: string;
                     nameEn: string;
                     icon: string | null;
-                    sortOrder: number;
                     isAutoCreated: boolean;
-                    isActive: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 } | null;
             } & {
                 id: string;
-                sortOrder: number;
                 createdAt: Date;
                 updatedAt: Date;
+                status: string;
                 prefix: string;
                 groupNameZh: string;
                 groupNameEn: string;
@@ -397,13 +397,16 @@ export declare class ProductService {
                 specCount: number;
                 mainImage: string | null;
                 isPublished: boolean;
-                status: string;
+                sortOrder: number;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.SkuStatus;
+            productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+            additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+            price: import("@prisma/client/runtime/library").Decimal | null;
             groupId: string;
             productCode: string;
             productName: string;
@@ -411,9 +414,6 @@ export declare class ProductService {
             subtitle: string | null;
             brand: string | null;
             specification: string | null;
-            productSpec: import("@prisma/client/runtime/library").JsonValue | null;
-            additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
-            price: import("@prisma/client/runtime/library").Decimal | null;
             images: import("@prisma/client/runtime/library").JsonValue | null;
             video: import("@prisma/client/runtime/library").JsonValue | null;
             useSharedVideo: boolean;
@@ -430,21 +430,21 @@ export declare class ProductService {
         group: {
             category: {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                sortOrder: number;
                 code: string;
                 nameZh: string;
                 nameEn: string;
                 icon: string | null;
-                sortOrder: number;
                 isAutoCreated: boolean;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             } | null;
         } & {
             id: string;
-            sortOrder: number;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             prefix: string;
             groupNameZh: string;
             groupNameEn: string;
@@ -459,13 +459,16 @@ export declare class ProductService {
             specCount: number;
             mainImage: string | null;
             isPublished: boolean;
-            status: string;
+            sortOrder: number;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
         productName: string;
@@ -473,9 +476,6 @@ export declare class ProductService {
         subtitle: string | null;
         brand: string | null;
         specification: string | null;
-        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
-        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
-        price: import("@prisma/client/runtime/library").Decimal | null;
         images: import("@prisma/client/runtime/library").JsonValue | null;
         video: import("@prisma/client/runtime/library").JsonValue | null;
         useSharedVideo: boolean;
@@ -485,21 +485,21 @@ export declare class ProductService {
         group: {
             category: {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                sortOrder: number;
                 code: string;
                 nameZh: string;
                 nameEn: string;
                 icon: string | null;
-                sortOrder: number;
                 isAutoCreated: boolean;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
             } | null;
         } & {
             id: string;
-            sortOrder: number;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             prefix: string;
             groupNameZh: string;
             groupNameEn: string;
@@ -514,13 +514,16 @@ export declare class ProductService {
             specCount: number;
             mainImage: string | null;
             isPublished: boolean;
-            status: string;
+            sortOrder: number;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
         productName: string;
@@ -528,9 +531,6 @@ export declare class ProductService {
         subtitle: string | null;
         brand: string | null;
         specification: string | null;
-        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
-        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
-        price: import("@prisma/client/runtime/library").Decimal | null;
         images: import("@prisma/client/runtime/library").JsonValue | null;
         video: import("@prisma/client/runtime/library").JsonValue | null;
         useSharedVideo: boolean;
@@ -541,6 +541,9 @@ export declare class ProductService {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.SkuStatus;
+        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
+        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
+        price: import("@prisma/client/runtime/library").Decimal | null;
         groupId: string;
         productCode: string;
         productName: string;
@@ -548,9 +551,6 @@ export declare class ProductService {
         subtitle: string | null;
         brand: string | null;
         specification: string | null;
-        productSpec: import("@prisma/client/runtime/library").JsonValue | null;
-        additionalAttributes: import("@prisma/client/runtime/library").JsonValue | null;
-        price: import("@prisma/client/runtime/library").Decimal | null;
         images: import("@prisma/client/runtime/library").JsonValue | null;
         video: import("@prisma/client/runtime/library").JsonValue | null;
         useSharedVideo: boolean;

@@ -11,19 +11,19 @@ export declare class CustomerService {
             englishName: string;
         } | null;
     } & {
-        id: string;
-        email: string;
         password: string | null;
+        email: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         contactPerson: string | null;
         phone: string | null;
         address: string | null;
         country: string | null;
+        salespersonId: string | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        salespersonId: string | null;
     }>;
     findAll(query?: {
         search?: string;
@@ -43,19 +43,19 @@ export declare class CustomerService {
                 orders: number;
             };
         } & {
-            id: string;
-            email: string;
             password: string | null;
+            email: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             name: string;
             contactPerson: string | null;
             phone: string | null;
             address: string | null;
             country: string | null;
+            salespersonId: string | null;
             customerType: import("@prisma/client").$Enums.CustomerType;
             status: string;
-            createdAt: Date;
-            updatedAt: Date;
-            salespersonId: string | null;
         })[];
         meta: {
             total: number;
@@ -70,8 +70,8 @@ export declare class CustomerService {
             totalAmount: number | import("@prisma/client/runtime/library").Decimal;
         };
         salesperson: {
-            id: string;
             email: string | null;
+            id: string;
             phone: string | null;
             accountId: string;
             chineseName: string;
@@ -84,13 +84,13 @@ export declare class CustomerService {
             };
         } & {
             id: string;
-            customerType: import("@prisma/client").$Enums.CustomerType;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
             salespersonId: string;
-            customerId: string;
+            customerType: import("@prisma/client").$Enums.CustomerType;
+            status: string;
             totalAmount: import("@prisma/client/runtime/library").Decimal | null;
+            customerId: string;
             orderNumber: string;
             orderType: import("@prisma/client").$Enums.OrderType;
             orderDate: Date;
@@ -99,19 +99,19 @@ export declare class CustomerService {
         _count: {
             orders: number;
         };
-        id: string;
-        email: string;
         password: string | null;
+        email: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         contactPerson: string | null;
         phone: string | null;
         address: string | null;
         country: string | null;
+        salespersonId: string | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        salespersonId: string | null;
     }>;
     update(id: string, updateCustomerDto: UpdateCustomerDto): Promise<{
         salesperson: {
@@ -121,42 +121,42 @@ export declare class CustomerService {
             englishName: string;
         } | null;
     } & {
-        id: string;
-        email: string;
         password: string | null;
+        email: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         contactPerson: string | null;
         phone: string | null;
         address: string | null;
         country: string | null;
+        salespersonId: string | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        salespersonId: string | null;
     }>;
     remove(id: string): Promise<{
-        id: string;
-        email: string;
         password: string | null;
+        email: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         contactPerson: string | null;
         phone: string | null;
         address: string | null;
         country: string | null;
+        salespersonId: string | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        salespersonId: string | null;
     }>;
     assignSalesperson(customerId: string, salespersonId: string): Promise<{
         salesperson: {
-            id: string;
             email: string | null;
-            phone: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            phone: string | null;
             accountId: string;
             chineseName: string;
             englishName: string;
@@ -164,18 +164,18 @@ export declare class CustomerService {
             avatar: string | null;
         } | null;
     } & {
-        id: string;
-        email: string;
         password: string | null;
+        email: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         contactPerson: string | null;
         phone: string | null;
         address: string | null;
         country: string | null;
+        salespersonId: string | null;
         customerType: import("@prisma/client").$Enums.CustomerType;
         status: string;
-        createdAt: Date;
-        updatedAt: Date;
-        salespersonId: string | null;
     }>;
 }

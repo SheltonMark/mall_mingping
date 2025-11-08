@@ -2,9 +2,30 @@
 
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function Footer() {
   const { t } = useLanguage()
+  const [socialMedia, setSocialMedia] = useState<any>({})
+
+  // 加载社交媒体配置
+  useEffect(() => {
+    const loadSocialMedia = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/site`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.social_media) {
+            setSocialMedia(typeof data.social_media === 'string' ? JSON.parse(data.social_media) : data.social_media)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load social media config:', error)
+      }
+    }
+    loadSocialMedia()
+  }, [])
 
   return (
     <footer
@@ -115,8 +136,83 @@ export default function Footer() {
         </div>
 
         {/* Footer Bottom */}
-        <div className="border-t border-neutral-800 pt-12 text-center">
-          <p className="text-neutral-600 text-sm">
+        <div className="border-t border-neutral-800 pt-12">
+          {/* Social Media Icons */}
+          <div className="flex justify-center gap-4 mb-8">
+            <a
+              href={socialMedia.facebook || '#'}
+              target={socialMedia.facebook ? '_blank' : undefined}
+              rel={socialMedia.facebook ? 'noopener noreferrer' : undefined}
+              onClick={(e) => !socialMedia.facebook && e.preventDefault()}
+              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
+                socialMedia.facebook ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
+              }`}
+              aria-label="Facebook"
+            >
+              <Facebook size={18} />
+            </a>
+            <a
+              href={socialMedia.twitter || '#'}
+              target={socialMedia.twitter ? '_blank' : undefined}
+              rel={socialMedia.twitter ? 'noopener noreferrer' : undefined}
+              onClick={(e) => !socialMedia.twitter && e.preventDefault()}
+              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
+                socialMedia.twitter ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
+              }`}
+              aria-label="Twitter"
+            >
+              <Twitter size={18} />
+            </a>
+            <a
+              href={socialMedia.instagram || '#'}
+              target={socialMedia.instagram ? '_blank' : undefined}
+              rel={socialMedia.instagram ? 'noopener noreferrer' : undefined}
+              onClick={(e) => !socialMedia.instagram && e.preventDefault()}
+              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
+                socialMedia.instagram ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
+              }`}
+              aria-label="Instagram"
+            >
+              <Instagram size={18} />
+            </a>
+            <a
+              href={socialMedia.linkedin || '#'}
+              target={socialMedia.linkedin ? '_blank' : undefined}
+              rel={socialMedia.linkedin ? 'noopener noreferrer' : undefined}
+              onClick={(e) => !socialMedia.linkedin && e.preventDefault()}
+              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
+                socialMedia.linkedin ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
+              }`}
+              aria-label="LinkedIn"
+            >
+              <Linkedin size={18} />
+            </a>
+            <a
+              href={socialMedia.youtube || '#'}
+              target={socialMedia.youtube ? '_blank' : undefined}
+              rel={socialMedia.youtube ? 'noopener noreferrer' : undefined}
+              onClick={(e) => !socialMedia.youtube && e.preventDefault()}
+              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
+                socialMedia.youtube ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
+              }`}
+              aria-label="YouTube"
+            >
+              <Youtube size={18} />
+            </a>
+            <a
+              href={socialMedia.email ? `mailto:${socialMedia.email}` : '#'}
+              onClick={(e) => !socialMedia.email && e.preventDefault()}
+              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
+                socialMedia.email ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
+              }`}
+              aria-label="Email"
+            >
+              <Mail size={18} />
+            </a>
+          </div>
+
+          {/* Copyright */}
+          <p className="text-neutral-600 text-sm text-center">
             {t('footer.copyright') || '© 2025 LEMOPX. Crafted with excellence in Dongyang.'}
           </p>
         </div>

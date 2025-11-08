@@ -184,6 +184,15 @@ export const orderApi = {
     }),
 };
 
+// ============ 询价单管理（客户提交的订单表单）============
+export const orderFormApi = {
+  // 获取所有询价单 - ✅ 管理后台可用
+  getAll: () => request<any>('/order-forms/admin/all'),
+
+  // 获取单个询价单 - ✅ 管理后台可用（复用客户端点，需要admin权限）
+  getOne: (id: string) => request<any>(`/order-forms/${id}`),
+};
+
 // ============ 产品管理 ============
 export const productApi = {
   // 分类

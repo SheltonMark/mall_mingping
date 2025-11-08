@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, User, ShoppingCart, ChevronDown, FileText, LogOut, Globe } from 'lucide-react'
+import { Search, User, ShoppingCart, ChevronDown, LogOut, Globe } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
+import { useAuth } from '@/context/AuthContext'
+import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 
 export default function Navbar() {
@@ -12,11 +14,10 @@ export default function Navbar() {
   const router = useRouter()
   const toast = useToast()
   const { language, setLanguage, t } = useLanguage()
+  const { customer, isAuthenticated, logout } = useAuth()
+  const { totalItems } = useCart()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-
-  // Mock login state - in real app, this would come from auth context/state management
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,9 +30,8 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path
 
   const handleLogout = () => {
-    setIsLoggedIn(false)
+    logout()
     setIsUserMenuOpen(false)
-    router.push('/')
     toast.success('Logged out successfully!')
   }
 
@@ -113,34 +113,26 @@ export default function Navbar() {
                 <User className="text-neutral-600 hover:text-primary transition-colors" size={18} />
               </button>
 
-              {/* Dropdown Menu - PRESERVED FUNCTIONALITY */}
+              {/* Dropdown Menu */}
               {isUserMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-large border border-neutral-200 dark:border-gray-700 py-2 z-50">
-                  {isLoggedIn ? (
+                  {isAuthenticated ? (
                     <>
                       <div className="px-4 py-3 border-b border-neutral-200 dark:border-gray-700">
                         <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                          {t('nav.account')}: 3579
+                          {customer?.name || customer?.email}
                         </p>
                         <p className="text-xs text-neutral-500 dark:text-gray-400">
-                          {t('order_confirm.name_qianqian')}
+                          {customer?.email}
                         </p>
                       </div>
-                      <Link
-                        href="/customer-management"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gold-50 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4" />
-                        <span>{t('nav.customer_profile')}</span>
-                      </Link>
                       <Link
                         href="/profile"
                         className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gold-50 dark:hover:bg-gray-700 transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        <FileText className="w-4 h-4" />
-                        <span>{t('nav.my_orders')}</span>
+                        <User className="w-4 h-4" />
+                        <span>{t('nav.my_account')}</span>
                       </Link>
                       <button
                         onClick={handleLogout}
@@ -171,9 +163,11 @@ export default function Navbar() {
               style={{ boxShadow: 'var(--shadow-medium)' }}
             >
               <ShoppingCart className="text-white" size={18} />
-              <span className="absolute -top-1 -right-1 flex items-center justify-center w-[18px] h-[18px] bg-red-500 text-white rounded-full text-[0.625rem] font-bold border-2 border-white">
-                3
-              </span>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 flex items-center justify-center w-[18px] h-[18px] bg-red-500 text-white rounded-full text-[0.625rem] font-bold border-2 border-white">
+                  {totalItems}
+                </span>
+              )}
             </Link>
           </div>
         </div>

@@ -9,26 +9,6 @@ export class CustomerRegisterDto {
   @IsNotEmpty({ message: 'Password is required' })
   @MinLength(6, { message: 'Password must be at least 6 characters' })
   password: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'Company name is required' })
-  name: string; // Company name
-
-  @IsString()
-  @IsOptional()
-  contactPerson?: string; // Contact person name
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
-  @IsOptional()
-  address?: string;
-
-  @IsString()
-  @IsOptional()
-  country?: string;
 }
 
 export class CustomerLoginDto {
