@@ -219,6 +219,16 @@ export default function EditSkuPage() {
     if (!sku) return;
 
     // 验证必填字段
+    if (!sku.productCode || !sku.productCode.trim()) {
+      toast.error('请输入品号');
+      return;
+    }
+
+    if (!sku.productName || !sku.productName.trim()) {
+      toast.error('请输入品名');
+      return;
+    }
+
     if (!sku.price || Number(sku.price) <= 0) {
       toast.error('请输入有效的价格');
       return;
@@ -228,6 +238,8 @@ export default function EditSkuPage() {
     try {
       // 准备更新数据
       const updateData: any = {
+        productCode: sku.productCode,
+        productName: sku.productName,
         price: Number(sku.price),
         status: sku.status,
         images: images, // ✅ 直接传数组对象，后端要求 @IsObject()
@@ -606,25 +618,27 @@ export default function EditSkuPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between">
               <h2 className="text-lg font-bold text-gray-900">基本信息</h2>
 
-              {/* 品号 (只读) */}
+              {/* 品号 (可编辑) */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">品号</label>
+                <label className="block text-sm font-bold text-gray-800 mb-2">品号 *</label>
                 <input
                   type="text"
                   value={sku.productCode}
-                  disabled
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-500 font-mono cursor-not-allowed"
+                  onChange={(e) => setSku({ ...sku, productCode: e.target.value })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-mono"
+                  placeholder="例如: MP001-001"
                 />
               </div>
 
-              {/* 品名 (只读) */}
+              {/* 品名 (可编辑) */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">品名</label>
+                <label className="block text-sm font-bold text-gray-800 mb-2">品名 *</label>
                 <input
                   type="text"
                   value={sku.productName}
-                  disabled
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                  onChange={(e) => setSku({ ...sku, productName: e.target.value })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="例如: 多功能拖把"
                 />
               </div>
 
