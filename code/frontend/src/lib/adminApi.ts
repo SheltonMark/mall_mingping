@@ -13,6 +13,14 @@ const getToken = () => {
   return null;
 };
 
+// 过滤 undefined、null、空字符串的辅助函数
+const filterParams = (params: any) => {
+  if (!params) return {};
+  return Object.fromEntries(
+    Object.entries(params).filter(([_, value]) => value !== undefined && value !== null && value !== '')
+  );
+};
+
 // 通用请求函数
 async function request<T>(
   endpoint: string,
@@ -71,7 +79,7 @@ export const authApi = {
 // ============ 业务员管理 ============
 export const salespersonApi = {
   getAll: (params?: { search?: string; page?: number; limit?: number }) => {
-    const query = new URLSearchParams(params as any).toString();
+    const query = new URLSearchParams(filterParams(params)).toString();
     return request<any>(`/salespersons${query ? `?${query}` : ''}`);
   },
 
@@ -98,7 +106,7 @@ export const salespersonApi = {
 // ============ 客户管理 ============
 export const customerApi = {
   getAll: (params?: { search?: string; type?: string; salespersonId?: string; page?: number; limit?: number }) => {
-    const query = new URLSearchParams(params as any).toString();
+    const query = new URLSearchParams(filterParams(params)).toString();
     return request<any>(`/customers${query ? `?${query}` : ''}`);
   },
 
@@ -134,7 +142,7 @@ export const customerApi = {
 export const orderApi = {
   // 获取订单列表 - ✅ 管理后台可用
   getAll: (params?: any) => {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(filterParams(params)).toString();
     return request<any>(`/orders${query ? `?${query}` : ''}`);
   },
 
@@ -226,7 +234,7 @@ export const productApi = {
 
   // 产品组
   getGroups: (params?: any) => {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(filterParams(params)).toString();
     return request<any>(`/products/groups${query ? `?${query}` : ''}`);
   },
 
@@ -251,7 +259,7 @@ export const productApi = {
 
   // SKU
   getSkus: (params?: any) => {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(filterParams(params)).toString();
     return request<any>(`/products/skus${query ? `?${query}` : ''}`);
   },
 
@@ -310,7 +318,7 @@ export const productApi = {
 // ============ 合作申请管理 ============
 export const partnershipApi = {
   getAll: (params?: any) => {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(filterParams(params)).toString();
     return request<any>(`/partnerships${query ? `?${query}` : ''}`);
   },
 
