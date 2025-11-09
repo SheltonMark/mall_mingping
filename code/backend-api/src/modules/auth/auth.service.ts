@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, ChangePasswordDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -112,5 +112,41 @@ export class AuthService {
     };
 
     return this.jwtService.sign(payload);
+  }
+
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ) {
+    const { oldPassword, newPassword } = changePasswordDto;
+
+    // Find admin
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: userId },
+    });
+
+    if (!admin) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Verify old password
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, admin.password);
+
+    if (!isOldPasswordValid) {
+      throw new BadRequestException('旧密码不正确');
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await this.prisma.admin.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword },
+    });
+
+    return {
+      message: '密码修改成功',
+    };
   }
 }

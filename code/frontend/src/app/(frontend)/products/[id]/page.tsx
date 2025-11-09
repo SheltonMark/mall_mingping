@@ -9,45 +9,25 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { productApi, type ProductGroup, type ProductSku } from '@/lib/publicApi'
-import { parseColorPart } from '@/lib/pantoneColors'
 
-// 解析部件化颜色属性 (Apple风格渐进式)
-interface ComponentColor {
-  componentCode: string // [A], [B], [C]
-  componentName: string // 拖把杆, 刷头, 抹布
-  colorSchemes: string[][] // [["喷塑:3C冷灰", "塑件:10C冷灰"], ["喷塑:黑色", "塑件:白色"]]
+// 解析部件化颜色属性 (多方案版本)
+interface ColorPart {
+  part: string;       // 部件名称，如 "喷塑"
+  color: string;      // 颜色描述，如 "3C冷灰"
+  hexColor: string;   // 十六进制颜色（必填）
 }
 
-function parseComponentColors(additionalAttributes: string | null): ComponentColor[] {
-  if (!additionalAttributes) return []
+interface ColorScheme {
+  id: string;         // 方案唯一ID
+  name: string;       // 方案名称，如 "方案1"
+  colors: ColorPart[]; // 部件颜色数组
+}
 
-  const components: ComponentColor[] = []
-  // 匹配格式: [A] 部件名 规格 颜色方案1 | 颜色方案2; [B] ...
-  const componentRegex = /\[([A-Z])\]\s*([^\s]+)[^;]*?([^;]+);?/g
-
-  let match
-  while ((match = componentRegex.exec(additionalAttributes)) !== null) {
-    const componentCode = match[1]
-    const componentName = match[2]
-    const colorPart = match[3]
-
-    // 提取颜色方案 (用 | 分割)
-    const schemes = colorPart.split('|').map(scheme => {
-      // 提取每个方案中的所有颜色部分 (例如: "喷塑:3C冷灰+塑件:10C冷灰")
-      const parts = scheme.split('+').map(p => p.trim()).filter(Boolean)
-      return parts
-    }).filter(scheme => scheme.length > 0)
-
-    if (schemes.length > 0) {
-      components.push({
-        componentCode,
-        componentName,
-        colorSchemes: schemes
-      })
-    }
-  }
-
-  return components
+interface ComponentColor {
+  componentCode: string   // [A], [B], [C]
+  componentName: string   // 拖把杆, 刷头, 抹布
+  spec?: string           // 规格描述（可选）
+  colorSchemes: ColorScheme[] // 多个配色方案
 }
 
 type ViewMode = 'gallery' | 'video' | 'params'
@@ -72,9 +52,10 @@ export default function ProductDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [images, setImages] = useState<string[]>([])
 
-  // Apple风格渐进式颜色选择状态
+  // Apple风格渐进式颜色选择状态 (多方案版本)
   const [componentColors, setComponentColors] = useState<ComponentColor[]>([])
-  const [selectedColorSchemes, setSelectedColorSchemes] = useState<number[]>([]) // 每个部件选择的方案索引
+  const [selectedSchemeIndexes, setSelectedSchemeIndexes] = useState<number[]>([]) // 每个组件选中的方案索引
+  const [selectedComponents, setSelectedComponents] = useState<boolean[]>([]) // 每个部件是否已选择
   const [visibleComponentIndex, setVisibleComponentIndex] = useState(-1) // 当前可见的部件索引 (-1表示未开始)
 
   // 视图模式: gallery(图集) / video(视频) / params(参数)
@@ -154,27 +135,70 @@ export default function ProductDetailPage() {
     }
     setImages(parsedImages)
 
-    // 解析部件颜色 - 现在数据库存储的是结构化对象
+    // 解析部件颜色 - 支持多方案数据结构
     let components: ComponentColor[] = []
-    if (sku.additionalAttributes) {
-      if (typeof sku.additionalAttributes === 'string') {
-        // 字符串格式（旧数据）
-        components = parseComponentColors(sku.additionalAttributes)
-      } else if (Array.isArray(sku.additionalAttributes)) {
-        // 结构化对象格式（新数据）
-        components = sku.additionalAttributes.map((comp: any) => ({
-          componentCode: comp.componentCode,
-          componentName: comp.componentCode, // 暂时使用代码作为名称
-          colorSchemes: comp.colorOptions.map((option: any) =>
-            option.colors.map((c: any) => `${c.part}:${c.color}`)
-          )
-        }))
+
+    // 先获取组件信息（从productSpec）
+    const componentInfoMap = new Map<string, { name: string; spec: string }>()
+    if (sku.productSpec && Array.isArray(sku.productSpec)) {
+      sku.productSpec.forEach((comp: any) => {
+        componentInfoMap.set(comp.code, {
+          name: comp.name || comp.code,
+          spec: comp.spec || ''
+        })
+      })
+    }
+
+    try {
+      if (sku.additionalAttributes && Array.isArray(sku.additionalAttributes)) {
+        components = sku.additionalAttributes.map((comp: any) => {
+          // 从productSpec获取组件名称和规格
+          const compInfo = componentInfoMap.get(comp.componentCode)
+
+          // 新格式：colorSchemes数组
+          if (comp.colorSchemes && Array.isArray(comp.colorSchemes)) {
+            return {
+              componentCode: comp.componentCode,
+              componentName: compInfo?.name || comp.componentCode,
+              spec: compInfo?.spec || undefined,
+              colorSchemes: comp.colorSchemes.filter((scheme: ColorScheme) =>
+                scheme.colors && scheme.colors.length > 0
+              )
+            }
+          }
+
+          // 旧格式：单个colors数组，转换为单方案
+          if (comp.colors && Array.isArray(comp.colors)) {
+            return {
+              componentCode: comp.componentCode,
+              componentName: compInfo?.name || comp.componentCode,
+              spec: compInfo?.spec || undefined,
+              colorSchemes: [{
+                id: `scheme-${Date.now()}-1`,
+                name: '方案1',
+                colors: comp.colors
+              }]
+            }
+          }
+
+          // 无颜色配置
+          return {
+            componentCode: comp.componentCode,
+            componentName: compInfo?.name || comp.componentCode,
+            spec: compInfo?.spec || undefined,
+            colorSchemes: []
+          }
+        }).filter(comp => comp.colorSchemes && comp.colorSchemes.length > 0)
       }
+    } catch (error) {
+      console.error('❌ 解析颜色数据失败:', error)
+      components = []
     }
     setComponentColors(components)
-    setSelectedColorSchemes([])
+    setSelectedComponents([])
+    setSelectedSchemeIndexes(components.map(() => 0)) // 默认选中每个组件的第一个方案
 
-    // 如果有部件颜色，延迟300ms后显示第一个部件
+    // Apple风格渐进式显示：如果有部件颜色，延迟300ms后显示第一个部件
     if (components.length > 0) {
       setTimeout(() => {
         setVisibleComponentIndex(0)
@@ -184,11 +208,17 @@ export default function ProductDetailPage() {
     }
   }
 
-  // 处理部件颜色方案选择
-  const handleColorSchemeSelect = (componentIndex: number, schemeIndex: number) => {
-    const newSchemes = [...selectedColorSchemes]
-    newSchemes[componentIndex] = schemeIndex
-    setSelectedColorSchemes(newSchemes)
+  // 处理方案选择（点击某个方案）
+  const handleSchemeSelect = (componentIndex: number, schemeIndex: number) => {
+    // 更新选中的方案索引
+    const newSchemeIndexes = [...selectedSchemeIndexes]
+    newSchemeIndexes[componentIndex] = schemeIndex
+    setSelectedSchemeIndexes(newSchemeIndexes)
+
+    // 标记该组件已选择
+    const newSelected = [...selectedComponents]
+    newSelected[componentIndex] = true
+    setSelectedComponents(newSelected)
 
     // 如果还有下一个部件，延迟300ms后显示
     if (componentIndex < componentColors.length - 1) {
@@ -204,12 +234,16 @@ export default function ProductDetailPage() {
       return
     }
 
-    // 构建颜色组合描述
+    // 构建颜色组合描述（使用选中的方案）
     const colorCombination: Record<string, any> = {}
     componentColors.forEach((component, index) => {
-      const schemeIndex = selectedColorSchemes[index]
-      if (schemeIndex !== undefined) {
-        colorCombination[component.componentCode] = component.colorSchemes[schemeIndex]
+      const selectedSchemeIndex = selectedSchemeIndexes[index] || 0
+      const selectedScheme = component.colorSchemes[selectedSchemeIndex]
+      if (selectedScheme) {
+        colorCombination[component.componentCode] = {
+          schemeName: selectedScheme.name,
+          colors: selectedScheme.colors
+        }
       }
     })
 
@@ -538,19 +572,18 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* 颜色选择器 - Apple风格渐进式 (只在选择规格后显示) */}
+            {/* 颜色选择器 - Apple风格渐进式 (新数据结构，但保留渐进式交互) */}
             {selectedSku && componentColors.length > 0 && (
               <div className="space-y-6 bg-gray-50 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-gray-900">选择颜色</h3>
 
-                {/* 依次显示每个部件的颜色选择器 */}
+                {/* 依次显示每个组件的颜色选择器 */}
                 <AnimatePresence>
                   {componentColors.map((component, componentIndex) => {
                     // 只显示到当前可见索引为止的部件
                     if (componentIndex > visibleComponentIndex) return null
 
-                    const isSelected = selectedColorSchemes[componentIndex] !== undefined
-                    const selectedSchemeIndex = selectedColorSchemes[componentIndex]
+                    const isSelected = selectedComponents[componentIndex]
 
                     return (
                       <motion.div
@@ -561,59 +594,57 @@ export default function ProductDetailPage() {
                         transition={{ duration: 0.3 }}
                         className="space-y-3"
                       >
-                        {/* 部件标题行：部件代码 + 材质组合 + 选中标记 */}
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 bg-primary/10 text-primary font-bold text-xs rounded">
+                        {/* 组件标题行：组件代码 + 组件名称 + 规格描述（可选）*/}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="px-2 py-1 bg-primary/10 text-primary font-bold text-sm rounded">
                             [{component.componentCode}]
                           </span>
-
-                          {/* 材质组合显示 - 从第一个颜色方案中提取 */}
-                          {component.colorSchemes.length > 0 && component.colorSchemes[0].length > 0 && (
-                            <span className="text-xs text-gray-500">
-                              ({component.colorSchemes[0].map((colorPart, idx) => {
-                                const parsed = parseColorPart(colorPart.trim())
-                                return parsed.material
-                              }).filter((m, idx, arr) => arr.indexOf(m) === idx).join(' + ')})
+                          <span className="font-semibold text-gray-900">
+                            {component.componentName}
+                          </span>
+                          {component.spec && (
+                            <span className="text-sm text-gray-600">
+                              {component.spec}
                             </span>
                           )}
-
                           {isSelected && (
                             <Check size={18} className="text-green-600 ml-auto" />
                           )}
                         </div>
 
-                        {/* 颜色方案按钮 - 只显示颜色圆圈 */}
-                        <div className="flex flex-wrap gap-3">
+                        {/* 显示部件名称 */}
+                        <div className="text-sm text-gray-600 mb-2">
+                          {component.colorSchemes[0]?.colors.map(c => c.part).join(' + ')}
+                        </div>
+
+                        {/* 横向显示所有配色方案 */}
+                        <div className="flex gap-2 flex-wrap">
                           {component.colorSchemes.map((scheme, schemeIndex) => {
-                            const isThisSelected = selectedSchemeIndex === schemeIndex
+                            const selectedSchemeIndex = selectedSchemeIndexes[componentIndex] || 0
+                            const isSchemeSelected = schemeIndex === selectedSchemeIndex
 
                             return (
                               <button
-                                key={schemeIndex}
-                                onClick={() => handleColorSchemeSelect(componentIndex, schemeIndex)}
-                                className="group relative"
+                                key={scheme.id}
+                                onClick={() => handleSchemeSelect(componentIndex, schemeIndex)}
+                                className="group relative p-1"
                               >
-                                {/* 颜色圆圈组合 */}
-                                <div className="flex gap-1.5">
-                                  {/* 每个颜色部分显示为一个小圆圈 */}
-                                  {scheme.map((colorPart, partIndex) => {
-                                    // 使用新的解析函数提取材质、潘通色号和颜色
-                                    const parsed = parseColorPart(colorPart.trim())
-                                    const hexColor = parsed.hex
-
+                                {/* 颜色圆圈 */}
+                                <div className="flex gap-1">
+                                  {scheme.colors.map((colorPart, partIndex) => {
+                                    const hexColor = colorPart.hexColor || '#CCCCCC'
                                     return (
                                       <div
                                         key={partIndex}
-                                        className={`w-6 h-6 rounded-full shadow-sm transition-all ${
-                                          isThisSelected
-                                            ? 'ring-2 ring-primary ring-offset-1'
-                                            : 'hover:scale-110'
+                                        className={`w-8 h-8 rounded-full transition-all ${
+                                          isSchemeSelected
+                                            ? 'ring-2 ring-primary ring-offset-2'
+                                            : 'ring-1 ring-gray-200 hover:ring-gray-300'
                                         }`}
                                         style={{
-                                          backgroundColor: hexColor,
-                                          border: hexColor === '#FFFFFF' ? '1px solid #E5E7EB' : 'none'
+                                          backgroundColor: hexColor
                                         }}
-                                        title={`${parsed.material} ${parsed.description}`.trim()}
+                                        title={`${colorPart.part}: ${colorPart.color || colorPart.hexColor}`}
                                       ></div>
                                     )
                                   })}

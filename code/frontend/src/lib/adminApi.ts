@@ -74,6 +74,12 @@ export const authApi = {
     }),
 
   getProfile: () => request<any>('/auth/profile'),
+
+  changePassword: (oldPassword: string, newPassword: string) =>
+    request<{ message: string }>('/auth/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({ oldPassword, newPassword }),
+    }),
 };
 
 // ============ 业务员管理 ============
@@ -242,9 +248,10 @@ export const productApi = {
     }),
 
   // 产品组
+  // 产品组 - 管理后台专用接口（不进行权限过滤，能看到所有产品）
   getGroups: (params?: any) => {
     const query = new URLSearchParams(filterParams(params)).toString();
-    return request<any>(`/products/groups${query ? `?${query}` : ''}`);
+    return request<any>(`/products/admin/groups${query ? `?${query}` : ''}`);
   },
 
   getGroup: (id: string) => request<any>(`/products/groups/${id}`),

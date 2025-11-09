@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { systemApi, uploadApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
+import PageHeader from '@/components/admin/PageHeader';
 
 type TabType = 'homepage' | 'about' | 'site';
 
@@ -143,11 +144,12 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">系统配置</h1>
-        <p className="text-gray-600 mt-1">配置网站首页、关于我们和站点信息</p>
-      </div>
+    <div className="space-y-6">
+      {/* 页面标题 */}
+      <PageHeader
+        title="系统配置"
+        subtitle="配置网站首页、关于我们和站点信息"
+      />
 
       {/* 标签页 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -184,20 +186,27 @@ export default function SettingsPage() {
               {activeTab === 'site' && (
                 <SiteTab config={siteConfig} setConfig={setSiteConfig} />
               )}
-
-              <div className="flex justify-end pt-6 border-t mt-6">
-                <button
-                  onClick={handleSave}
-                  disabled={submitting}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
-                >
-                  {submitting ? <ButtonLoader /> : '💾 保存配置'}
-                </button>
-              </div>
             </>
           )}
         </div>
       </div>
+
+      {/* 粘性底部按钮栏 */}
+      {!loading && (
+        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex justify-end">
+              <button
+                onClick={handleSave}
+                disabled={submitting}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+              >
+                {submitting ? <ButtonLoader /> : '💾 保存配置'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

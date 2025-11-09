@@ -186,13 +186,6 @@ export default function HomepageConfigPage() {
               <h1 className="text-2xl font-bold text-gray-900">首页配置</h1>
               <p className="text-sm text-gray-600 mt-1">配置首页Hero区域和精选产品</p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={submitting}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
-            >
-              {submitting ? <ButtonLoader /> : <><Save size={18} /> 保存配置</>}
-            </button>
           </div>
         </div>
       </div>
@@ -333,7 +326,7 @@ export default function HomepageConfigPage() {
                         <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
                       </div>
                       {showDropdowns[index] && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                           {getFilteredSkus(index).length > 0 ? (
                             getFilteredSkus(index).map((sku) => (
                               <div
@@ -379,6 +372,21 @@ export default function HomepageConfigPage() {
               </div>
             </div>
           </Section>
+        </div>
+      </div>
+
+      {/* 粘性底部按钮栏 */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={submitting}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+            >
+              {submitting ? <ButtonLoader /> : <><Save size={18} /> 保存配置</>}
+            </button>
+          </div>
         </div>
       </div>
     </div>

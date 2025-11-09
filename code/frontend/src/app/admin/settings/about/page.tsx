@@ -218,13 +218,6 @@ export default function AboutConfigPage() {
               <h1 className="text-2xl font-bold text-gray-900">关于我们配置</h1>
               <p className="text-sm text-gray-600 mt-1">配置关于我们页面的所有内容</p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={submitting}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
-            >
-              {submitting ? <ButtonLoader /> : <><Save size={18} /> 保存配置</>}
-            </button>
           </div>
         </div>
       </div>
@@ -425,6 +418,21 @@ export default function AboutConfigPage() {
               placeholderZh="浙江省东阳市"
             />
           </Section>
+        </div>
+      </div>
+
+      {/* 粘性底部按钮栏 */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={submitting}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+            >
+              {submitting ? <ButtonLoader /> : <><Save size={18} /> 保存配置</>}
+            </button>
+          </div>
         </div>
       </div>
     </div>

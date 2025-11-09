@@ -63,6 +63,9 @@ model Customer {
   salespersonId   String?  @map("salesperson_id")
   customerType    CustomerType @default(NEW) @map("customer_type")
 
+  // 客户等级（产品权限控制）
+  tier            CustomerTier @default(STANDARD) @map("customer_tier")
+
   status          String   @default("active") // active/disabled
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -77,6 +80,12 @@ model Customer {
 enum CustomerType {
   NEW @map("new")
   OLD @map("old")
+}
+
+enum CustomerTier {
+  STANDARD @map("standard") // 普通客户
+  VIP      @map("vip")      // VIP客户
+  SVIP     @map("svip")     // SVIP客户
 }
 
 // ========================================
@@ -251,6 +260,10 @@ model ProductGroup {
   isPublished     Boolean  @default(false) @map("is_published") // 是否上架
   sortOrder       Int      @default(0) @map("sort_order") // 排序权重
   status          String   @default("inactive") // active/inactive
+
+  // 产品可见性控制 (2025-11-09 新增)
+  visibilityTier  ProductVisibility @default(ALL) @map("visibility_tier") // 可见性等级
+
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -487,4 +500,14 @@ model OrderForm {
   customer        Customer @relation(fields: [customerId], references: [id])
 
   @@map("order_forms")
+}
+
+// ========================================
+// 枚举：产品可见性等级 (2025-11-09 新增)
+// ========================================
+enum ProductVisibility {
+  ALL      @map("all")      // 所有人可见（未登录、普通、VIP、SVIP）
+  STANDARD @map("standard") // 普通及以上可见（普通、VIP、SVIP）
+  VIP      @map("vip")      // VIP及以上可见（VIP、SVIP）
+  SVIP     @map("svip")     // 仅SVIP可见
 }

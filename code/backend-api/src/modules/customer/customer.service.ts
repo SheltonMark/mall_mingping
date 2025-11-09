@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma.service';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 
@@ -11,7 +12,15 @@ export class CustomerService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCustomerDto: CreateCustomerDto) {
-    const { salespersonId, name, contactPerson, email, phone, address, customerType } = createCustomerDto;
+    const { salespersonId, name, contactPerson, email, phone, address, customerType, password, tier } = createCustomerDto;
+
+    // Check if email already exists
+    const existingCustomer = await this.prisma.customer.findUnique({
+      where: { email },
+    });
+    if (existingCustomer) {
+      throw new BadRequestException('Email already registered');
+    }
 
     // Verify salesperson exists if provided
     if (salespersonId) {
@@ -23,15 +32,23 @@ export class CustomerService {
       }
     }
 
+    // Hash password if provided
+    let hashedPassword;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
     return this.prisma.customer.create({
       data: {
         name,
         email,
+        ...(hashedPassword && { password: hashedPassword }),
         ...(contactPerson && { contactPerson }),
         ...(phone && { phone }),
         ...(address && { address }),
         ...(salespersonId && { salespersonId }),
         ...(customerType && { customerType }),
+        ...(tier && { tier }),
       },
       include: {
         salesperson: {
@@ -216,12 +233,14 @@ export class CustomerService {
   }
 
   async remove(id: string) {
+    // Check if customer exists and get counts
     const customer = await this.prisma.customer.findUnique({
       where: { id },
       include: {
         _count: {
           select: {
             orders: true,
+            orderForms: true,
           },
         },
       },
@@ -231,10 +250,10 @@ export class CustomerService {
       throw new NotFoundException('Customer not found');
     }
 
-    // Check if customer has orders
-    if (customer._count.orders > 0) {
+    // Check if customer has orders or order forms
+    if (customer._count.orders > 0 || customer._count.orderForms > 0) {
       throw new BadRequestException(
-        'Cannot delete customer with existing orders',
+        `无法删除该客户：该客户有 ${customer._count.orders} 个订单和 ${customer._count.orderForms} 个订单表单。请先删除相关数据。`,
       );
     }
 

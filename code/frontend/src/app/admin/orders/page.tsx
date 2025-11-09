@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { orderFormApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { Package, Mail, Phone, MapPin, Calendar, User } from 'lucide-react';
+import PageHeader from '@/components/admin/PageHeader';
 
 interface OrderForm {
   id: string;
@@ -68,25 +69,26 @@ export default function OrdersPage() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">订单管理</h1>
-        <p className="text-gray-600 mt-1">查看和管理客户订单</p>
-      </div>
+    <div className="space-y-6">
+      {/* 页面标题 */}
+      <PageHeader
+        title="订单管理"
+        subtitle="查看和管理客户订单"
+      />
 
       {/* 搜索栏 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <input
           type="text"
           placeholder="搜索订单（订单号、客户名称、联系人、邮箱、电话）..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="text-sm text-gray-600 mb-1">总订单</div>
           <div className="text-2xl font-bold text-gray-900">{orderForms.length}</div>

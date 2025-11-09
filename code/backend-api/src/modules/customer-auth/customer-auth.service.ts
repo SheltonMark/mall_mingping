@@ -54,6 +54,7 @@ export class CustomerAuthService {
         phone: true,
         address: true,
         country: true,
+        tier: true, // ADDED: Include tier
         status: true,
         createdAt: true,
       },
@@ -108,6 +109,7 @@ export class CustomerAuthService {
         phone: customer.phone,
         address: customer.address,
         country: customer.country,
+        tier: customer.tier, // ADDED: Include tier
         status: customer.status,
         createdAt: customer.createdAt,
       },
@@ -129,6 +131,7 @@ export class CustomerAuthService {
         phone: true,
         address: true,
         country: true,
+        tier: true, // ADDED: Include tier
         status: true,
         createdAt: true,
         updatedAt: true,
@@ -170,6 +173,7 @@ export class CustomerAuthService {
         phone: true,
         address: true,
         country: true,
+        tier: true, // ADDED: Include tier
         status: true,
         createdAt: true,
         updatedAt: true,
@@ -194,6 +198,7 @@ export class CustomerAuthService {
         address: true,
         country: true,
         status: true,
+        tier: true, // ADDED: Include tier for product visibility filtering
         createdAt: true,
       },
     });

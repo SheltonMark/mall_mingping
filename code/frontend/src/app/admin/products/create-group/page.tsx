@@ -6,6 +6,7 @@ import { productApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
 import { ArrowLeft, Plus, FolderPlus } from 'lucide-react';
+import CustomSelect from '@/components/common/CustomSelect';
 
 interface Category {
   id: string;
@@ -182,19 +183,17 @@ export default function CreateGroupPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   产品分类 <span className="text-red-500">*</span>
                 </label>
-                <select
+                <CustomSelect
+                  options={[
+                    { value: '', label: '请选择分类' },
+                    ...categories.map((category) => ({
+                      value: category.id,
+                      label: `${category.nameZh}${category.nameEn ? ` (${category.nameEn})` : ''}`
+                    }))
+                  ]}
                   value={formData.categoryId}
-                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  required
-                >
-                  <option value="">请选择分类</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.nameZh} {category.nameEn ? `(${category.nameEn})` : ''}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setFormData({ ...formData, categoryId: value })}
+                />
                 {categories.length === 0 && (
                   <p className="text-xs text-amber-600 mt-1">
                     ⚠️ 暂无可用分类，请先创建产品分类

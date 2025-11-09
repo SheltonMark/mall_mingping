@@ -1,3 +1,4 @@
+
 import {
   Controller,
   Get,
@@ -25,6 +26,8 @@ import {
   BatchImportSkuDto,
 } from './dto/product.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { JwtCustomerOptionalGuard } from '../customer-auth/jwt-customer-optional.guard';
+import { CurrentCustomer } from '../../common/decorators/current-customer.decorator';
 
 @Controller('products')
 export class ProductController {
@@ -63,9 +66,31 @@ export class ProductController {
   }
 
   // ============ Product Group Endpoints ============
-  // 公开接口：获取产品组列表（前台商城使用，支持publishedOnly参数）
+  // 管理接口：获取所有产品组列表（后台管理使用，不进行权限过滤）
+  @Get('admin/groups')
+  @UseGuards(JwtAuthGuard)
+  findAllProductGroupsAdmin(
+    @Query('search') search?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('isPublished') isPublished?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.productService.findAllProductGroups({
+      search,
+      categoryId,
+      isPublished: isPublished === 'true' ? true : isPublished === 'false' ? false : undefined,
+      // 不传customerTier，后台能看到所有产品
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    });
+  }
+
+  // 公开接口：获取产品组列表（前台商城使用，根据客户等级进行权限过滤）
   @Get('groups')
+  @UseGuards(JwtCustomerOptionalGuard)
   findAllProductGroups(
+    @CurrentCustomer() customer: any,
     @Query('search') search?: string,
     @Query('categoryId') categoryId?: string,
     @Query('isPublished') isPublished?: string,
@@ -77,6 +102,7 @@ export class ProductController {
       search,
       categoryId,
       isPublished: isPublished === 'true' ? true : isPublished === 'false' ? false : undefined,
+      customerTier: customer?.tier, // 根据客户等级过滤产品可见性
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     });

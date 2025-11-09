@@ -6,6 +6,8 @@ import { productApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
 import { Upload, Edit2, Trash2, Search, Image as ImageIcon, Plus, X } from 'lucide-react';
+import PageHeader from '@/components/admin/PageHeader';
+import CustomSelect from '@/components/common/CustomSelect';
 
 interface ProductGroup {
   id: string;
@@ -19,6 +21,7 @@ interface ProductGroup {
     nameEn?: string;
   };
   isPublished: boolean;
+  visibilityTier?: 'ALL' | 'STANDARD' | 'VIP' | 'SVIP';
   skuCount?: number;
 }
 
@@ -274,74 +277,62 @@ export default function ProductsPage() {
   }, {} as Record<string, ProductSku[]>);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 页头 */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">产品管理</h1>
-              <p className="text-gray-600 mt-1">
-                共 <span className="font-semibold text-blue-600">{groups.length}</span> 个产品系列，
-                <span className="font-semibold text-blue-600">{skus.length}</span> 个规格
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleDownloadTemplate}
-                className="px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 font-medium"
-              >
-                <Upload size={18} />
-                下载模板
-              </button>
-              <button
-                onClick={handleImportClick}
-                disabled={importing}
-                className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
-              >
-                {importing ? (
-                  <>
-                    <ButtonLoader />
-                    <span>导入中...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload size={18} />
-                    导入Excel
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  // 打开新增产品组（SKU）对话框
-                  router.push('/admin/products/create-group');
-                }}
-                className="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
-              >
-                <Plus size={18} />
-                新增SKU
-              </button>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* 页面标题 */}
+      <PageHeader
+        title="产品管理"
+        subtitle={`共 ${groups.length} 个产品系列，${skus.length} 个规格`}
+        actions={
+          <>
+            <button
+              onClick={handleDownloadTemplate}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+            >
+              <Upload size={18} />
+              下载模板
+            </button>
+            <button
+              onClick={handleImportClick}
+              disabled={importing}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {importing ? (
+                <>
+                  <ButtonLoader />
+                  <span>导入中...</span>
+                </>
+              ) : (
+                <>
+                  <Upload size={18} />
+                  导入Excel
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => router.push('/admin/products/create-group')}
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-gold-600 transition-all flex items-center gap-2"
+            >
+              <Plus size={18} />
+              新增SKU
+            </button>
+          </>
+        }
+      />
 
-          {/* 搜索栏 */}
-          <div className="mt-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索品号、品名..."
-                className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-            </div>
-          </div>
-        </div>
+      {/* 搜索栏 */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="搜索品号、品名..."
+          className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        />
       </div>
 
       {/* 主内容 */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div>
         {loading ? (
           <div className="flex justify-center items-center h-96">
             <div className="text-center">
@@ -395,6 +386,29 @@ export default function ProductsPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
+                        {/* 可见性选择器 */}
+                        <CustomSelect
+                          options={[
+                            { value: 'ALL', label: '👁️ 所有人可见' },
+                            { value: 'STANDARD', label: '📝 普通及以上' },
+                            { value: 'VIP', label: '⭐ VIP及以上' },
+                            { value: 'SVIP', label: '💎 仅SVIP' }
+                          ]}
+                          value={group.visibilityTier || 'ALL'}
+                          onChange={async (value) => {
+                            try {
+                              await productApi.updateGroup(group.id, {
+                                visibilityTier: value as any
+                              });
+                              toast.success('可见性已更新');
+                              loadData();
+                            } catch (error: any) {
+                              toast.error('更新失败: ' + error.message);
+                            }
+                          }}
+                          className="w-48"
+                        />
+
                         <div className="text-sm font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg shadow-sm">
                           {groupSkus.length} 个规格
                         </div>
@@ -624,21 +638,20 @@ export default function ProductsPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     选择产品组 <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <CustomSelect
+                    options={[
+                      { value: '', label: '请选择产品组' },
+                      ...groups.map(group => ({
+                        value: group.id,
+                        label: `${group.groupNameZh} (${group.prefix})`
+                      }))
+                    ]}
                     value={selectedGroupForCreate?.id || ''}
-                    onChange={(e) => {
-                      const group = groups.find(g => g.id === e.target.value);
+                    onChange={(value) => {
+                      const group = groups.find(g => g.id === value);
                       setSelectedGroupForCreate(group || null);
                     }}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  >
-                    <option value="">请选择产品组</option>
-                    {groups.map(group => (
-                      <option key={group.id} value={group.id}>
-                        {group.groupNameZh} ({group.prefix})
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
               )}
               {/* 品号 */}

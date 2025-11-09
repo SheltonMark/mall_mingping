@@ -141,10 +141,36 @@ export class ProductService {
     });
   }
 
+  /**
+   * Get allowed visibility levels for a customer tier
+   */
+  private getAllowedVisibilityLevels(customerTier?: string): string[] {
+    if (!customerTier) {
+      // Not logged in: only see 'ALL' visibility products
+      return ['ALL'];
+    }
+
+    switch (customerTier) {
+      case 'SVIP':
+        // SVIP sees all products
+        return ['ALL', 'STANDARD', 'VIP', 'SVIP'];
+      case 'VIP':
+        // VIP sees VIP + STANDARD + ALL
+        return ['ALL', 'STANDARD', 'VIP'];
+      case 'STANDARD':
+        // STANDARD sees STANDARD + ALL
+        return ['ALL', 'STANDARD'];
+      default:
+        // Unknown tier: only see 'ALL'
+        return ['ALL'];
+    }
+  }
+
   async findAllProductGroups(query?: {
     search?: string;
     categoryId?: string;
     isPublished?: boolean;
+    customerTier?: string;
     page?: number;
     limit?: number;
   }) {
@@ -152,6 +178,7 @@ export class ProductService {
       search,
       categoryId,
       isPublished,
+      customerTier,
       page = 1,
       limit = 10,
     } = query || {};
@@ -172,6 +199,13 @@ export class ProductService {
 
     if (isPublished !== undefined) {
       where.isPublished = isPublished;
+    }
+
+    // Apply visibility filter ONLY if customerTier is provided (for customer access)
+    // When customerTier is undefined (admin access), show all products
+    if (customerTier !== undefined) {
+      const allowedLevels = this.getAllowedVisibilityLevels(customerTier);
+      where.visibilityTier = { in: allowedLevels };
     }
 
     const [groups, total] = await Promise.all([

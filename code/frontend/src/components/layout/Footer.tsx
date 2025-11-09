@@ -144,76 +144,73 @@ export default function Footer() {
               target={socialMedia.facebook ? '_blank' : undefined}
               rel={socialMedia.facebook ? 'noopener noreferrer' : undefined}
               onClick={(e) => !socialMedia.facebook && e.preventDefault()}
-              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
-                socialMedia.facebook ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
-              }`}
+              className="group w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center transition-all duration-250 cursor-pointer border-2 border-neutral-800 hover:border-primary"
               aria-label="Facebook"
             >
-              <Facebook size={18} />
+              <Facebook size={18} className="text-neutral-400 group-hover:text-primary transition-colors duration-250" />
             </a>
             <a
               href={socialMedia.twitter || '#'}
               target={socialMedia.twitter ? '_blank' : undefined}
               rel={socialMedia.twitter ? 'noopener noreferrer' : undefined}
               onClick={(e) => !socialMedia.twitter && e.preventDefault()}
-              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
-                socialMedia.twitter ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
-              }`}
+              className="group w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center transition-all duration-250 cursor-pointer border-2 border-neutral-800 hover:border-primary"
               aria-label="Twitter"
             >
-              <Twitter size={18} />
+              <Twitter size={18} className="text-neutral-400 group-hover:text-primary transition-colors duration-250" />
             </a>
             <a
               href={socialMedia.instagram || '#'}
               target={socialMedia.instagram ? '_blank' : undefined}
               rel={socialMedia.instagram ? 'noopener noreferrer' : undefined}
               onClick={(e) => !socialMedia.instagram && e.preventDefault()}
-              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
-                socialMedia.instagram ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
-              }`}
+              className="group w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center transition-all duration-250 cursor-pointer border-2 border-neutral-800 hover:border-primary"
               aria-label="Instagram"
             >
-              <Instagram size={18} />
+              <Instagram size={18} className="text-neutral-400 group-hover:text-primary transition-colors duration-250" />
             </a>
             <a
               href={socialMedia.linkedin || '#'}
               target={socialMedia.linkedin ? '_blank' : undefined}
               rel={socialMedia.linkedin ? 'noopener noreferrer' : undefined}
               onClick={(e) => !socialMedia.linkedin && e.preventDefault()}
-              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
-                socialMedia.linkedin ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
-              }`}
+              className="group w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center transition-all duration-250 cursor-pointer border-2 border-neutral-800 hover:border-primary"
               aria-label="LinkedIn"
             >
-              <Linkedin size={18} />
+              <Linkedin size={18} className="text-neutral-400 group-hover:text-primary transition-colors duration-250" />
             </a>
             <a
               href={socialMedia.youtube || '#'}
               target={socialMedia.youtube ? '_blank' : undefined}
               rel={socialMedia.youtube ? 'noopener noreferrer' : undefined}
               onClick={(e) => !socialMedia.youtube && e.preventDefault()}
-              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
-                socialMedia.youtube ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
-              }`}
+              className="group w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center transition-all duration-250 cursor-pointer border-2 border-neutral-800 hover:border-primary"
               aria-label="YouTube"
             >
-              <Youtube size={18} />
+              <Youtube size={18} className="text-neutral-400 group-hover:text-primary transition-colors duration-250" />
             </a>
             <a
               href={socialMedia.email ? `mailto:${socialMedia.email}` : '#'}
               onClick={(e) => !socialMedia.email && e.preventDefault()}
-              className={`w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 transition-all duration-250 ${
-                socialMedia.email ? 'hover:bg-primary hover:text-neutral-900 cursor-pointer' : 'opacity-50 cursor-default'
-              }`}
+              className="group w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center transition-all duration-250 cursor-pointer border-2 border-neutral-800 hover:border-primary"
               aria-label="Email"
             >
-              <Mail size={18} />
+              <Mail size={18} className="text-neutral-400 group-hover:text-primary transition-colors duration-250" />
             </a>
           </div>
 
           {/* Copyright */}
-          <p className="text-neutral-600 text-sm text-center">
-            {t('footer.copyright') || '© 2025 LEMOPX. Crafted with excellence in Dongyang.'}
+          <p className="text-neutral-600 text-sm text-center space-x-2">
+            <span>© 2025 LEMOPX. All rights reserved.</span>
+            <span>|</span>
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors duration-250"
+            >
+              浙ICP备2025204932号
+            </a>
           </p>
         </div>
       </div>

@@ -2,27 +2,35 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { ChevronDown, Grid3x3, List, ShoppingCart } from 'lucide-react'
+import { ShoppingCart, ChevronDown } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
-import { productApi, type ProductGroup, type Category, type Material } from '@/lib/publicApi'
+import { productApi, type ProductGroup, type Category } from '@/lib/publicApi'
 import { useToast } from '@/components/common/ToastContainer'
+import CustomSelect from '@/components/common/CustomSelect'
+
+// 分页配置常量 - 修改此值即可调整每页显示数量
+const PRODUCTS_PER_PAGE = 9
 
 export default function ProductsPage() {
   const { t } = useLanguage()
   const toast = useToast()
   const [view, setView] = useState<'grid' | 'list'>('grid')
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 200 })
   const [addedItem, setAddedItem] = useState<string | null>(null)
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high'>('newest')
+  const [currentPage, setCurrentPage] = useState(1) // 当前页码
   const { addItem } = useCart()
 
   // State for API data
   const [productGroups, setProductGroups] = useState<ProductGroup[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // 动态价格范围
+  const [maxPrice, setMaxPrice] = useState(200)
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 200 })
 
   // Fetch data from API
   useEffect(() => {
@@ -31,7 +39,7 @@ export default function ProductsPage() {
         setLoading(true)
         setError(null)
 
-        // Fetch groups and categories (materials API doesn't exist yet)
+        // Fetch groups and categories
         const [groupsRes, categoriesRes] = await Promise.all([
           productApi.getGroups({ limit: 100 }),
           productApi.getCategories(),
@@ -39,8 +47,12 @@ export default function ProductsPage() {
 
         setProductGroups(groupsRes.data || [])
         setCategories(categoriesRes || [])
-        // Materials will be empty for now until backend implements the endpoint
-        setMaterials([])
+
+        // 动态计算价格最大值
+        const prices = (groupsRes.data || []).map(group => Number(group.skus?.[0]?.price || 0))
+        const calculatedMaxPrice = prices.length > 0 ? Math.ceil(Math.max(...prices)) : 200
+        setMaxPrice(calculatedMaxPrice)
+        setPriceRange({ min: 0, max: calculatedMaxPrice })
       } catch (err: any) {
         console.error('Failed to load products:', err)
         setError(err.message || 'Failed to load products')
@@ -87,6 +99,37 @@ export default function ProductsPage() {
       })
     : productGroups
 
+  // Filter by price range (based on first SKU price)
+  const priceFilteredGroups = filteredProductGroups.filter(group => {
+    const firstSkuPrice = Number(group.skus?.[0]?.price || 0)
+    return firstSkuPrice >= priceRange.min && firstSkuPrice <= priceRange.max
+  })
+
+  // Sort filtered products
+  const sortedProductGroups = [...priceFilteredGroups].sort((a, b) => {
+    if (sortBy === 'newest') {
+      // 默认按创建日期降序 (最新的在前面)
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    } else if (sortBy === 'price_low') {
+      // 价格从低到高
+      const priceA = a.skus?.[0]?.price || 0
+      const priceB = b.skus?.[0]?.price || 0
+      return Number(priceA) - Number(priceB)
+    } else if (sortBy === 'price_high') {
+      // 价格从高到低
+      const priceA = a.skus?.[0]?.price || 0
+      const priceB = b.skus?.[0]?.price || 0
+      return Number(priceB) - Number(priceA)
+    }
+    return 0
+  })
+
+  // 分页计算
+  const totalPages = Math.ceil(sortedProductGroups.length / PRODUCTS_PER_PAGE)
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE
+  const endIndex = startIndex + PRODUCTS_PER_PAGE
+  const currentProducts = sortedProductGroups.slice(startIndex, endIndex)
+
   // Handle category click
   const handleCategoryClick = (categoryCode: string) => {
     if (selectedCategoryCode === categoryCode) {
@@ -94,6 +137,13 @@ export default function ProductsPage() {
     } else {
       setSelectedCategoryCode(categoryCode)
     }
+    setCurrentPage(1) // 切换分类时重置到第1页
+  }
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' }) // 滚动到顶部
   }
 
   // Loading state
@@ -163,7 +213,7 @@ export default function ProductsPage() {
                               : 'text-gray-600 hover:text-primary'
                           }`}
                         >
-                          {t(`category.${category.code}`)}
+                          {t('lang') === 'en' ? category.nameEn : category.nameZh}
                         </button>
                       </li>
                     ))}
@@ -178,14 +228,14 @@ export default function ProductsPage() {
                       <div
                         className="absolute h-2 bg-primary rounded-lg"
                         style={{
-                          left: `${(priceRange.min / 200) * 100}%`,
-                          right: `${100 - (priceRange.max / 200) * 100}%`,
+                          left: `${(priceRange.min / maxPrice) * 100}%`,
+                          right: `${100 - (priceRange.max / maxPrice) * 100}%`,
                         }}
                       />
                       <input
                         type="range"
                         min="0"
-                        max="200"
+                        max={maxPrice}
                         value={priceRange.min}
                         onChange={(e) => setPriceRange({ ...priceRange, min: Math.min(Number(e.target.value), priceRange.max - 1) })}
                         className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0"
@@ -193,7 +243,7 @@ export default function ProductsPage() {
                       <input
                         type="range"
                         min="0"
-                        max="200"
+                        max={maxPrice}
                         value={priceRange.max}
                         onChange={(e) => setPriceRange({ ...priceRange, max: Math.max(Number(e.target.value), priceRange.min + 1) })}
                         className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0"
@@ -205,80 +255,34 @@ export default function ProductsPage() {
                     <span>${priceRange.max}</span>
                   </div>
                 </div>
-
-                {/* Color Filter */}
-                <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.color')}</h4>
-                  <div className="flex flex-wrap gap-3">
-                    <button className="size-8 rounded-full bg-white border-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark hover:border-primary transition-colors" title="White"></button>
-                    <button className="size-8 rounded-full bg-gray-800 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark hover:ring-2 hover:ring-primary transition-all" title="Black"></button>
-                    <button className="size-8 rounded-full bg-gray-400 border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark hover:ring-2 hover:ring-primary transition-all" title="Gray"></button>
-                    <button className="size-8 rounded-full bg-[#BDB76B] border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark hover:ring-2 hover:ring-primary transition-all" title="Gold"></button>
-                  </div>
-                </div>
-
-                {/* Material Filter */}
-                <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.material')}</h4>
-                  <ul className="space-y-3 text-sm">
-                    {materials.map((material) => (
-                      <li key={material.id}>
-                        <a className="text-gray-600 hover:text-primary transition-colors cursor-pointer" href="#">
-                          {material.nameZh}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             </div>
           </aside>
 
           {/* Product Grid */}
           <div className="flex-1">
-            <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-              <h1 className="text-3xl font-bold tracking-tight">{t('products.title')}</h1>
-              <div className="flex items-center gap-4">
-                {/* Sort Dropdown */}
-                <div className="relative">
-                  <select className="appearance-none rounded-lg bg-gray-200/50 dark:bg-gray-800/50 border-transparent focus:ring-2 focus:ring-primary focus:border-transparent py-2 pl-3 pr-8 text-sm">
-                    <option>{t('products.sort_popularity')}</option>
-                    <option>{t('products.sort_new')}</option>
-                    <option>{t('products.sort_price_low')}</option>
-                    <option>{t('products.sort_price_high')}</option>
-                  </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-                </div>
+            {/* 标题和排序行 - iPad和移动端优化 */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-6">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('products.title')}</h1>
 
-                {/* View Toggle */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setView('grid')}
-                    className={`p-2 rounded-lg ${
-                      view === 'grid'
-                        ? 'bg-gray-200/50 dark:bg-gray-800/50 text-primary'
-                        : 'text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-800/50'
-                    }`}
-                  >
-                    <Grid3x3 size={20} />
-                  </button>
-                  <button
-                    onClick={() => setView('list')}
-                    className={`p-2 rounded-lg ${
-                      view === 'list'
-                        ? 'bg-gray-200/50 dark:bg-gray-800/50 text-primary'
-                        : 'text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-800/50'
-                    }`}
-                  >
-                    <List size={20} />
-                  </button>
-                </div>
+              {/* Custom Sort Dropdown - 圆角统一设计 */}
+              <div className="sm:ml-auto w-full sm:w-auto">
+                <CustomSelect
+                  options={[
+                    { value: 'newest', label: t('products.sort_new') },
+                    { value: 'price_low', label: t('products.sort_price_low') },
+                    { value: 'price_high', label: t('products.sort_price_high') },
+                  ]}
+                  value={sortBy}
+                  onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
+                  className="w-full sm:w-auto"
+                />
               </div>
             </div>
 
             {/* Products Grid */}
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProductGroups.length === 0 ? (
+              {currentProducts.length === 0 ? (
                 <div className="col-span-full text-center py-12">
                   <p className="text-gray-500">
                     {selectedCategoryCode
@@ -287,7 +291,7 @@ export default function ProductsPage() {
                   </p>
                 </div>
               ) : (
-                filteredProductGroups.map((productGroup) => {
+                currentProducts.map((productGroup) => {
                   if (!productGroup.skus || productGroup.skus.length === 0) {
                     return null
                   }
@@ -359,20 +363,68 @@ export default function ProductsPage() {
               )}
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-center pt-8 mt-8 border-t border-gray-200 dark:border-gray-800">
-              <a className="flex size-10 items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800" href="#">
-                <ChevronDown className="rotate-90" size={20} />
-              </a>
-              <a className="text-sm font-bold leading-normal flex size-10 items-center justify-center text-white rounded-lg bg-primary mx-1" href="#">1</a>
-              <a className="text-sm font-normal leading-normal flex size-10 items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 mx-1" href="#">2</a>
-              <a className="text-sm font-normal leading-normal flex size-10 items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 mx-1" href="#">3</a>
-              <span className="text-sm font-normal leading-normal flex size-10 items-center justify-center rounded-lg mx-1">...</span>
-              <a className="text-sm font-normal leading-normal flex size-10 items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 mx-1" href="#">10</a>
-              <a className="flex size-10 items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800" href="#">
-                <ChevronDown className="-rotate-90" size={20} />
-              </a>
-            </div>
+            {/* Pagination - 真实分页功能 */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-1 pt-8 mt-8 border-t border-gray-200 dark:border-gray-800">
+                {/* 上一页 */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`flex size-10 items-center justify-center rounded-lg transition-colors ${
+                    currentPage === 1
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : 'hover:bg-gray-200 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <ChevronDown className="rotate-90" size={20} />
+                </button>
+
+                {/* 页码 */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // 显示逻辑：第1页、最后1页、当前页及其前后1页
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`text-sm font-${page === currentPage ? 'bold' : 'normal'} leading-normal flex size-10 items-center justify-center rounded-lg mx-1 transition-colors ${
+                          page === currentPage
+                            ? 'text-white bg-primary'
+                            : 'hover:bg-gray-200 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    // 显示省略号
+                    return (
+                      <span key={page} className="text-sm font-normal leading-normal flex size-10 items-center justify-center rounded-lg mx-1">
+                        ...
+                      </span>
+                    )
+                  }
+                  return null
+                })}
+
+                {/* 下一页 */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`flex size-10 items-center justify-center rounded-lg transition-colors ${
+                    currentPage === totalPages
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : 'hover:bg-gray-200 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <ChevronDown className="-rotate-90" size={20} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

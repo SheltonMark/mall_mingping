@@ -10,19 +10,17 @@ export default function Preloader() {
   const [shouldShow, setShouldShow] = useState(false)
 
   useEffect(() => {
-    // 只在首页且首次访问时显示
-    const hasSeenPreloader = sessionStorage.getItem('hasSeenPreloader')
+    // 只在首页显示
     const isHomePage = pathname === '/'
 
-    // 如果不是首页，或者已经看过preloader，直接跳过
-    if (!isHomePage || hasSeenPreloader) {
+    // 如果不是首页,直接跳过
+    if (!isHomePage) {
       setIsLoaded(true)
       setShouldShow(false)
       return
     }
 
-    // 标记已经看过preloader
-    sessionStorage.setItem('hasSeenPreloader', 'true')
+    // 显示preloader
     setShouldShow(true)
 
     // 所有字母飞入后开始呼吸动画

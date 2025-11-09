@@ -18,6 +18,14 @@ async function request<T>(
     ...options.headers,
   };
 
+  // 如果客户已登录，自动附带JWT token以便后端进行权限过滤
+  if (typeof window !== 'undefined') {
+    const customerToken = localStorage.getItem('customer_token');
+    if (customerToken) {
+      headers['Authorization'] = `Bearer ${customerToken}`;
+    }
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,

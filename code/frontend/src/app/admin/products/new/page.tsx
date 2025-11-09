@@ -8,6 +8,7 @@ import { ButtonLoader } from '@/components/common/Loader';
 import { ArrowLeft, Plus, Package, Trash2, Edit2 } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import ConfirmModal from '@/components/common/ConfirmModal';
+import CustomSelect from '@/components/common/CustomSelect';
 
 interface ProductGroup {
   id: string;
@@ -538,14 +539,14 @@ export default function NewProductSkuPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     状态
                   </label>
-                  <select
+                  <CustomSelect
+                    options={[
+                      { value: 'ACTIVE', label: '上架' },
+                      { value: 'INACTIVE', label: '下架' }
+                    ]}
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  >
-                    <option value="ACTIVE">上架</option>
-                    <option value="INACTIVE">下架</option>
-                  </select>
+                    onChange={(value) => setFormData({ ...formData, status: value })}
+                  />
                 </div>
               </div>
 
@@ -671,18 +672,17 @@ export default function NewProductSkuPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">组件编号 *</label>
-                <select
+                <CustomSelect
+                  options={[
+                    { value: '', label: '请选择组件' },
+                    ...components.map(comp => ({
+                      value: comp.code,
+                      label: `${comp.code} - ${comp.name}`
+                    }))
+                  ]}
                   value={editingColor.componentCode}
-                  onChange={(e) => setEditingColor({ ...editingColor, componentCode: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="">请选择组件</option>
-                  {components.map(comp => (
-                    <option key={comp.code} value={comp.code}>
-                      {comp.code} - {comp.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setEditingColor({ ...editingColor, componentCode: value })}
+                />
               </div>
 
               <div>

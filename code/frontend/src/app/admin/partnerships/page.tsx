@@ -5,6 +5,8 @@ import { partnershipApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { useConfirm } from '@/hooks/useConfirm';
 import ConfirmModal from '@/components/common/ConfirmModal';
+import PageHeader from '@/components/admin/PageHeader';
+import CustomSelect from '@/components/common/CustomSelect';
 
 interface Partnership {
   id: string;
@@ -106,20 +108,21 @@ export default function PartnershipsPage() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">合作申请</h1>
-        <p className="text-gray-600 mt-1">查看所有合作伙伴申请</p>
-      </div>
+    <div className="space-y-6">
+      {/* 页面标题 */}
+      <PageHeader
+        title="合作申请"
+        subtitle="查看所有合作伙伴申请"
+      />
 
       {/* 搜索栏 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <input
           type="text"
           placeholder="搜索合作申请（姓名、公司、邮箱）..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
@@ -281,16 +284,16 @@ export default function PartnershipsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   更新状态
                 </label>
-                <select
+                <CustomSelect
+                  options={[
+                    { value: 'PENDING', label: '待处理' },
+                    { value: 'CONTACTED', label: '已联系' },
+                    { value: 'PARTNERED', label: '已合作' },
+                    { value: 'REJECTED', label: '已拒绝' }
+                  ]}
                   value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="PENDING">待处理</option>
-                  <option value="CONTACTED">已联系</option>
-                  <option value="PARTNERED">已合作</option>
-                  <option value="REJECTED">已拒绝</option>
-                </select>
+                  onChange={(value) => setNewStatus(value)}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

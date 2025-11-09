@@ -16,9 +16,11 @@ import {
   Trash2,
   Plus,
   Edit2,
+  Copy,
 } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import ConfirmModal from '@/components/common/ConfirmModal';
+import CustomSelect from '@/components/common/CustomSelect';
 
 interface ProductSku {
   id: string;
@@ -46,19 +48,25 @@ interface ProductSku {
 interface Component {
   code: string;
   name: string;
-  spec: string;
-  description?: string;
+  spec?: string;      // 规格描述(可选)
+  parts: string[];    // 部件列表(必须至少1个),如["喷塑", "塑件"]
 }
 
 interface ColorPart {
-  part: string;
-  color: string;
-  hexColor?: string; // 新增：16进制颜色值
+  part: string;       // 部件名称
+  color: string;      // 颜色描述
+  hexColor: string;   // 十六进制颜色
+}
+
+interface ColorScheme {
+  id: string;
+  name: string;
+  colors: ColorPart[];
 }
 
 interface ComponentColor {
-  componentCode: string;
-  colors: ColorPart[];
+  componentCode: string;  // 对应Component的code
+  colorSchemes: ColorScheme[]; // 改为多方案
 }
 
 export default function EditSkuPage() {
@@ -88,8 +96,10 @@ export default function EditSkuPage() {
 
   // 配色管理状态
   const [componentColors, setComponentColors] = useState<ComponentColor[]>([]);
-  const [editingColor, setEditingColor] = useState<ComponentColor | null>(null);
+  const [editingScheme, setEditingScheme] = useState<ColorScheme | null>(null);
+  const [editingSchemeComponentCode, setEditingSchemeComponentCode] = useState<string>('');
   const [isColorModalOpen, setIsColorModalOpen] = useState(false);
+  const [currentPartIndex, setCurrentPartIndex] = useState(0); // 当前配置的部件索引（渐进式）
 
   useEffect(() => {
     loadSku();
@@ -146,7 +156,16 @@ export default function EditSkuPage() {
           const specs = typeof data.productSpec === 'string'
             ? JSON.parse(data.productSpec)
             : data.productSpec;
-          setComponents(Array.isArray(specs) ? specs : []);
+
+          // 确保每个组件都有parts字段，如果没有则初始化为空数组
+          const normalizedSpecs = Array.isArray(specs)
+            ? specs.map(spec => ({
+                ...spec,
+                parts: spec.parts || []
+              }))
+            : [];
+
+          setComponents(normalizedSpecs);
         } catch (e) {
           console.error('Failed to parse productSpec:', e);
           setComponents([]);
@@ -159,7 +178,38 @@ export default function EditSkuPage() {
           const attrs = typeof data.additionalAttributes === 'string'
             ? JSON.parse(data.additionalAttributes)
             : data.additionalAttributes;
-          setComponentColors(Array.isArray(attrs) ? attrs : []);
+
+          if (Array.isArray(attrs)) {
+            // 处理旧格式转换（只有colors字段）到新格式（colorSchemes）
+            const normalizedColors = attrs.map(attr => {
+              // 如果已经是新格式(有colorSchemes字段)
+              if (attr.colorSchemes && Array.isArray(attr.colorSchemes)) {
+                return attr;
+              }
+
+              // 如果是旧格式(只有colors字段)，转换为新格式
+              if (attr.colors && Array.isArray(attr.colors) && attr.colors.length > 0) {
+                return {
+                  componentCode: attr.componentCode,
+                  colorSchemes: [{
+                    id: `scheme-${Date.now()}-1`,
+                    name: '方案1',
+                    colors: attr.colors
+                  }]
+                };
+              }
+
+              // 其他情况返回空方案列表
+              return {
+                componentCode: attr.componentCode,
+                colorSchemes: []
+              };
+            });
+
+            setComponentColors(normalizedColors);
+          } else {
+            setComponentColors([]);
+          }
         } catch (e) {
           console.error('Failed to parse additionalAttributes:', e);
           setComponentColors([]);
@@ -275,7 +325,7 @@ export default function EditSkuPage() {
 
   // 组件管理函数
   const handleAddComponent = () => {
-    setEditingComponent({ code: '', name: '', spec: '', description: '' });
+    setEditingComponent({ code: '', name: '', spec: '', parts: [] });
     setIsComponentModalOpen(true);
   };
 
@@ -297,14 +347,27 @@ export default function EditSkuPage() {
       return;
     }
 
+    if (!editingComponent.parts || editingComponent.parts.length === 0) {
+      toast.error('请至少添加一个部件');
+      return;
+    }
+
+    // 过滤掉空的部件名
+    const validParts = editingComponent.parts.filter(p => p.trim());
+    if (validParts.length === 0) {
+      toast.error('请至少添加一个有效的部件');
+      return;
+    }
+
+    const componentToSave = { ...editingComponent, parts: validParts };
     const existingIndex = components.findIndex(c => c.code === editingComponent.code);
 
     if (existingIndex >= 0) {
       const newComponents = [...components];
-      newComponents[existingIndex] = editingComponent;
+      newComponents[existingIndex] = componentToSave;
       setComponents(newComponents);
     } else {
-      setComponents([...components, editingComponent]);
+      setComponents([...components, componentToSave]);
     }
 
     setIsComponentModalOpen(false);
@@ -326,45 +389,115 @@ export default function EditSkuPage() {
   };
 
   // 配色管理函数
-  const handleAddColor = () => {
-    setEditingColor({ componentCode: '', colors: [] });
-    setIsColorModalOpen(true);
-  };
-
-  const handleEditColor = (color: ComponentColor) => {
-    setEditingColor({ ...color, colors: [...color.colors] });
-    setIsColorModalOpen(true);
-  };
-
-  const handleSaveColor = () => {
-    if (!editingColor) return;
-
-    if (!editingColor.componentCode.trim()) {
-      toast.error('请选择组件编号');
+  const handleAddColorScheme = (componentCode: string) => {
+    const component = components.find(c => c.code === componentCode);
+    if (!component) {
+      toast.error('组件不存在');
       return;
     }
 
-    if (editingColor.colors.length === 0) {
-      toast.error('请至少添加一个配色部件');
+    // 获取当前组件的配色数据
+    const componentColor = componentColors.find(cc => cc.componentCode === componentCode);
+    const existingSchemeCount = componentColor?.colorSchemes?.length || 0;
+
+    // 根据组件的parts创建初始颜色配置
+    const initialColors: ColorPart[] = component.parts.map(part => ({
+      part,
+      color: '',
+      hexColor: '#000000'
+    }));
+
+    setEditingScheme({
+      id: `scheme-${Date.now()}`,
+      name: `方案${existingSchemeCount + 1}`,
+      colors: initialColors
+    });
+    setEditingSchemeComponentCode(componentCode);
+    setCurrentPartIndex(0); // 重置为第一个部件
+    setIsColorModalOpen(true);
+  };
+
+  const handleEditColorScheme = (componentCode: string, scheme: ColorScheme) => {
+    setEditingScheme({
+      ...scheme,
+      colors: [...scheme.colors]
+    });
+    setEditingSchemeComponentCode(componentCode);
+    setCurrentPartIndex(0); // 重置为第一个部件
+    setIsColorModalOpen(true);
+  };
+
+  // 渐进式导航：下一个部件
+  const handleNextPart = () => {
+    if (!editingScheme) return;
+    if (currentPartIndex < editingScheme.colors.length - 1) {
+      setCurrentPartIndex(currentPartIndex + 1);
+    }
+  };
+
+  // 渐进式导航：上一个部件
+  const handlePrevPart = () => {
+    if (currentPartIndex > 0) {
+      setCurrentPartIndex(currentPartIndex - 1);
+    }
+  };
+
+  const handleSaveColorScheme = () => {
+    if (!editingScheme || !editingSchemeComponentCode) return;
+
+    // 验证必填字段
+    if (!editingScheme.name.trim()) {
+      toast.error('请输入方案名称');
       return;
     }
 
-    const existingIndex = componentColors.findIndex(cc => cc.componentCode === editingColor.componentCode);
+    if (!editingScheme.colors || editingScheme.colors.length === 0) {
+      toast.error('请至少添加一个部件颜色');
+      return;
+    }
+
+    // 验证每个颜色配置都有hexColor
+    const hasEmptyHex = editingScheme.colors.some(c => !c.hexColor.trim());
+    if (hasEmptyHex) {
+      toast.error('每个颜色配置都需要填写色号');
+      return;
+    }
+
+    // 查找或创建组件配色数据
+    const existingIndex = componentColors.findIndex(cc => cc.componentCode === editingSchemeComponentCode);
 
     if (existingIndex >= 0) {
-      const newColors = [...componentColors];
-      newColors[existingIndex] = editingColor;
-      setComponentColors(newColors);
+      // 组件已存在，更新或添加方案
+      const newComponentColors = [...componentColors];
+      const componentColor = newComponentColors[existingIndex];
+
+      // 查找方案是否已存在
+      const schemeIndex = componentColor.colorSchemes.findIndex(s => s.id === editingScheme.id);
+
+      if (schemeIndex >= 0) {
+        // 更新现有方案
+        componentColor.colorSchemes[schemeIndex] = editingScheme;
+      } else {
+        // 添加新方案
+        componentColor.colorSchemes.push(editingScheme);
+      }
+
+      setComponentColors(newComponentColors);
     } else {
-      setComponentColors([...componentColors, editingColor]);
+      // 组件不存在，创建新的组件配色
+      setComponentColors([...componentColors, {
+        componentCode: editingSchemeComponentCode,
+        colorSchemes: [editingScheme]
+      }]);
     }
 
     setIsColorModalOpen(false);
-    setEditingColor(null);
-    toast.success('配色已保存');
+    setEditingScheme(null);
+    setEditingSchemeComponentCode('');
+    toast.success('配色方案已保存');
   };
 
-  const handleDeleteColor = async (componentCode: string) => {
+  const handleDeleteColorScheme = async (componentCode: string, schemeId: string) => {
     const confirmed = await confirm({
       title: '确认删除',
       message: '确定要删除这个配色方案吗?',
@@ -372,29 +505,57 @@ export default function EditSkuPage() {
     });
     if (!confirmed) return;
 
-    setComponentColors(componentColors.filter(cc => cc.componentCode !== componentCode));
+    const newComponentColors = componentColors.map(cc => {
+      if (cc.componentCode === componentCode) {
+        return {
+          ...cc,
+          colorSchemes: cc.colorSchemes.filter(s => s.id !== schemeId)
+        };
+      }
+      return cc;
+    }).filter(cc => cc.colorSchemes.length > 0); // 移除没有方案的组件
+
+    setComponentColors(newComponentColors);
     toast.success('配色方案已删除');
   };
 
+  const handleDeleteComponentColor = async (componentCode: string) => {
+    const confirmed = await confirm({
+      title: '确认删除',
+      message: '确定要删除该组件的所有配色方案吗?',
+      type: 'danger',
+    });
+    if (!confirmed) return;
+
+    setComponentColors(componentColors.filter(cc => cc.componentCode !== componentCode));
+    toast.success('配色已删除');
+  };
+
+  // 颜色部件管理函数
   const handleAddColorPart = () => {
-    if (!editingColor) return;
-    setEditingColor({
-      ...editingColor,
-      colors: [...editingColor.colors, { part: '', color: '', hexColor: '' }]
+    if (!editingScheme) return;
+    setEditingScheme({
+      ...editingScheme,
+      colors: [...editingScheme.colors, { part: '', color: '', hexColor: '#000000' }]
     });
   };
 
   const handleUpdateColorPart = (index: number, field: 'part' | 'color' | 'hexColor', value: string) => {
-    if (!editingColor) return;
-    const newColors = [...editingColor.colors];
+    if (!editingScheme) return;
+    const newColors = [...editingScheme.colors];
     newColors[index][field] = value;
-    setEditingColor({ ...editingColor, colors: newColors });
+    setEditingScheme({
+      ...editingScheme,
+      colors: newColors
+    });
   };
 
   const handleDeleteColorPart = (index: number) => {
-    if (!editingColor) return;
-    const newColors = editingColor.colors.filter((_, i) => i !== index);
-    setEditingColor({ ...editingColor, colors: newColors });
+    if (!editingScheme) return;
+    setEditingScheme({
+      ...editingScheme,
+      colors: editingScheme.colors.filter((_, i) => i !== index)
+    });
   };
 
   const handleSave = async () => {
@@ -428,9 +589,15 @@ export default function EditSkuPage() {
         specification: sku.specification || null,
         title: sku.title || null,
         subtitle: sku.subtitle || null,
-        productSpec: components.length > 0 ? components : null,
-        additionalAttributes: componentColors.length > 0 ? componentColors : null,
       };
+
+      // 只有在有数据时才添加这两个字段（避免@IsObject验证器拒绝空数组）
+      if (components.length > 0) {
+        updateData.productSpec = components;
+      }
+      if (componentColors.length > 0) {
+        updateData.additionalAttributes = componentColors;
+      }
 
       // 如果有新上传的视频文件，先上传视频（使用带认证的API）
       if (videoFile) {
@@ -504,31 +671,7 @@ export default function EditSkuPage() {
                 <p className="text-sm text-gray-600 font-mono mt-1">{sku.productCode}</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => router.push('/admin/products')}
-                className="px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center gap-2 disabled:opacity-50"
-              >
-                {saving ? (
-                  <>
-                    <ButtonLoader />
-                    保存中...
-                  </>
-                ) : (
-                  <>
-                    <Save size={18} />
-                    保存
-                  </>
-                )}
-              </button>
-            </div>
+            {/* Buttons moved to bottom-right */}
           </div>
         </div>
       </div>
@@ -686,13 +829,13 @@ export default function EditSkuPage() {
                             <span className="text-gray-700 font-medium">{comp.name}</span>
                           </div>
                           {comp.spec && (
-                            <div className="text-sm text-gray-600 mb-1">
+                            <div className="text-sm text-gray-600 mb-2">
                               规格: {comp.spec}
                             </div>
                           )}
-                          {comp.description && (
-                            <div className="text-sm text-gray-500">
-                              说明: {comp.description}
+                          {comp.parts && comp.parts.length > 0 && (
+                            <div className="text-sm text-gray-600">
+                              部件: {comp.parts.join('、')}
                             </div>
                           )}
                         </div>
@@ -721,71 +864,141 @@ export default function EditSkuPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900">配色管理</h2>
-                <button
-                  onClick={handleAddColor}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium"
-                >
-                  <Plus size={16} />
-                  添加配色
-                </button>
               </div>
 
               {componentColors.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  暂无配色数据，点击"添加配色"开始添加
+                  请先在组件管理中添加组件，然后为组件添加配色方案
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {componentColors.map((compColor, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="font-bold text-green-600 mb-2">
-                            组件 {compColor.componentCode}
-                          </div>
-                          <div className="space-y-1">
-                            {compColor.colors && Array.isArray(compColor.colors) && compColor.colors.length > 0 ? (
-                              compColor.colors.map((colorPart, partIndex) => (
-                                <div key={partIndex} className="text-sm text-gray-700 flex items-center gap-2">
-                                  {colorPart.hexColor && (
-                                    <div
-                                      className="w-4 h-4 rounded border border-gray-300 flex-shrink-0"
-                                      style={{ backgroundColor: colorPart.hexColor }}
-                                      title={colorPart.hexColor}
-                                    />
-                                  )}
-                                  <span className="font-medium">{colorPart.part}:</span>{' '}
-                                  <span>{colorPart.color}</span>
-                                  {colorPart.hexColor && (
-                                    <span className="text-xs text-gray-400 font-mono">{colorPart.hexColor}</span>
-                                  )}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-sm text-gray-500">暂无配色数据</div>
+                <div className="space-y-6">
+                  {componentColors.map((compColor, index) => {
+                    const component = components.find(c => c.code === compColor.componentCode);
+                    return (
+                      <div
+                        key={index}
+                        className="border-2 border-gray-200 rounded-xl p-5 hover:border-blue-300 transition-all"
+                      >
+                        {/* 组件标题 */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-bold text-blue-600 text-lg">[{compColor.componentCode}]</span>
+                              <span className="font-semibold text-gray-900">{component?.name || '未知组件'}</span>
+                            </div>
+                            {component?.spec && (
+                              <div className="text-sm text-gray-600">
+                                规格: {component.spec}
+                              </div>
                             )}
                           </div>
-                        </div>
-                        <div className="flex gap-2">
                           <button
-                            onClick={() => handleEditColor(compColor)}
+                            onClick={() => handleAddColorScheme(compColor.componentCode)}
                             className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                            title="添加配色方案"
                           >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteColor(compColor.componentCode)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                          >
-                            <Trash2 size={16} />
+                            <Plus size={18} />
                           </button>
                         </div>
+
+                        {/* 配色方案列表 */}
+                        {compColor.colorSchemes && compColor.colorSchemes.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {compColor.colorSchemes.map((scheme) => (
+                              <div
+                                key={scheme.id}
+                                className="bg-gray-50 border border-gray-300 rounded-lg p-4 hover:border-green-400 hover:shadow-md transition-all group"
+                              >
+                                {/* 方案名称和操作图标 */}
+                                <div className="flex items-center justify-between mb-3">
+                                  <h4 className="font-semibold text-gray-900">{scheme.name}</h4>
+                                  <div className="flex gap-1">
+                                    <button
+                                      onClick={() => handleEditColorScheme(compColor.componentCode, scheme)}
+                                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
+                                      title="编辑方案"
+                                    >
+                                      <Edit2 size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteColorScheme(compColor.componentCode, scheme.id)}
+                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-all"
+                                      title="删除方案"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* 颜色方块显示 */}
+                                <div className="space-y-2">
+                                  {scheme.colors && scheme.colors.length > 0 ? (
+                                    scheme.colors.map((colorPart, colorIndex) => (
+                                      <div
+                                        key={colorIndex}
+                                        className="flex items-center gap-2 bg-white px-2 py-1.5 rounded border border-gray-200"
+                                      >
+                                        {/* 颜色方块 */}
+                                        {colorPart.hexColor && (
+                                          <div
+                                            className="w-6 h-6 rounded border-2 border-gray-400 flex-shrink-0"
+                                            style={{ backgroundColor: colorPart.hexColor }}
+                                            title={colorPart.hexColor}
+                                          />
+                                        )}
+                                        {/* 部件名和颜色名 */}
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-xs font-semibold text-gray-700 truncate">
+                                            {colorPart.part}
+                                          </div>
+                                          <div className="text-xs text-gray-500 truncate">
+                                            {colorPart.color || colorPart.hexColor}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="text-xs text-gray-400 text-center py-2">暂无配色</div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                            <div className="text-gray-400 mb-3">暂无配色方案</div>
+                            <button
+                              onClick={() => handleAddColorScheme(compColor.componentCode)}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium"
+                            >
+                              <Plus size={16} />
+                              添加第一个方案
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 为没有配色的组件显示添加按钮 */}
+              {components.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-wrap gap-2">
+                    {components
+                      .filter(comp => !componentColors.some(cc => cc.componentCode === comp.code))
+                      .map(comp => (
+                        <button
+                          key={comp.code}
+                          onClick={() => handleAddColorScheme(comp.code)}
+                          className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium"
+                        >
+                          <Plus size={16} />
+                          为 [{comp.code}] {comp.name} 添加配色
+                        </button>
+                      ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -793,7 +1006,7 @@ export default function EditSkuPage() {
 
           {/* 右侧：基本信息（可编辑） */}
           <div className="h-full">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <h2 className="text-lg font-bold text-gray-900">基本信息</h2>
 
               {/* 品号 (可编辑) */}
@@ -925,6 +1138,37 @@ export default function EditSkuPage() {
         </div>
       </div>
 
+      {/* 粘性底部按钮栏 */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => router.push('/admin/products')}
+              className="px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
+            >
+              取消
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center gap-2 disabled:opacity-50"
+            >
+              {saving ? (
+                <>
+                  <ButtonLoader />
+                  保存中...
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  保存
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* 组件编辑模态框 */}
       {isComponentModalOpen && editingComponent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -954,30 +1198,65 @@ export default function EditSkuPage() {
                   value={editingComponent.name}
                   onChange={(e) => setEditingComponent({ ...editingComponent, name: e.target.value })}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="例如: 伸缩铁杆"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">规格参数 *</label>
-                <input
-                  type="text"
-                  value={editingComponent.spec}
-                  onChange={(e) => setEditingComponent({ ...editingComponent, spec: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="例如: φ19/22*0.27mm*1200mm"
+                  placeholder="例如: 伸缩杆"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  说明 <span className="text-xs text-gray-500">(选填)</span>
+                  规格参数 <span className="text-xs text-gray-500">(选填)</span>
                 </label>
                 <input
                   type="text"
-                  value={editingComponent.description || ''}
-                  onChange={(e) => setEditingComponent({ ...editingComponent, description: e.target.value })}
+                  value={editingComponent.spec || ''}
+                  onChange={(e) => setEditingComponent({ ...editingComponent, spec: e.target.value })}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="例如: 意标螺纹"
+                  placeholder="例如: φ22*1200mm"
                 />
+              </div>
+
+              {/* 部件列表管理 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  部件列表 * <span className="text-xs text-gray-500">(至少1个)</span>
+                </label>
+                <div className="space-y-2">
+                  {(editingComponent.parts || []).map((part, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={part}
+                        onChange={(e) => {
+                          const newParts = [...(editingComponent.parts || [])];
+                          newParts[index] = e.target.value;
+                          setEditingComponent({ ...editingComponent, parts: newParts });
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        placeholder="如: 喷塑、塑件"
+                      />
+                      <button
+                        onClick={() => {
+                          const newParts = (editingComponent.parts || []).filter((_, i) => i !== index);
+                          setEditingComponent({ ...editingComponent, parts: newParts });
+                        }}
+                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => {
+                      const newParts = [...(editingComponent.parts || []), ''];
+                      setEditingComponent({ ...editingComponent, parts: newParts });
+                    }}
+                    className="w-full py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-blue-400 hover:text-blue-600 transition-all text-sm font-medium"
+                  >
+                    + 添加部件
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  部件用于配色管理，如: 喷塑、塑件、手柄等
+                </p>
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3">
@@ -1001,168 +1280,214 @@ export default function EditSkuPage() {
         </div>
       )}
 
-      {/* 配色编辑模态框 */}
-      {isColorModalOpen && editingColor && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 sticky top-0 bg-white">
+      {/* 配色编辑模态框 - Apple风格渐进式 */}
+      {isColorModalOpen && editingScheme && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">
-                {componentColors.find(cc => cc.componentCode === editingColor.componentCode) ? '编辑配色' : '添加配色'}
+                {componentColors.find(cc => cc.componentCode === editingSchemeComponentCode)?.colorSchemes.some(s => s.id === editingScheme.id)
+                  ? '编辑配色方案'
+                  : '添加配色方案'}
               </h3>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">组件编号 *</label>
-                <select
-                  value={editingColor.componentCode}
-                  onChange={(e) => setEditingColor({ ...editingColor, componentCode: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="">请选择组件</option>
-                  {components.map(comp => (
-                    <option key={comp.code} value={comp.code}>
-                      {comp.code} - {comp.name}
-                    </option>
-                  ))}
-                </select>
+              <p className="text-sm text-gray-600 mt-1">
+                [{editingSchemeComponentCode}] {components.find(c => c.code === editingSchemeComponentCode)?.name}
+              </p>
+
+              {/* 方案名称 */}
+              <div className="mt-4">
+                <input
+                  type="text"
+                  value={editingScheme.name}
+                  onChange={(e) => setEditingScheme({ ...editingScheme, name: e.target.value })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all font-medium"
+                  placeholder="方案名称"
+                />
               </div>
+            </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-semibold text-gray-700">配色部件</label>
-                  <button
-                    onClick={handleAddColorPart}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium"
-                  >
-                    <Plus size={14} />
-                    添加部件
-                  </button>
+            {/* Body - 渐进式部件配置 */}
+            <div className="p-8">
+              {editingScheme.colors.length === 0 ? (
+                <div className="text-center py-12 text-gray-500 text-sm">
+                  此组件没有配置部件，请先在组件管理中添加部件
                 </div>
-
-                {editingColor.colors.length === 0 ? (
-                  <div className="text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-lg">
-                    暂无配色部件，点击"添加部件"开始添加
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {editingColor.colors.map((colorPart, index) => (
-                      <div key={index} className="border-2 border-gray-200 rounded-lg p-3 space-y-2">
-                        {/* 部件名 */}
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">部件名称</label>
-                          <input
-                            type="text"
-                            value={colorPart.part}
-                            onChange={(e) => handleUpdateColorPart(index, 'part', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                            placeholder="如: 喷塑、电镀、拉丝"
-                          />
-                        </div>
-
-                        {/* 颜色名称 */}
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">颜色名称</label>
-                          <input
-                            type="text"
-                            value={colorPart.color}
-                            onChange={(e) => handleUpdateColorPart(index, 'color', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                            placeholder="如: 3C冷灰、磨砂黑"
-                          />
-                        </div>
-
-                        {/* 16进制色号 + 颜色选择器 */}
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">色号 (选填)</label>
-                          <div className="flex gap-2">
-                            <div className="flex-1 relative">
-                              <input
-                                type="text"
-                                value={colorPart.hexColor || ''}
-                                onChange={(e) => handleUpdateColorPart(index, 'hexColor', e.target.value)}
-                                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-mono"
-                                placeholder="#3C3C3C"
-                                maxLength={7}
-                              />
-                              {colorPart.hexColor && (
-                                <div
-                                  className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-gray-300"
-                                  style={{ backgroundColor: colorPart.hexColor }}
-                                />
-                              )}
-                            </div>
-                            <input
-                              type="color"
-                              value={colorPart.hexColor || '#000000'}
-                              onChange={(e) => handleUpdateColorPart(index, 'hexColor', e.target.value)}
-                              className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
-                              title="选择颜色"
-                            />
-                          </div>
-                        </div>
-
-                        {/* 常用色板 */}
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">常用色</label>
-                          <div className="grid grid-cols-8 gap-1">
-                            {[
-                              { name: '黑色', hex: '#000000' },
-                              { name: '白色', hex: '#FFFFFF' },
-                              { name: '冷灰', hex: '#3C3C3C' },
-                              { name: '暖灰', hex: '#6B6B6B' },
-                              { name: '银色', hex: '#C0C0C0' },
-                              { name: '金色', hex: '#FFD700' },
-                              { name: '红色', hex: '#E74C3C' },
-                              { name: '蓝色', hex: '#3498DB' },
-                            ].map((preset) => (
-                              <button
-                                key={preset.hex}
-                                type="button"
-                                onClick={() => {
-                                  handleUpdateColorPart(index, 'hexColor', preset.hex);
-                                  if (!colorPart.color) {
-                                    handleUpdateColorPart(index, 'color', preset.name);
-                                  }
-                                }}
-                                className="w-8 h-8 rounded border-2 border-gray-300 hover:border-green-500 transition-all"
-                                style={{ backgroundColor: preset.hex }}
-                                title={preset.name}
-                              />
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 删除按钮 */}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteColorPart(index)}
-                          className="w-full py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all text-sm font-medium flex items-center justify-center gap-1"
-                        >
-                          <Trash2 size={14} />
-                          删除此部件
-                        </button>
-                      </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* 进度指示器 */}
+                  <div className="flex items-center gap-3">
+                    {editingScheme.colors.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentPartIndex(index)}
+                        className={`flex-1 h-1.5 rounded-full transition-all ${
+                          index === currentPartIndex
+                            ? 'bg-green-600'
+                            : index < currentPartIndex
+                            ? 'bg-green-400'
+                            : 'bg-gray-200'
+                        }`}
+                        title={`${editingScheme.colors[index].part}${index < currentPartIndex ? ' (已完成)' : index === currentPartIndex ? ' (当前)' : ' (待配置)'}`}
+                      />
                     ))}
                   </div>
-                )}
-              </div>
+
+                  {/* 已完成部件预览 */}
+                  {currentPartIndex > 0 && (
+                    <div className="space-y-2">
+                      {editingScheme.colors.slice(0, currentPartIndex).map((colorPart, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <span className="font-medium">{colorPart.part}:</span>
+                          <div
+                            className="w-5 h-5 rounded border-2 border-gray-300"
+                            style={{ backgroundColor: colorPart.hexColor }}
+                            title={colorPart.hexColor}
+                          />
+                          <span className="text-gray-500">{colorPart.color || colorPart.hexColor}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 当前配置的部件 */}
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="inline-block px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-4">
+                        步骤 {currentPartIndex + 1} / {editingScheme.colors.length}
+                      </div>
+                      <h4 className="text-lg font-bold text-gray-900 mb-2">
+                        配置：{editingScheme.colors[currentPartIndex].part}
+                      </h4>
+                      <div className="w-16 h-1 bg-green-500 rounded-full mx-auto" />
+                    </div>
+
+                    {/* 颜色名称（可选） */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
+                        颜色名称 <span className="text-gray-400">(可选)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={editingScheme.colors[currentPartIndex].color}
+                        onChange={(e) => handleUpdateColorPart(currentPartIndex, 'color', e.target.value)}
+                        className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                        placeholder="如: 3C冷灰、经典黑"
+                      />
+                    </div>
+
+                    {/* 色号输入 + 取色器 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
+                        色号 <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex gap-3">
+                        <div className="flex-1 relative">
+                          <input
+                            type="text"
+                            value={editingScheme.colors[currentPartIndex].hexColor || ''}
+                            onChange={(e) => handleUpdateColorPart(currentPartIndex, 'hexColor', e.target.value)}
+                            className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-base"
+                            placeholder="#000000"
+                            maxLength={7}
+                          />
+                          {editingScheme.colors[currentPartIndex].hexColor && (
+                            <div
+                              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg border-2 border-gray-400 shadow-sm"
+                              style={{ backgroundColor: editingScheme.colors[currentPartIndex].hexColor }}
+                            />
+                          )}
+                        </div>
+                        <input
+                          type="color"
+                          value={editingScheme.colors[currentPartIndex].hexColor || '#000000'}
+                          onChange={(e) => handleUpdateColorPart(currentPartIndex, 'hexColor', e.target.value)}
+                          className="w-16 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                          title="取色器"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 快速选择色板 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-3">
+                        快速选择
+                      </label>
+                      <div className="grid grid-cols-8 gap-2">
+                        {[
+                          { name: '黑色', hex: '#000000' },
+                          { name: '白色', hex: '#FFFFFF' },
+                          { name: '3C冷灰', hex: '#3C3C3C' },
+                          { name: '10C冷灰', hex: '#6B6B6B' },
+                          { name: '银色', hex: '#C0C0C0' },
+                          { name: '金色', hex: '#FFD700' },
+                          { name: '红色', hex: '#E74C3C' },
+                          { name: '蓝色', hex: '#3498DB' },
+                        ].map((preset) => (
+                          <button
+                            key={preset.hex}
+                            type="button"
+                            onClick={() => {
+                              handleUpdateColorPart(currentPartIndex, 'hexColor', preset.hex);
+                              if (!editingScheme.colors[currentPartIndex].color) {
+                                handleUpdateColorPart(currentPartIndex, 'color', preset.name);
+                              }
+                            }}
+                            className="aspect-square rounded-lg border-2 border-gray-300 hover:border-green-500 hover:scale-110 transition-all shadow-sm"
+                            style={{ backgroundColor: preset.hex }}
+                            title={preset.name}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="p-6 border-t border-gray-200 flex gap-3 sticky bottom-0 bg-white">
+
+            {/* Footer - 导航按钮 */}
+            <div className="p-6 border-t border-gray-200 flex gap-3">
               <button
                 onClick={() => {
                   setIsColorModalOpen(false);
-                  setEditingColor(null);
+                  setEditingScheme(null);
+                  setEditingSchemeComponentCode('');
+                  setCurrentPartIndex(0);
                 }}
-                className="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
+                className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
               >
                 取消
               </button>
-              <button
-                onClick={handleSaveColor}
-                className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium"
-              >
-                保存
-              </button>
+
+              {currentPartIndex > 0 && (
+                <button
+                  onClick={handlePrevPart}
+                  className="px-6 py-2.5 border-2 border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-all font-medium"
+                >
+                  ← 上一步
+                </button>
+              )}
+
+              {currentPartIndex < editingScheme.colors.length - 1 ? (
+                <button
+                  onClick={handleNextPart}
+                  className="flex-1 px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium"
+                >
+                  下一步 →
+                </button>
+              ) : (
+                <button
+                  onClick={handleSaveColorScheme}
+                  className="flex-1 px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium"
+                >
+                  完成配置 ✓
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -11,6 +11,14 @@ import {
   MinLength,
 } from 'class-validator';
 
+// 产品可见性枚举
+enum ProductVisibility {
+  ALL = 'ALL',
+  STANDARD = 'STANDARD',
+  VIP = 'VIP',
+  SVIP = 'SVIP',
+}
+
 // Category DTOs (2025-10-31 updated)
 export class CreateCategoryDto {
   @IsString()
@@ -116,6 +124,10 @@ export class CreateProductGroupDto {
   @IsNumber()
   @IsOptional()
   sortOrder?: number; // CHANGED: displayOrder → sortOrder
+
+  @IsEnum(ProductVisibility)
+  @IsOptional()
+  visibilityTier?: ProductVisibility; // NEW: 产品可见性
 }
 
 export class UpdateProductGroupDto {
@@ -165,6 +177,10 @@ export class UpdateProductGroupDto {
   @IsNumber()
   @IsOptional()
   sortOrder?: number; // CHANGED: displayOrder → sortOrder
+
+  @IsEnum(ProductVisibility)
+  @IsOptional()
+  visibilityTier?: ProductVisibility; // NEW: 产品可见性
 }
 
 // Product SKU DTOs (2025-10-31 updated)
@@ -196,13 +212,11 @@ export class CreateProductSkuDto {
   @IsOptional()
   specification?: string; // NEW: 货品规格原始文本
 
-  @IsObject()
   @IsOptional()
-  productSpec?: any; // NEW: 解析后的部件规格 (JSON数组)
+  productSpec?: any; // NEW: 解析后的部件规格 (JSON数组) - 不用@IsObject因为它是数组
 
-  @IsObject()
   @IsOptional()
-  additionalAttributes?: any; // NEW: 解析后的颜色属性 (JSON数组)
+  additionalAttributes?: any; // NEW: 解析后的颜色属性 (JSON数组) - 不用@IsObject因为它是数组
 
   @IsNumber()
   @Min(0)
@@ -253,13 +267,11 @@ export class UpdateProductSkuDto {
   @IsOptional()
   specification?: string;
 
-  @IsObject()
   @IsOptional()
-  productSpec?: any;
+  productSpec?: any; // 可以是数组或对象，不使用@IsObject限制
 
-  @IsObject()
   @IsOptional()
-  additionalAttributes?: any;
+  additionalAttributes?: any; // 可以是数组或对象，不使用@IsObject限制
 
   @IsNumber()
   @Min(0)
