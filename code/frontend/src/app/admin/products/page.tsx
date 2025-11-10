@@ -126,7 +126,7 @@ export default function ProductsPage() {
         }
       }, 300);
     }
-  }, [scrollToId, loading, skus]);
+  }, [searchParams, loading, skus]);
 
   const handleDownloadTemplate = () => {
     productApi.downloadTemplate();
