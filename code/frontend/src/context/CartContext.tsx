@@ -9,8 +9,11 @@ interface CartContextType {
   removeItem: (skuId: string) => void
   updateQuantity: (skuId: string, quantity: number) => void
   clearCart: () => void
+  removeSelectedItems: () => void
   totalItems: number
   totalPrice: number
+  selectedItems: string[]
+  setSelectedItems: (items: string[]) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -18,13 +21,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
 
   // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem('lemopx_cart')
     if (savedCart) {
       try {
-        setItems(JSON.parse(savedCart))
+        const parsedItems = JSON.parse(savedCart)
+        setItems(parsedItems)
+        // Initialize all items as selected
+        setSelectedItems(parsedItems.map((item: CartItem) => item.skuId))
       } catch (error) {
         console.error('Failed to load cart:', error)
       }
@@ -73,6 +80,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setItems([])
+    setSelectedItems([])
+  }
+
+  const removeSelectedItems = () => {
+    setItems((prevItems) => prevItems.filter((item) => !selectedItems.includes(item.skuId)))
+    setSelectedItems([])
   }
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
@@ -86,8 +99,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeItem,
         updateQuantity,
         clearCart,
+        removeSelectedItems,
         totalItems,
         totalPrice,
+        selectedItems,
+        setSelectedItems,
       }}
     >
       {children}
