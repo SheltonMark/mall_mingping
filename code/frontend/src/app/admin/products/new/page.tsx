@@ -297,155 +297,10 @@ export default function NewProductSkuPage() {
         </div>
 
         {/* 表单 */}
-        <form onSubmit={handleSubmit} className="grid lg:grid-cols-[60fr_40fr] gap-6">
-          {/* 左侧：组件和配色管理 */}
-          <div className="space-y-6">
-            {/* 组件管理 */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">组件管理</h2>
-                <button
-                  type="button"
-                  onClick={handleAddComponent}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium"
-                >
-                  <Plus size={16} />
-                  添加组件
-                </button>
-              </div>
-
-              {components.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  暂无组件数据，点击"添加组件"开始添加
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {components.map((comp, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-bold text-blue-600">{comp.code}</span>
-                            <span className="text-gray-700 font-medium">{comp.name}</span>
-                          </div>
-                          {comp.spec && (
-                            <div className="text-sm text-gray-600 mb-1">
-                              规格: {comp.spec}
-                            </div>
-                          )}
-                          {comp.description && (
-                            <div className="text-sm text-gray-500">
-                              说明: {comp.description}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditComponent(comp)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteComponent(comp.code)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* 配色管理 */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">配色管理</h2>
-                <button
-                  type="button"
-                  onClick={handleAddColor}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium"
-                >
-                  <Plus size={16} />
-                  添加配色
-                </button>
-              </div>
-
-              {componentColors.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  暂无配色数据，点击"添加配色"开始添加
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {componentColors.map((compColor, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="font-bold text-green-600 mb-2">
-                            组件 {compColor.componentCode}
-                          </div>
-                          <div className="space-y-1">
-                            {compColor.colors && Array.isArray(compColor.colors) && compColor.colors.length > 0 ? (
-                              compColor.colors.map((colorPart, partIndex) => (
-                                <div key={partIndex} className="text-sm text-gray-700 flex items-center gap-2">
-                                  {colorPart.hexColor && (
-                                    <div
-                                      className="w-4 h-4 rounded border border-gray-300 flex-shrink-0"
-                                      style={{ backgroundColor: colorPart.hexColor }}
-                                      title={colorPart.hexColor}
-                                    />
-                                  )}
-                                  <span className="font-medium">{colorPart.part}:</span>{' '}
-                                  <span>{colorPart.color}</span>
-                                  {colorPart.hexColor && (
-                                    <span className="text-xs text-gray-400 font-mono">{colorPart.hexColor}</span>
-                                  )}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-sm text-gray-500">暂无配色数据</div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditColor(compColor)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteColor(compColor.componentCode)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 右侧：基本信息 */}
-          <div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-24">
-              <h2 className="text-lg font-bold text-gray-900 mb-6">基本信息</h2>
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          {/* 基本信息 - Centered */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">基本信息</h2>
 
               <div className="space-y-5">
                 {/* 品号 */}
@@ -557,33 +412,32 @@ export default function NewProductSkuPage() {
                 </div>
               </div>
 
-              {/* 提交按钮 */}
-              <div className="mt-6 pt-6 border-t border-gray-200 flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => router.push('/admin/products')}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-all font-semibold"
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {creating ? (
-                    <>
-                      <ButtonLoader />
-                      <span>创建中...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus size={18} />
-                      <span>创建规格</span>
-                    </>
-                  )}
-                </button>
-              </div>
+            {/* 提交按钮 */}
+            <div className="mt-6 pt-6 border-t border-gray-200 flex gap-4">
+              <button
+                type="button"
+                onClick={() => router.push('/admin/products')}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-all font-semibold"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                disabled={creating}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {creating ? (
+                  <>
+                    <ButtonLoader />
+                    <span>创建中...</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus size={18} />
+                    <span>创建规格</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </form>

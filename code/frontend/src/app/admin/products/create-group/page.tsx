@@ -76,7 +76,7 @@ export default function CreateGroupPage() {
       });
 
       toast.success('产品系列创建成功！');
-      router.push('/admin/products');
+      router.push('/admin/products?scrollToBottom=true');
     } catch (error: any) {
       console.error('Failed to create group:', error);
       toast.error(`创建失败: ${error.message || '未知错误'}`);

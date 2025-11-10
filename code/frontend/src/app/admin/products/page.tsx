@@ -109,6 +109,20 @@ export default function ProductsPage() {
     }
   };
 
+  // 创建系列后滚动到页面底部
+  useEffect(() => {
+    const scrollToBottom = searchParams?.get('scrollToBottom');
+    if (scrollToBottom === 'true' && !loading) {
+      setTimeout(() => {
+        const scrollHeight = Math.max(
+          document.body.scrollHeight,
+          document.documentElement.scrollHeight
+        );
+        window.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+      }, 300);
+    }
+  }, [searchParams, loading]);
+
   // 滚动到新增的SKU（页面最底部）
   useEffect(() => {
     const scrollToId = searchParams?.get('scrollTo');
