@@ -237,12 +237,36 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
   }, []);
 
   // 初始化精选产品（如果不存在）
-  const featuredProducts = config.featured_products || [
-    { title: '', description: '', image: '', link: '' },
-    { title: '', description: '', image: '', link: '' },
-    { title: '', description: '', image: '', link: '' },
-    { title: '', description: '', image: '', link: '' },
-  ];
+  const parseFeaturedProducts = () => {
+    if (!config.featured_products) {
+      return [
+        { title: '', description: '', image: '', link: '' },
+        { title: '', description: '', image: '', link: '' },
+        { title: '', description: '', image: '', link: '' },
+        { title: '', description: '', image: '', link: '' },
+      ];
+    }
+
+    // 如果是字符串,解析它
+    if (typeof config.featured_products === 'string') {
+      try {
+        return JSON.parse(config.featured_products);
+      } catch (e) {
+        console.error('Failed to parse featured_products:', e);
+        return [
+          { title: '', description: '', image: '', link: '' },
+          { title: '', description: '', image: '', link: '' },
+          { title: '', description: '', image: '', link: '' },
+          { title: '', description: '', image: '', link: '' },
+        ];
+      }
+    }
+
+    // 如果已经是数组,直接返回
+    return config.featured_products;
+  };
+
+  const featuredProducts = parseFeaturedProducts();
 
   // 更新精选产品
   const updateFeaturedProduct = (index: number, field: string, value: string) => {
@@ -407,7 +431,7 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
         <p className="text-sm text-gray-600 mb-6">配置首页展示的4个精选产品卡片，用户点击后将跳转到对应的产品系列详情页</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {featuredProducts.map((product, index) => (
+          {featuredProducts.map((product: any, index: number) => (
             <div key={index} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-semibold text-gray-900">产品 {index + 1}</h4>
@@ -475,7 +499,7 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
                 {/* 描述 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    产品描述 <span className="text-red-500">*</span>
+                    产品描述(中文) <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={product.description}
@@ -483,6 +507,34 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
                     rows={2}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="例：专业级别清洁工具，适用于多种场景"
+                  />
+                </div>
+
+                {/* 英文标题 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    产品标题(英文)
+                  </label>
+                  <input
+                    type="text"
+                    value={product.title_en || ''}
+                    onChange={(e) => updateFeaturedProduct(index, 'title_en', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Example: Professional Cleaning Kit"
+                  />
+                </div>
+
+                {/* 英文描述 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    产品描述(英文)
+                  </label>
+                  <textarea
+                    value={product.description_en || ''}
+                    onChange={(e) => updateFeaturedProduct(index, 'description_en', e.target.value)}
+                    rows={2}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Example: Professional-grade cleaning tools for various scenarios"
                   />
                 </div>
 

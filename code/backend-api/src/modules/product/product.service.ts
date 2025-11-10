@@ -30,6 +30,135 @@ export class ProductService {
     private fileUploadService: FileUploadService,
   ) {}
 
+  // Helper method to enrich productSpec with bilingual component names
+  private async enrichProductSpecWithComponents(productSpec: any): Promise<any> {
+    if (!productSpec || !Array.isArray(productSpec) || productSpec.length === 0) {
+      return productSpec;
+    }
+
+    // Get all component codes from productSpec
+    const componentCodes = productSpec.map((spec: any) => spec.code).filter(Boolean);
+
+    if (componentCodes.length === 0) {
+      return productSpec;
+    }
+
+    // Fetch all components from database
+    const components = await this.prisma.component.findMany({
+      where: {
+        code: { in: componentCodes },
+        isActive: true,
+      },
+    });
+
+    // Create a map for quick lookup
+    const componentMap = new Map(
+      components.map((c) => [c.code, { nameZh: c.nameZh, nameEn: c.nameEn }])
+    );
+
+    // Enrich productSpec with bilingual names
+    return productSpec.map((spec: any) => ({
+      ...spec,
+      name: spec.name || componentMap.get(spec.code)?.nameZh || spec.code,
+      nameEn: componentMap.get(spec.code)?.nameEn || spec.name || spec.code,
+    }));
+  }
+
+  /**
+   * Enrich additionalAttributes with part translations from component configuration
+   */
+  private async enrichAdditionalAttributesWithParts(
+    additionalAttributes: any,
+    productSpec: any
+  ): Promise<any> {
+    console.log('🔍 [Enrich Parts] Called');
+
+    if (!additionalAttributes || !Array.isArray(additionalAttributes) || additionalAttributes.length === 0) {
+      console.log('⚠️  [Enrich Parts] Skipped: No additionalAttributes');
+      return additionalAttributes;
+    }
+
+    if (!productSpec || !Array.isArray(productSpec) || productSpec.length === 0) {
+      console.log('⚠️  [Enrich Parts] Skipped: No productSpec');
+      return additionalAttributes;
+    }
+
+    // Get all component codes
+    const componentCodes = productSpec.map((spec: any) => spec.code).filter(Boolean);
+    if (componentCodes.length === 0) {
+      return additionalAttributes;
+    }
+
+    // Fetch components with parts
+    const components = await this.prisma.component.findMany({
+      where: {
+        code: { in: componentCodes },
+        isActive: true,
+      },
+    });
+
+    // Create a map: componentCode -> { parts: Map<partNameZh, partNameEn> }
+    const componentPartsMap = new Map<string, Map<string, string>>();
+
+    components.forEach((component) => {
+      if (component.parts && Array.isArray(component.parts)) {
+        const partsMap = new Map<string, string>();
+        (component.parts as any[]).forEach((part) => {
+          if (part.nameZh && part.nameEn) {
+            partsMap.set(part.nameZh, part.nameEn);
+          }
+        });
+        componentPartsMap.set(component.code, partsMap);
+      }
+    });
+
+    // Enrich additionalAttributes with part translations
+    return additionalAttributes.map((attr: any) => {
+      const componentCode = attr.componentCode;
+      if (!componentCode) return attr;
+
+      const partsMap = componentPartsMap.get(componentCode);
+      if (!partsMap) return attr;
+
+      // Enrich colorSchemes
+      if (attr.colorSchemes && Array.isArray(attr.colorSchemes)) {
+        const enrichedSchemes = attr.colorSchemes.map((scheme: any) => {
+          if (scheme.colors && Array.isArray(scheme.colors)) {
+            const enrichedColors = scheme.colors.map((colorPart: any) => {
+              if (colorPart.part) {
+                const partEn = partsMap.get(colorPart.part);
+                // 合并成"中文/English"格式，如果part已经包含/，则不处理
+                const bilingualPart = colorPart.part.includes('/')
+                  ? colorPart.part
+                  : `${colorPart.part}/${partEn || colorPart.part}`;
+
+                return {
+                  ...colorPart,
+                  part: bilingualPart, // 更新part为双语格式
+                  partEn: partEn || colorPart.part, // 保留partEn字段以便需要时使用
+                };
+              }
+              return colorPart;
+            });
+
+            return {
+              ...scheme,
+              colors: enrichedColors,
+            };
+          }
+          return scheme;
+        });
+
+        return {
+          ...attr,
+          colorSchemes: enrichedSchemes,
+        };
+      }
+
+      return attr;
+    });
+  }
+
   // ============ Category Methods ============
   async createCategory(dto: CreateCategoryDto) {
     // Check if code already exists
@@ -264,6 +393,21 @@ export class ProductService {
       throw new NotFoundException('Product group not found');
     }
 
+    // Enrich productSpec for each SKU with bilingual component names
+    if (group.skus && group.skus.length > 0) {
+      for (const sku of group.skus) {
+        if (sku.productSpec) {
+          sku.productSpec = await this.enrichProductSpecWithComponents(sku.productSpec);
+        }
+        if (sku.additionalAttributes && sku.productSpec) {
+          sku.additionalAttributes = await this.enrichAdditionalAttributesWithParts(
+            sku.additionalAttributes,
+            sku.productSpec
+          );
+        }
+      }
+    }
+
     return group;
   }
 
@@ -416,6 +560,19 @@ export class ProductService {
 
     if (!sku) {
       throw new NotFoundException('Product SKU not found');
+    }
+
+    // Enrich productSpec with bilingual component names
+    if (sku.productSpec) {
+      sku.productSpec = await this.enrichProductSpecWithComponents(sku.productSpec);
+    }
+
+    // Enrich additionalAttributes with part translations
+    if (sku.additionalAttributes && sku.productSpec) {
+      sku.additionalAttributes = await this.enrichAdditionalAttributesWithParts(
+        sku.additionalAttributes,
+        sku.productSpec
+      );
     }
 
     return sku;

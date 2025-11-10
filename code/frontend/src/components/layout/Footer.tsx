@@ -70,7 +70,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  Professional Series
+                  {t('footer.professional_series')}
                 </Link>
               </li>
             </ul>
@@ -89,12 +89,12 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  Our Story
+                  {t('footer.our_story')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  Sustainability
+                  {t('footer.sustainability')}
                 </Link>
               </li>
               <li>
@@ -118,17 +118,17 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  Help Center
+                  {t('footer.help_center')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  Privacy Policy
+                  {t('footer.privacy_policy')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  Terms of Service
+                  {t('footer.terms_of_service')}
                 </Link>
               </li>
             </ul>

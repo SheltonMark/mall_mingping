@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { productApi, uploadApi, getServerUrl } from '@/lib/adminApi';
+import { productApi, uploadApi, getServerUrl, componentApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
 import {
@@ -48,12 +48,14 @@ interface ProductSku {
 interface Component {
   code: string;
   name: string;
+  name_en?: string;   // 组件英文名称
   spec?: string;      // 规格描述(可选)
   parts: string[];    // 部件列表(必须至少1个),如["喷塑", "塑件"]
 }
 
 interface ColorPart {
   part: string;       // 部件名称
+  part_en?: string;   // 部件英文名称
   color: string;      // 颜色描述
   hexColor: string;   // 十六进制颜色
 }
@@ -61,6 +63,7 @@ interface ColorPart {
 interface ColorScheme {
   id: string;
   name: string;
+  name_en?: string;   // 方案英文名称
   colors: ColorPart[];
 }
 
@@ -101,8 +104,12 @@ export default function EditSkuPage() {
   const [isColorModalOpen, setIsColorModalOpen] = useState(false);
   const [currentPartIndex, setCurrentPartIndex] = useState(0); // 当前配置的部件索引（渐进式）
 
+  // 可选组件列表（从组件配置管理表中加载）
+  const [availableComponents, setAvailableComponents] = useState<any[]>([]);
+
   useEffect(() => {
     loadSku();
+    loadAvailableComponents();
   }, [skuId]);
 
   const loadSku = async () => {
@@ -220,6 +227,17 @@ export default function EditSkuPage() {
       toast.error('加载失败: ' + error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAvailableComponents = async () => {
+    try {
+      const response = await componentApi.getAll({ isActive: true });
+      const componentsList = Array.isArray(response) ? response : response.data || [];
+      setAvailableComponents(componentsList);
+    } catch (error: any) {
+      console.error('Failed to load components:', error);
+      // 不显示错误提示，静默失败
     }
   };
 
@@ -418,9 +436,27 @@ export default function EditSkuPage() {
   };
 
   const handleEditColorScheme = (componentCode: string, scheme: ColorScheme) => {
+    // 获取组件信息
+    const component = components.find(c => c.code === componentCode);
+    if (!component) {
+      toast.error('组件不存在');
+      return;
+    }
+
+    // 按照组件parts的顺序重新构建颜色数组,确保所有部件都有配置
+    const existingColorsMap = new Map(scheme.colors.map(c => [c.part, c]));
+    const allColors: ColorPart[] = component.parts.map(part => {
+      // 如果该部件已有颜色配置,使用现有的;否则创建默认配置
+      return existingColorsMap.get(part) || {
+        part,
+        color: '',
+        hexColor: '#000000'
+      };
+    });
+
     setEditingScheme({
       ...scheme,
-      colors: [...scheme.colors]
+      colors: allColors
     });
     setEditingSchemeComponentCode(componentCode);
     setCurrentPartIndex(0); // 重置为第一个部件
@@ -1181,81 +1217,89 @@ export default function EditSkuPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  组件编号 * <span className="text-xs text-gray-500">(如: A, B, C)</span>
+                  选择组件 * <span className="text-xs text-gray-500">(从组件配置中选择)</span>
                 </label>
-                <input
-                  type="text"
+                <CustomSelect
                   value={editingComponent.code}
-                  onChange={(e) => setEditingComponent({ ...editingComponent, code: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="A"
+                  onChange={(value) => {
+                    const selectedComponent = availableComponents.find(c => c.code === value);
+                    if (selectedComponent) {
+                      // 从组件配置自动带入所有信息
+                      const parts = selectedComponent.parts
+                        ? selectedComponent.parts.map((p: any) => p.nameZh)
+                        : [];
+
+                      setEditingComponent({
+                        ...editingComponent,
+                        code: selectedComponent.code,
+                        name: selectedComponent.nameZh,
+                        name_en: selectedComponent.nameEn,
+                        spec: selectedComponent.description || '', // 自动填充规格参数
+                        parts: parts // 自动填充部件列表
+                      });
+                    }
+                  }}
+                  options={[
+                    { label: '请选择组件', value: '' },
+                    ...availableComponents.map(comp => ({
+                      label: `[${comp.code}] ${comp.nameZh} / ${comp.nameEn}`,
+                      value: comp.code
+                    }))
+                  ]}
+                  placeholder="请选择组件"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">组件名称 *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">组件名称（自动填充）</label>
                 <input
                   type="text"
                   value={editingComponent.name}
-                  onChange={(e) => setEditingComponent({ ...editingComponent, name: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="例如: 伸缩杆"
+                  readOnly
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                  placeholder="选择组件后自动填充"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  规格参数 <span className="text-xs text-gray-500">(选填)</span>
+                  规格参数 <span className="text-xs text-gray-500">(来自组件配置)</span>
                 </label>
                 <input
                   type="text"
                   value={editingComponent.spec || ''}
-                  onChange={(e) => setEditingComponent({ ...editingComponent, spec: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="例如: φ22*1200mm"
+                  readOnly
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                  placeholder="选择组件后自动填充"
                 />
               </div>
 
-              {/* 部件列表管理 */}
+              {/* 部件列表显示（只读，显示中英文） */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  部件列表 * <span className="text-xs text-gray-500">(至少1个)</span>
+                  部件列表 <span className="text-xs text-gray-500">(来自组件配置，至少1个)</span>
                 </label>
                 <div className="space-y-2">
-                  {(editingComponent.parts || []).map((part, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={part}
-                        onChange={(e) => {
-                          const newParts = [...(editingComponent.parts || [])];
-                          newParts[index] = e.target.value;
-                          setEditingComponent({ ...editingComponent, parts: newParts });
-                        }}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        placeholder="如: 喷塑、塑件"
-                      />
-                      <button
-                        onClick={() => {
-                          const newParts = (editingComponent.parts || []).filter((_, i) => i !== index);
-                          setEditingComponent({ ...editingComponent, parts: newParts });
-                        }}
-                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                  {(editingComponent.parts || []).length > 0 ? (
+                    (editingComponent.parts || []).map((part, index) => {
+                      // 查找对应的组件配置，获取部件的英文名称
+                      const selectedComp = availableComponents.find(c => c.code === editingComponent.code);
+                      const partObj = selectedComp?.parts?.find((p: any) => p.nameZh === part);
+                      const partEn = partObj?.nameEn || part;
+
+                      return (
+                        <div key={index} className="px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+                          <span className="font-medium">{part}</span>
+                          <span className="text-gray-500 ml-2">/ {partEn}</span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 text-center">
+                      选择组件后自动填充部件列表
                     </div>
-                  ))}
-                  <button
-                    onClick={() => {
-                      const newParts = [...(editingComponent.parts || []), ''];
-                      setEditingComponent({ ...editingComponent, parts: newParts });
-                    }}
-                    className="w-full py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-blue-400 hover:text-blue-600 transition-all text-sm font-medium"
-                  >
-                    + 添加部件
-                  </button>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  部件用于配色管理，如: 喷塑、塑件、手柄等
+                <p className="text-xs text-gray-500 mt-2">
+                  💡 部件列表由组件配置决定，如需修改请前往"组件配置"模块
                 </p>
               </div>
             </div>
@@ -1367,18 +1411,21 @@ export default function EditSkuPage() {
                       <div className="w-16 h-1 bg-green-500 rounded-full mx-auto" />
                     </div>
 
-                    {/* 颜色名称（可选） */}
+                    {/* 颜色名称（必填） */}
                     <div>
                       <label className="block text-sm font-medium text-gray-600 mb-2">
-                        颜色名称 <span className="text-gray-400">(可选)</span>
+                        颜色名称 <span className="text-red-500">*</span>
+                        <span className="text-gray-400 text-xs ml-2">(请输入中英文格式，如：红色/red)</span>
                       </label>
                       <input
                         type="text"
                         value={editingScheme.colors[currentPartIndex].color}
                         onChange={(e) => handleUpdateColorPart(currentPartIndex, 'color', e.target.value)}
                         className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                        placeholder="如: 3C冷灰、经典黑"
+                        placeholder="如: 3C冷灰/Cool Gray, 经典黑/Classic Black"
+                        required
                       />
+                      <p className="text-xs text-gray-500 mt-1">提示：使用"中文/English"格式支持多语言显示</p>
                     </div>
 
                     {/* 色号输入 + 取色器 */}

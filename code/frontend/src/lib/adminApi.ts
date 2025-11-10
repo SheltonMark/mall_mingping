@@ -14,10 +14,12 @@ const getToken = () => {
 };
 
 // 过滤 undefined、null、空字符串的辅助函数
-const filterParams = (params: any) => {
+const filterParams = (params: any): Record<string, string> => {
   if (!params) return {};
   return Object.fromEntries(
-    Object.entries(params).filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    Object.entries(params)
+      .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+      .map(([key, value]) => [key, String(value)])
   );
 };
 
@@ -380,7 +382,7 @@ export const systemApi = {
 
 // ============ 文件上传 ============
 export const uploadApi = {
-  uploadSingle: async (file: File, type: 'image' | 'document' | 'excel' = 'image') => {
+  uploadSingle: async (file: File, type: 'image' | 'document' | 'excel' | 'video' = 'image') => {
     const token = getToken();
     const formData = new FormData();
     formData.append('file', file);
@@ -426,5 +428,32 @@ export const uploadApi = {
     request<any>('/upload', {
       method: 'DELETE',
       body: JSON.stringify({ url }),
+    }),
+};
+
+// ============ 组件管理 ============
+export const componentApi = {
+  getAll: (params?: { search?: string; page?: number; limit?: number; isActive?: boolean }) => {
+    const query = new URLSearchParams(filterParams(params)).toString();
+    return request<any>(`/admin/components${query ? `?${query}` : ''}`);
+  },
+
+  getOne: (id: string) => request<any>(`/admin/components/${id}`),
+
+  create: (data: any) =>
+    request<any>('/admin/components', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    request<any>(`/admin/components/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<any>(`/admin/components/${id}`, {
+      method: 'DELETE',
     }),
 };

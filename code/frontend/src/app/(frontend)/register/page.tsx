@@ -107,7 +107,7 @@ export default function RegisterPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t('auth.password_placeholder')}
               />
-              <p className="mt-1 text-xs text-gray-500">至少6个字符</p>
+              <p className="mt-1 text-xs text-gray-500">{t('auth.password_min_length')}</p>
             </div>
 
             {/* Confirm Password */}

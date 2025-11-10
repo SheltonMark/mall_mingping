@@ -244,8 +244,8 @@ export default function AboutConfigPage() {
               label="主标题第一行"
               valueEn={config.hero_title_line1_en || ''}
               valueZh={config.hero_title_line1_zh || ''}
-              onChangeEn={(val) => setConfig({ ...config, hero_title_line1_en: val })}
-              onChangeZh={(val) => setConfig({ ...config, hero_title_line1_zh: val })}
+              onChangeEn={(val: string) => setConfig({ ...config, hero_title_line1_en: val })}
+              onChangeZh={(val: string) => setConfig({ ...config, hero_title_line1_zh: val })}
               placeholderEn="Crafting Tomorrow's"
               placeholderZh="匠心打造"
             />
@@ -254,8 +254,8 @@ export default function AboutConfigPage() {
               label="主标题第二行 (金色斜体)"
               valueEn={config.hero_title_line2_en || ''}
               valueZh={config.hero_title_line2_zh || ''}
-              onChangeEn={(val) => setConfig({ ...config, hero_title_line2_en: val })}
-              onChangeZh={(val) => setConfig({ ...config, hero_title_line2_zh: val })}
+              onChangeEn={(val: string) => setConfig({ ...config, hero_title_line2_en: val })}
+              onChangeZh={(val: string) => setConfig({ ...config, hero_title_line2_zh: val })}
               placeholderEn="Cleaning Solutions"
               placeholderZh="清洁方案"
             />
@@ -264,8 +264,8 @@ export default function AboutConfigPage() {
               label="副标题"
               valueEn={config.hero_subtitle_en || ''}
               valueZh={config.hero_subtitle_zh || ''}
-              onChangeEn={(val) => setConfig({ ...config, hero_subtitle_en: val })}
-              onChangeZh={(val) => setConfig({ ...config, hero_subtitle_zh: val })}
+              onChangeEn={(val: string) => setConfig({ ...config, hero_subtitle_en: val })}
+              onChangeZh={(val: string) => setConfig({ ...config, hero_subtitle_zh: val })}
               placeholderEn="Professional cleaning tools manufacturer"
               placeholderZh="专业清洁工具制造商"
             />
@@ -283,14 +283,14 @@ export default function AboutConfigPage() {
               desc1Zh={config.story1_desc1_zh || ''}
               desc2En={config.story1_desc2_en || ''}
               desc2Zh={config.story1_desc2_zh || ''}
-              onImageUpload={(e) => handleImageUpload(e, 'story1_image')}
+              onImageUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleImageUpload(e, 'story1_image')}
               onImageRemove={() => setConfig({ ...config, story1_image: '' })}
-              onTitleEnChange={(val) => setConfig({ ...config, story1_title_en: val })}
-              onTitleZhChange={(val) => setConfig({ ...config, story1_title_zh: val })}
-              onDesc1EnChange={(val) => setConfig({ ...config, story1_desc1_en: val })}
-              onDesc1ZhChange={(val) => setConfig({ ...config, story1_desc1_zh: val })}
-              onDesc2EnChange={(val) => setConfig({ ...config, story1_desc2_en: val })}
-              onDesc2ZhChange={(val) => setConfig({ ...config, story1_desc2_zh: val })}
+              onTitleEnChange={(val: string) => setConfig({ ...config, story1_title_en: val })}
+              onTitleZhChange={(val: string) => setConfig({ ...config, story1_title_zh: val })}
+              onDesc1EnChange={(val: string) => setConfig({ ...config, story1_desc1_en: val })}
+              onDesc1ZhChange={(val: string) => setConfig({ ...config, story1_desc1_zh: val })}
+              onDesc2EnChange={(val: string) => setConfig({ ...config, story1_desc2_en: val })}
+              onDesc2ZhChange={(val: string) => setConfig({ ...config, story1_desc2_zh: val })}
               uploading={uploading}
             />
 
@@ -304,14 +304,14 @@ export default function AboutConfigPage() {
               desc1Zh={config.story2_desc1_zh || ''}
               desc2En={config.story2_desc2_en || ''}
               desc2Zh={config.story2_desc2_zh || ''}
-              onImageUpload={(e) => handleImageUpload(e, 'story2_image')}
+              onImageUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleImageUpload(e, 'story2_image')}
               onImageRemove={() => setConfig({ ...config, story2_image: '' })}
-              onTitleEnChange={(val) => setConfig({ ...config, story2_title_en: val })}
-              onTitleZhChange={(val) => setConfig({ ...config, story2_title_zh: val })}
-              onDesc1EnChange={(val) => setConfig({ ...config, story2_desc1_en: val })}
-              onDesc1ZhChange={(val) => setConfig({ ...config, story2_desc1_zh: val })}
-              onDesc2EnChange={(val) => setConfig({ ...config, story2_desc2_en: val })}
-              onDesc2ZhChange={(val) => setConfig({ ...config, story2_desc2_zh: val })}
+              onTitleEnChange={(val: string) => setConfig({ ...config, story2_title_en: val })}
+              onTitleZhChange={(val: string) => setConfig({ ...config, story2_title_zh: val })}
+              onDesc1EnChange={(val: string) => setConfig({ ...config, story2_desc1_en: val })}
+              onDesc1ZhChange={(val: string) => setConfig({ ...config, story2_desc1_zh: val })}
+              onDesc2EnChange={(val: string) => setConfig({ ...config, story2_desc2_en: val })}
+              onDesc2ZhChange={(val: string) => setConfig({ ...config, story2_desc2_zh: val })}
               uploading={uploading}
             />
           </Section>
@@ -345,7 +345,7 @@ export default function AboutConfigPage() {
                     item={item}
                     onUpdate={updateCarouselItem}
                     onRemove={removeCarouselItem}
-                    onImageUpload={async (e) => {
+                    onImageUpload={async (e: React.ChangeEvent<HTMLInputElement>) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       try {
@@ -360,7 +360,7 @@ export default function AboutConfigPage() {
                         setUploading(false);
                       }
                     }}
-                    onVideoUpload={(e) => handleVideoUpload(e, index)}
+                    onVideoUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleVideoUpload(e, index)}
                     uploading={uploading}
                   />
                 ))}
@@ -412,8 +412,8 @@ export default function AboutConfigPage() {
               label="地址"
               valueEn={config.contact_address_en || ''}
               valueZh={config.contact_address_zh || ''}
-              onChangeEn={(val) => setConfig({ ...config, contact_address_en: val })}
-              onChangeZh={(val) => setConfig({ ...config, contact_address_zh: val })}
+              onChangeEn={(val: string) => setConfig({ ...config, contact_address_en: val })}
+              onChangeZh={(val: string) => setConfig({ ...config, contact_address_zh: val })}
               placeholderEn="Dongyang, Zhejiang, China"
               placeholderZh="浙江省东阳市"
             />
@@ -787,8 +787,8 @@ function CarouselItem({
         label="标签文字"
         valueEn={item.label_en || ''}
         valueZh={item.label_zh || ''}
-        onChangeEn={(val) => onUpdate(index, 'label_en', val)}
-        onChangeZh={(val) => onUpdate(index, 'label_zh', val)}
+        onChangeEn={(val: string) => onUpdate(index, 'label_en', val)}
+        onChangeZh={(val: string) => onUpdate(index, 'label_zh', val)}
         placeholderEn="Production Line A"
         placeholderZh="生产线A"
       />

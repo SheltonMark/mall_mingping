@@ -1,19 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
   const { login } = useAuth()
   const { t } = useLanguage()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
+
+  // Store redirect parameter from URL to sessionStorage
+  useEffect(() => {
+    const redirectParam = searchParams.get('redirect')
+    if (redirectParam) {
+      sessionStorage.setItem('redirect_after_login', redirectParam)
+    }
+  }, [searchParams])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

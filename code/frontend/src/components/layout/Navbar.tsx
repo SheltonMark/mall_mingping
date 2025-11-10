@@ -32,7 +32,7 @@ export default function Navbar() {
   const handleLogout = () => {
     logout()
     setIsUserMenuOpen(false)
-    toast.success('Logged out successfully!')
+    toast.success(t('auth.logout_success'))
   }
 
   return (

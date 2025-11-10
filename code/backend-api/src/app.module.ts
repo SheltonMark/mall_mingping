@@ -13,6 +13,7 @@ import { ProductModule } from './modules/product/product.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { SystemModule } from './modules/system/system.module';
 import { PartnershipModule } from './modules/partnership/partnership.module';
+import { ComponentModule } from './modules/component/component.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PartnershipModule } from './modules/partnership/partnership.module';
     UploadModule,
     SystemModule,
     PartnershipModule,
+    ComponentModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

@@ -225,6 +225,12 @@ export default function NewProductSkuPage() {
       return;
     }
 
+    // 检查系列英文名称是否存在
+    if (!group?.groupNameEn || !group.groupNameEn.trim()) {
+      toast.error('系列英文名称为空，请先在产品组管理中设置系列英文名称');
+      return;
+    }
+
     setCreating(true);
     try {
       await productApi.createSku({

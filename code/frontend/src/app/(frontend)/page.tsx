@@ -7,13 +7,15 @@ import { useState, useEffect } from 'react'
 
 interface FeaturedProduct {
   title: string
+  title_en?: string
   description: string
+  description_en?: string
   image: string
   link: string
 }
 
 export default function HomePage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   // 默认产品数据
   const defaultProducts: FeaturedProduct[] = [
@@ -77,7 +79,9 @@ export default function HomePage() {
 
                 return {
                   title: p.title || defaultProducts[index]?.title || '',
+                  title_en: p.title_en || p.title || defaultProducts[index]?.title || '',
                   description: p.description || defaultProducts[index]?.description || '',
+                  description_en: p.description_en || p.description || defaultProducts[index]?.description || '',
                   image: imageUrl,
                   link: p.link || defaultProducts[index]?.link || '#'
                 }
@@ -219,7 +223,7 @@ export default function HomePage() {
                 className="absolute top-[10%] right-[-8%] bg-white/95 backdrop-blur-xl p-8 rounded-2xl border border-white/50 hidden lg:block"
                 style={{ boxShadow: 'var(--shadow-large)', animation: 'floatSlow 6s ease-in-out infinite' }}
               >
-                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">Global Clients</div>
+                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">{language === 'zh' ? '全球客户' : 'Global Clients'}</div>
                 <div className="text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-display)' }}>500+</div>
               </div>
 
@@ -227,7 +231,7 @@ export default function HomePage() {
                 className="absolute bottom-[15%] left-[-8%] bg-white/95 backdrop-blur-xl p-8 rounded-2xl border border-white/50 hidden lg:block"
                 style={{ boxShadow: 'var(--shadow-large)', animation: 'floatSlow 6s ease-in-out infinite 1s' }}
               >
-                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">Products</div>
+                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">{language === 'zh' ? '产品系列' : 'Products'}</div>
                 <div className="text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-display)' }}>200+</div>
               </div>
             </div>
@@ -248,11 +252,10 @@ export default function HomePage() {
             className="text-4xl md:text-6xl font-light leading-[1.4] text-white mb-12 italic"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            "Simplicity is the ultimate{' '}
-            <span className="text-primary font-medium">sophistication</span>"
+            "{t('home.quote.text')}"
           </blockquote>
           <p className="text-base text-neutral-500 tracking-[0.1em] uppercase">
-            — Our Design Philosophy
+            — {t('home.quote.author')}
           </p>
         </div>
       </section>
@@ -261,15 +264,15 @@ export default function HomePage() {
       <section className="py-32 bg-white">
         <div className="max-w-[1440px] mx-auto px-6">
           <div className="text-center mb-20">
-            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">Why Choose Us</p>
+            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
             <h2
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
               style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
             >
-              Excellence in Every Detail
+              {t('home.why_choose.title')}
             </h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-              We craft each product with artisan spirit, from material selection to craftsmanship details, pursuing perfection while balancing practicality and aesthetic value
+              {t('home.why_choose.subtitle')}
             </p>
           </div>
 
@@ -280,9 +283,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 01
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">Premium Materials</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature1.title')}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Carefully selected global premium eco-friendly materials, ensuring every product reaches luxury-grade quality and durability
+                {t('home.why_choose.feature1.desc')}
               </p>
             </div>
 
@@ -291,9 +294,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 02
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">Innovative Design</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature2.title')}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Blending ergonomics with modern aesthetics, making cleaning tools not only practical but also art pieces in your space
+                {t('home.why_choose.feature2.desc')}
               </p>
             </div>
 
@@ -302,9 +305,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 03
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">Sustainable Future</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature3.title')}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Committed to using sustainable materials and production methods, contributing our part to the planet's future
+                {t('home.why_choose.feature3.desc')}
               </p>
             </div>
 
@@ -313,9 +316,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 04
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">Craftsmanship</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature4.title')}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Each product undergoes rigorous quality control, inheriting artisan spirit and pursuing ultimate perfection
+                {t('home.why_choose.feature4.desc')}
               </p>
             </div>
 
@@ -324,9 +327,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 05
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">Global Standard</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature5.title')}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Certified with ISO9001 and multiple international standards, quality trusted by global clients
+                {t('home.why_choose.feature5.desc')}
               </p>
             </div>
 
@@ -335,9 +338,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 06
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">Exclusive Service</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature6.title')}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Providing customized solutions and exclusive customer service to meet each client's unique needs
+                {t('home.why_choose.feature6.desc')}
               </p>
             </div>
           </div>
@@ -349,7 +352,7 @@ export default function HomePage() {
         <div className="w-full max-w-full">
           {/* Section Header */}
           <div className="text-center mb-20 px-6">
-            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">Our Collection</p>
+            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{language === 'zh' ? '我们的系列' : 'Our Collection'}</p>
             <h2
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
               style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
@@ -373,10 +376,10 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/80 group-hover:via-black/40 transition-all duration-500 z-10"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-12 z-20 flex flex-col">
                   <h3 className="text-5xl md:text-6xl font-bold text-white mb-3 tracking-tight leading-tight transition-transform duration-500 group-hover:-translate-y-2">
-                    {product.title}
+                    {language === 'zh' ? product.title : (product.title_en || product.title)}
                   </h3>
                   <p className="text-xl text-white/90 mb-6 leading-relaxed max-w-lg opacity-0 translate-y-5 transition-all duration-500 delay-100 group-hover:opacity-100 group-hover:translate-y-0">
-                    {product.description}
+                    {language === 'zh' ? product.description : (product.description_en || product.description)}
                   </p>
                   <div className="opacity-0 translate-y-5 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0">
                     <span className="relative inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-neutral-900 text-sm font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden hover:bg-gold-400 hover:-translate-y-0.5 transition-all duration-300">
@@ -423,7 +426,7 @@ export default function HomePage() {
                 15+
               </div>
               <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
-                Years Excellence
+                {language === 'zh' ? '年卓越品质' : 'Years Excellence'}
               </div>
             </div>
 
@@ -436,7 +439,7 @@ export default function HomePage() {
                 500+
               </div>
               <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
-                Global Clients
+                {language === 'zh' ? '全球客户' : 'Global Clients'}
               </div>
             </div>
 
@@ -449,7 +452,7 @@ export default function HomePage() {
                 200+
               </div>
               <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
-                Premium Products
+                {language === 'zh' ? '优质产品' : 'Premium Products'}
               </div>
             </div>
 
@@ -462,7 +465,7 @@ export default function HomePage() {
                 99%
               </div>
               <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
-                Satisfaction
+                {language === 'zh' ? '客户满意度' : 'Satisfaction'}
               </div>
             </div>
           </div>
@@ -485,17 +488,17 @@ export default function HomePage() {
             className="text-5xl md:text-7xl font-light text-white mb-8"
             style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
           >
-            Begin Your Journey
+            {language === 'zh' ? '开启您的旅程' : 'Begin Your Journey'}
           </h2>
           <p className="text-xl text-neutral-500 mb-12 leading-relaxed">
-            Join us to start a new chapter of excellent cleaning experience
+            {language === 'zh' ? '与我们一起开启卓越清洁体验的新篇章' : 'Join us to start a new chapter of excellent cleaning experience'}
           </p>
           <Link
             href="/about"
             className="relative inline-flex items-center gap-3 px-12 py-5 bg-primary text-neutral-900 rounded-full text-lg font-bold tracking-[0.05em] uppercase overflow-hidden group hover:bg-gold-400 hover:-translate-y-1 transition-all duration-300"
           >
             <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
-            <span className="relative z-10">Start Conversation</span>
+            <span className="relative z-10">{language === 'zh' ? '开始对话' : 'Start Conversation'}</span>
             <ArrowRight className="relative z-10" size={24} />
           </Link>
         </div>

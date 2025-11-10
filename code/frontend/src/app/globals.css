@@ -121,16 +121,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--neutral-100);
+  background: #FAFAFA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary);
+  background: #F0F0F0;
   border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
+  background: #E5E5E5;
 }
 
 /* ====================

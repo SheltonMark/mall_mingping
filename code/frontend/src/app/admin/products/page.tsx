@@ -646,7 +646,7 @@ export default function ProductsPage() {
                         label: `${group.groupNameZh} (${group.prefix})`
                       }))
                     ]}
-                    value={selectedGroupForCreate?.id || ''}
+                    value={(selectedGroupForCreate as ProductGroup | null)?.id || ''}
                     onChange={(value) => {
                       const group = groups.find(g => g.id === value);
                       setSelectedGroupForCreate(group || null);
