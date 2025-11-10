@@ -236,6 +236,29 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
     loadProductSkus();
   }, []);
 
+  // 当SKU列表和配置都加载完成后，初始化搜索文本（反显已选择的产品）
+  useEffect(() => {
+    if (productSkus.length > 0 && config.featured_products) {
+      const featured = parseFeaturedProducts();
+      const newSearchTexts = featured.map((product: any) => {
+        if (product.link) {
+          // 从 link 中提取 groupId，格式: /products/123
+          const match = product.link.match(/\/products\/(.+)/);
+          if (match && match[1]) {
+            const groupId = match[1];
+            // 找到第一个匹配该 groupId 的 SKU
+            const sku = productSkus.find(s => s.groupId === groupId);
+            if (sku) {
+              return `${sku.group?.prefix || sku.productCode} - ${sku.productName}`;
+            }
+          }
+        }
+        return '';
+      });
+      setSearchTexts(newSearchTexts);
+    }
+  }, [productSkus, config.featured_products]);
+
   // 初始化精选产品（如果不存在）
   const parseFeaturedProducts = () => {
     if (!config.featured_products) {
@@ -291,9 +314,9 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
   const selectSku = (index: number, sku: any) => {
     updateFeaturedProduct(index, 'link', `/products/${sku.groupId}`);
 
-    // 更新搜索框显示为选中的SKU
+    // 更新搜索框显示为选中的SKU（使用group的prefix）
     const newSearchTexts = [...searchTexts];
-    newSearchTexts[index] = `${sku.productCode} - ${sku.productName}`;
+    newSearchTexts[index] = `${sku.group?.prefix || sku.productCode} - ${sku.productName}`;
     setSearchTexts(newSearchTexts);
 
     // 隐藏下拉框
@@ -302,12 +325,13 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
     setShowDropdowns(newShowDropdowns);
   };
 
-  // 过滤SKU列表
+  // 过滤SKU列表（支持按prefix或productCode或productName搜索）
   const getFilteredSkus = (index: number) => {
     const searchText = searchTexts[index].toLowerCase();
     if (!searchText) return productSkus;
 
     return productSkus.filter(sku =>
+      (sku.group?.prefix && sku.group.prefix.toLowerCase().includes(searchText)) ||
       sku.productCode.toLowerCase().includes(searchText) ||
       sku.productName.toLowerCase().includes(searchText)
     );
@@ -565,7 +589,7 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
                               onClick={() => selectSku(index, sku)}
                               className="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors"
                             >
-                              <div className="font-medium text-gray-900">{sku.productCode}</div>
+                              <div className="font-medium text-gray-900">{sku.group?.prefix || sku.productCode}</div>
                               <div className="text-sm text-gray-600">{sku.productName}</div>
                             </div>
                           ))
