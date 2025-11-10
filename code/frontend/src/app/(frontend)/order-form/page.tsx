@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
@@ -10,7 +10,7 @@ import { parseBilingualText } from '@/lib/i18nHelper'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
-export default function OrderFormPage() {
+function OrderFormContent() {
   const { customer, isAuthenticated, isLoading } = useAuth()
   const { items: cart, clearCart, selectedItems, removeSelectedItems } = useCart()
   const { t, language } = useLanguage()
@@ -417,5 +417,14 @@ export default function OrderFormPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// 用 Suspense 包裹导出
+export default function OrderFormPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <OrderFormContent />
+    </Suspense>
   )
 }

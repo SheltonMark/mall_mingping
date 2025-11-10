@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function LoginPage() {
+// 将使用 useSearchParams 的部分抽取到单独组件
+function LoginForm() {
   const { login } = useAuth()
   const { t } = useLanguage()
   const searchParams = useSearchParams()
@@ -125,5 +126,14 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// 用 Suspense 包裹导出
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   )
 }
