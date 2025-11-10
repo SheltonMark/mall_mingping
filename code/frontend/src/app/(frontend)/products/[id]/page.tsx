@@ -305,7 +305,7 @@ export default function ProductDetailPage() {
     }
 
     // 使用 localStorage 临时存储订单数据（比 sessionStorage 更可靠）
-    localStorage.setItem('pendingOrder', JSON.stringify(orderData))
+    sessionStorage.setItem('pendingOrder', JSON.stringify(orderData))
 
     // 使用 router.push 代替 window.location.href 避免状态丢失
     router.push('/order-form?type=buy-now')

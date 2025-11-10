@@ -36,7 +36,7 @@ function OrderFormContent() {
 
     if (orderType === 'buy-now') {
       // 从立即购买来的数据 - 先加载数据，不管是否登录
-      const pendingOrder = localStorage.getItem('pendingOrder')
+      const pendingOrder = sessionStorage.getItem('pendingOrder')
       if (pendingOrder) {
         try {
           const data = JSON.parse(pendingOrder)
@@ -72,7 +72,7 @@ function OrderFormContent() {
       const orderType = searchParams.get('type')
       if (orderType === 'buy-now') {
         // 登录后清除 localStorage
-        localStorage.removeItem('pendingOrder')
+        sessionStorage.removeItem('pendingOrder')
       }
     }
   }, [isAuthenticated, isLoading, router, searchParams])
