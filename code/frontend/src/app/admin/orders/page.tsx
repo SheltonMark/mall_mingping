@@ -267,17 +267,27 @@ export default function OrdersPage() {
                                             const config = item.configuration || item.colorCombination;
                                             if (!config || Object.keys(config).length === 0) return '-';
 
+                                            // 提取中文部分的辅助函数
+                                            const extractChinese = (text: string) => {
+                                              if (!text) return '';
+                                              // 如果是双语格式 "中文/English"，提取中文
+                                              if (text.includes('/')) {
+                                                return text.split('/')[0].trim();
+                                              }
+                                              return text;
+                                            };
+
                                             // 渲染配置（组件、部件、颜色圆圈和颜色名称）
                                             return (
                                               <div className="space-y-2">
                                                 {Object.entries(config).map(([componentCode, value]: [string, any]) => {
                                                   if (typeof value === 'object' && value !== null) {
-                                                    const componentName = value.componentName || componentCode;
+                                                    const componentName = extractChinese(value.componentName || componentCode);
                                                     const colors = Array.isArray(value.colors) ? value.colors : [];
 
                                                     return (
                                                       <div key={componentCode} className="space-y-1">
-                                                        {/* 组件名称（不显示schemeName） */}
+                                                        {/* 组件名称（仅中文） */}
                                                         <div className="flex items-center gap-2 text-xs">
                                                           <span className="font-medium text-gray-700">[{componentCode}]</span>
                                                           <span className="text-gray-900 font-medium">{componentName}</span>
@@ -289,13 +299,13 @@ export default function OrdersPage() {
                                                             {colors.map((colorPart: any, idx: number) => {
                                                               // 支持多种格式
                                                               const hexColor = colorPart.hexColor || colorPart.hex || (typeof colorPart === 'string' ? colorPart : '');
-                                                              const partName = colorPart.part || '';
-                                                              const colorName = colorPart.color || colorPart.name || '';
+                                                              const partName = extractChinese(colorPart.part || '');
+                                                              const colorName = extractChinese(colorPart.color || colorPart.name || '');
 
                                                               return (
-                                                                <div key={idx} className="flex items-center gap-1">
+                                                                <div key={idx} className="flex items-center gap-1.5">
                                                                   <div
-                                                                    className="w-4 h-4 rounded-full border border-gray-300"
+                                                                    className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
                                                                     style={{ backgroundColor: hexColor }}
                                                                     title={hexColor}
                                                                   />
