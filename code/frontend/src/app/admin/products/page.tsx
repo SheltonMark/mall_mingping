@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { productApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
@@ -57,6 +57,7 @@ interface ImportResult {
 
 export default function ProductsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const [groups, setGroups] = useState<ProductGroup[]>([]);
   const [skus, setSkus] = useState<ProductSku[]>([]);
@@ -107,6 +108,25 @@ export default function ProductsPage() {
       setLoading(false);
     }
   };
+
+  // 滚动到新增的SKU
+  useEffect(() => {
+    const scrollToId = searchParams?.get('scrollTo');
+    if (scrollToId && !loading && skus.length > 0) {
+      // 延迟执行以确保DOM已渲染
+      setTimeout(() => {
+        const element = document.getElementById(`sku-${scrollToId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // 高亮显示
+          element.classList.add('ring-2', 'ring-blue-500');
+          setTimeout(() => {
+            element.classList.remove('ring-2', 'ring-blue-500');
+          }, 2000);
+        }
+      }, 300);
+    }
+  }, [scrollToId, loading, skus]);
 
   const handleDownloadTemplate = () => {
     productApi.downloadTemplate();
@@ -451,7 +471,7 @@ export default function ProductsPage() {
                             // 按创建时间降序排序，新增的SKU显示在最上面
                             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                           }).map((sku) => (
-                            <tr key={sku.id} className="hover:bg-blue-50/30 transition-colors">
+                            <tr key={sku.id} id={`sku-${sku.id}`} className="hover:bg-blue-50/30 transition-colors">
                               <td className="px-6 py-4">
                                 <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
                                   {(() => {

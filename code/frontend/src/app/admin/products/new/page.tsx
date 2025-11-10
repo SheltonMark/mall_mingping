@@ -233,7 +233,7 @@ export default function NewProductSkuPage() {
 
     setCreating(true);
     try {
-      await productApi.createSku({
+      const newSku = await productApi.createSku({
         ...formData,
         groupId: groupId!,
         price: formData.price ? parseFloat(formData.price) : undefined,
@@ -242,7 +242,8 @@ export default function NewProductSkuPage() {
       });
 
       toast.success('产品规格创建成功！');
-      router.push('/admin/products');
+      // 跳转回产品列表页，并传递新SKU的ID用于滚动定位
+      router.push(`/admin/products?scrollTo=${newSku.id}`);
     } catch (error: any) {
       console.error('Failed to create SKU:', error);
       toast.error(`创建失败: ${error.message || '未知错误'}`);
