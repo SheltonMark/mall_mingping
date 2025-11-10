@@ -5,15 +5,19 @@ import { useState, useEffect } from 'react'
 import { ShoppingCart, ChevronDown } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { useAuth } from '@/context/AuthContext'
 import { productApi, type ProductGroup, type Category } from '@/lib/publicApi'
 import { useToast } from '@/components/common/ToastContainer'
 import CustomSelect from '@/components/common/CustomSelect'
+import { useRouter } from 'next/navigation'
 
 // 分页配置常量 - 修改此值即可调整每页显示数量
 const PRODUCTS_PER_PAGE = 9
 
 export default function ProductsPage() {
   const { t, language } = useLanguage()
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
   const toast = useToast()
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [addedItem, setAddedItem] = useState<string | null>(null)
@@ -66,6 +70,13 @@ export default function ProductsPage() {
 
   const handleAddToCart = (e: React.MouseEvent, productGroup: ProductGroup) => {
     e.preventDefault()
+
+    // 检查登录状态
+    if (!isAuthenticated) {
+      toast.warning(t('auth.please_login_first') || '请先登录')
+      router.push(`/login?redirect=/products`)
+      return
+    }
 
     if (!productGroup.skus || productGroup.skus.length === 0) {
       toast.warning(t('products.no_skus_available'))
