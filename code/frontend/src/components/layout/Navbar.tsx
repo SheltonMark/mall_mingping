@@ -68,10 +68,10 @@ export default function Navbar() {
           </Link>
 
           {/* Center Navigation with dot indicators */}
-          <nav className="hidden md:flex items-center gap-12">
+          <nav className="flex items-center gap-4 md:gap-12">
             <Link
               href="/"
-              className={`relative text-sm font-medium tracking-[0.05em] uppercase transition-colors duration-250 ${
+              className={`relative text-xs md:text-sm font-medium tracking-[0.05em] uppercase transition-colors duration-250 ${
                 isActive('/') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -82,7 +82,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/products"
-              className={`relative text-sm font-medium tracking-[0.05em] uppercase transition-colors duration-250 ${
+              className={`relative text-xs md:text-sm font-medium tracking-[0.05em] uppercase transition-colors duration-250 ${
                 isActive('/products') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -93,7 +93,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/about"
-              className="relative text-sm font-medium tracking-[0.05em] uppercase text-neutral-600 hover:text-neutral-900 transition-colors duration-250"
+              className="relative text-xs md:text-sm font-medium tracking-[0.05em] uppercase text-neutral-600 hover:text-neutral-900 transition-colors duration-250"
             >
               {t('nav.about')}
               <span className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full opacity-0 hover:opacity-100 transition-opacity duration-250"></span>
@@ -101,7 +101,7 @@ export default function Navbar() {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6">
             {/* Language Switcher Button */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
