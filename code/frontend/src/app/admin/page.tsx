@@ -33,7 +33,7 @@ export default function AdminDashboard() {
     try {
       const [orders, products, partnerships] = await Promise.all([
         orderApi.getAll({ limit: 1 }),
-        productApi.getAll({ limit: 1 }),
+        productApi.getGroups({ limit: 1 }),
         partnershipApi.getStatistics(),
       ]);
 
