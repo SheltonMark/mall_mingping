@@ -297,8 +297,7 @@ export default function ProductDetailPage() {
       items: [{
         skuId: selectedSku.id,
         sku: selectedSku.productCode,
-        groupName: language === 'zh' ? productGroup.groupNameZh : productGroup.groupNameEn,
-        translationKey: productGroup.translationKey,
+        groupName: `${productGroup.groupNameZh}/${productGroup.groupNameEn}`,
         colorCombination: colorCombination,
         quantity: quantity,
         price: selectedSku.price,
