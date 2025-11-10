@@ -273,39 +273,38 @@ export default function OrdersPage() {
                                                 {Object.entries(config).map(([componentCode, value]: [string, any]) => {
                                                   if (typeof value === 'object' && value !== null) {
                                                     const componentName = value.componentName || componentCode;
-                                                    const schemeName = value.schemeName || '';
                                                     const colors = Array.isArray(value.colors) ? value.colors : [];
 
                                                     return (
                                                       <div key={componentCode} className="space-y-1">
-                                                        {/* 组件名称和部件名称 */}
+                                                        {/* 组件名称（不显示schemeName） */}
                                                         <div className="flex items-center gap-2 text-xs">
                                                           <span className="font-medium text-gray-700">[{componentCode}]</span>
                                                           <span className="text-gray-900 font-medium">{componentName}</span>
-                                                          {schemeName && (
-                                                            <>
-                                                              <span className="text-gray-400">·</span>
-                                                              <span className="text-gray-600">{schemeName}</span>
-                                                            </>
-                                                          )}
                                                         </div>
 
-                                                        {/* 颜色列表（圆圈 + 颜色名称） */}
+                                                        {/* 颜色列表（圆圈 + 部件名: 颜色名） */}
                                                         {colors.length > 0 && (
                                                           <div className="flex flex-wrap gap-2 ml-4">
-                                                            {colors.map((colorItem: any, idx: number) => {
-                                                              // 支持两种格式：字符串 "#fff" 或对象 {name: "冷灰", hex: "#fff"}
-                                                              const colorHex = typeof colorItem === 'string' ? colorItem : colorItem.hex;
-                                                              const colorName = typeof colorItem === 'object' && colorItem.name ? colorItem.name : '';
+                                                            {colors.map((colorPart: any, idx: number) => {
+                                                              // 支持多种格式
+                                                              const hexColor = colorPart.hexColor || colorPart.hex || (typeof colorPart === 'string' ? colorPart : '');
+                                                              const partName = colorPart.part || '';
+                                                              const colorName = colorPart.color || colorPart.name || '';
 
                                                               return (
                                                                 <div key={idx} className="flex items-center gap-1">
                                                                   <div
                                                                     className="w-4 h-4 rounded-full border border-gray-300"
-                                                                    style={{ backgroundColor: colorHex }}
-                                                                    title={colorHex}
+                                                                    style={{ backgroundColor: hexColor }}
+                                                                    title={hexColor}
                                                                   />
-                                                                  {colorName && (
+                                                                  {partName && colorName && (
+                                                                    <span className="text-xs text-gray-600">
+                                                                      {partName}: {colorName}
+                                                                    </span>
+                                                                  )}
+                                                                  {!partName && colorName && (
                                                                     <span className="text-xs text-gray-600">{colorName}</span>
                                                                   )}
                                                                 </div>
