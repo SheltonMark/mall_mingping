@@ -8,17 +8,30 @@ export class CartService {
 
   // Get user's cart items
   async getCartItems(customerId: string) {
-    return this.prisma.cartItem.findMany({
+    const cartItems = await this.prisma.cartItem.findMany({
       where: { customerId },
-      include: {
-        sku: {
-          select: {
-            images: true,
-          },
-        },
-      },
       orderBy: { createdAt: 'desc' },
     })
+
+    // Manually fetch SKU data for each cart item (since there's no direct relation in schema)
+    const cartItemsWithSku = await Promise.all(
+      cartItems.map(async (item) => {
+        const sku = await this.prisma.productSku.findUnique({
+          where: { id: item.skuId },
+          select: {
+            images: true,
+            productSpec: true,
+            additionalAttributes: true,
+          },
+        })
+        return {
+          ...item,
+          sku,
+        }
+      })
+    )
+
+    return cartItemsWithSku
   }
 
   // Add item to cart
