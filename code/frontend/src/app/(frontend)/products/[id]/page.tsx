@@ -657,7 +657,7 @@ export default function ProductDetailPage() {
                                     return (
                                       <div
                                         key={partIndex}
-                                        className={`w-8 h-8 rounded-full transition-all ${
+                                        className={`w-6 h-6 rounded-full transition-all ${
                                           isSchemeSelected
                                             ? 'ring-2 ring-primary ring-offset-2'
                                             : 'ring-1 ring-gray-200 hover:ring-gray-300'
