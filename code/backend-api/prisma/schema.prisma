@@ -73,6 +73,7 @@ model Customer {
   salesperson     Salesperson? @relation(fields: [salespersonId], references: [id])
   orders          Order[]
   orderForms      OrderForm[] // 外网版：订单表单关系
+  cartItems       CartItem[] // 外网版：购物车关系
 
   @@map("customers")
 }
@@ -528,4 +529,26 @@ enum ProductVisibility {
   STANDARD @map("standard") // 普通及以上可见（普通、VIP、SVIP）
   VIP      @map("vip")      // VIP及以上可见（VIP、SVIP）
   SVIP     @map("svip")     // 仅SVIP可见
+}
+
+// ========================================
+// 购物车表 (2025-11-10 新增)
+// ========================================
+model CartItem {
+  id              String   @id @default(uuid())
+  customerId      String   @map("customer_id")
+  skuId           String   @map("sku_id")
+  productCode     String   @map("product_code") // 产品代码，如: C04.01.0021
+  productName     String   @map("product_name") // 产品名称
+  colorScheme     Json?    @map("color_scheme") // 配色方案 JSON
+  quantity        Int      @default(1)
+  price           Decimal  @db.Decimal(10, 2) // 单价
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, skuId, colorScheme])
+  @@index([customerId])
+  @@map("cart_items")
 }
