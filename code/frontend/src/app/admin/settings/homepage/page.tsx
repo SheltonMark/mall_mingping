@@ -49,7 +49,24 @@ export default function HomepageConfigPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/skus?limit=200`);
       if (response.ok) {
         const data = await response.json();
-        setProductSkus(data.data || []);
+        const skus = data.data || [];
+        setProductSkus(skus);
+
+        // Populate searchTexts from saved links
+        if (config.featured_products) {
+          const newSearchTexts = config.featured_products.map((product: any) => {
+            if (product.link) {
+              const groupId = product.link.replace('/products/', '');
+              // Find first SKU with matching groupId
+              const sku = skus.find((s: any) => s.groupId === groupId);
+              if (sku) {
+                return `${sku.productCode} - ${sku.productName}`;
+              }
+            }
+            return '';
+          });
+          setSearchTexts(newSearchTexts);
+        }
       }
     } catch (error) {
       console.error('Failed to load product SKUs:', error);
