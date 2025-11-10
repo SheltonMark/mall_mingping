@@ -109,16 +109,18 @@ export default function ProductsPage() {
     }
   };
 
-  // 滚动到新增的SKU
+  // 滚动到新增的SKU（页面最底部）
   useEffect(() => {
     const scrollToId = searchParams?.get('scrollTo');
     if (scrollToId && !loading && skus.length > 0) {
       // 延迟执行以确保DOM已渲染
       setTimeout(() => {
+        // 滚动到页面最底部
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+        // 可选：高亮显示新增的SKU
         const element = document.getElementById(`sku-${scrollToId}`);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          // 高亮显示
           element.classList.add('ring-2', 'ring-blue-500');
           setTimeout(() => {
             element.classList.remove('ring-2', 'ring-blue-500');
@@ -468,8 +470,8 @@ export default function ProductsPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {groupSkus.sort((a, b) => {
-                            // 按创建时间降序排序，新增的SKU显示在最上面
-                            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                            // 按创建时间升序排序，新增的SKU显示在最下面
+                            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
                           }).map((sku) => (
                             <tr key={sku.id} id={`sku-${sku.id}`} className="hover:bg-blue-50/30 transition-colors">
                               <td className="px-6 py-4">
