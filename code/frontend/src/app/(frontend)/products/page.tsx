@@ -131,9 +131,9 @@ export default function ProductsPage() {
           // 从productSpec获取双语组件名称
           const compInfo = componentInfoMap.get(attr.componentCode)
 
-          // Backend已经将part和color都enriched成双语格式
-          // part格式: "布料1/Fabric 1"
-          // color格式: "米色/Beige"
+          // Backend enriches both part and color to bilingual format
+          // part格式: "布料/Fabric" (enriched by enrichAdditionalAttributesWithParts)
+          // color格式: "米色/Beige" (enriched by enrichColorSchemes)
           // 所以我们直接使用即可
           const processedColors = firstScheme.colors.map((colorPart: any) => ({
             ...colorPart,

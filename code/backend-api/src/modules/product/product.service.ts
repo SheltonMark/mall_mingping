@@ -372,6 +372,23 @@ export class ProductService {
       this.prisma.productGroup.count({ where }),
     ]);
 
+    // Enrich productSpec and additionalAttributes for each group's SKUs
+    for (const group of groups) {
+      if (group.skus && group.skus.length > 0) {
+        for (const sku of group.skus) {
+          if (sku.productSpec) {
+            sku.productSpec = await this.enrichProductSpecWithComponents(sku.productSpec);
+          }
+          if (sku.additionalAttributes && sku.productSpec) {
+            sku.additionalAttributes = await this.enrichAdditionalAttributesWithParts(
+              sku.additionalAttributes,
+              sku.productSpec
+            );
+          }
+        }
+      }
+    }
+
     return {
       data: groups,
       meta: {
