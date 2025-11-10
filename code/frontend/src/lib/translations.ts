@@ -148,7 +148,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'detail.select_colors': 'Select Colors',
     'detail.quantity': 'Quantity',
     'detail.add_to_cart': 'Add to Cart',
-    'detail.added_to_cart': 'Added to Cart',
     'detail.buy_now': 'Buy Now',
     'detail.product_details': 'Product Details',
     'detail.components': 'Components',
