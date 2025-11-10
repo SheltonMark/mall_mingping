@@ -260,7 +260,6 @@ export default function ProductDetailPage() {
       groupName: productGroup.groupNameEn
         ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
         : productGroup.groupNameZh,
-      translationKey: '',
       colorCombination,
       quantity: quantity,
       price: Number(selectedSku.price),
