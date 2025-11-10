@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -500,6 +500,24 @@ model OrderForm {
   customer        Customer @relation(fields: [customerId], references: [id])
 
   @@map("order_forms")
+}
+
+// ========================================
+// 组件管理表 (2025-11-10 新增)
+// ========================================
+model Component {
+  id          String   @id @default(uuid())
+  code        String   @unique // 组件代码，如: A, B, C
+  nameZh      String   @map("name_zh") // 组件中文名称，如: 拖把杆
+  nameEn      String   @map("name_en") // 组件英文名称，如: Mop Handle
+  description String?  // 组件描述（可选）
+  parts       Json?    // 部件列表，格式: [{ nameZh: "杆身", nameEn: "Pole Body" }, ...]
+  sortOrder   Int      @default(0) @map("sort_order") // 排序权重
+  isActive    Boolean  @default(true) @map("is_active") // 是否启用
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("components")
 }
 
 // ========================================
