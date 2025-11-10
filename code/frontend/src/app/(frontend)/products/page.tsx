@@ -107,13 +107,30 @@ export default function ProductsPage() {
     }
 
     // 构建颜色组合 - 选择每个组件的第一个配色方案
+    // 首先从productSpec获取组件的双语名称
+    const componentInfoMap = new Map<string, { name: string; spec?: string }>()
+    if (defaultSKU.productSpec && Array.isArray(defaultSKU.productSpec)) {
+      defaultSKU.productSpec.forEach((comp: any) => {
+        // 合并中英文名称为"中文/English"格式
+        const bilingualName = comp.nameEn
+          ? `${comp.name}/${comp.nameEn}`
+          : comp.name
+        componentInfoMap.set(comp.code, {
+          name: bilingualName || comp.code,
+          spec: comp.spec || ''
+        })
+      })
+    }
+
     const colorCombination: Record<string, any> = {}
     if (defaultSKU.additionalAttributes && Array.isArray(defaultSKU.additionalAttributes)) {
       defaultSKU.additionalAttributes.forEach((attr: any) => {
         if (attr.colorSchemes && Array.isArray(attr.colorSchemes) && attr.colorSchemes.length > 0) {
           const firstScheme = attr.colorSchemes[0]
+          // 从productSpec获取双语组件名称
+          const compInfo = componentInfoMap.get(attr.componentCode)
           colorCombination[attr.componentCode] = {
-            componentName: attr.componentName,  // 不使用fallback，避免显示 [A] A
+            componentName: compInfo?.name || attr.componentName || attr.componentCode,  // 优先使用productSpec的双语名称
             schemeName: firstScheme.name,
             colors: firstScheme.colors
           }
