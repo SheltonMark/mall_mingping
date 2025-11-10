@@ -53,15 +53,20 @@ export class ProductService {
 
     // Create a map for quick lookup
     const componentMap = new Map(
-      components.map((c) => [c.code, { nameZh: c.nameZh, nameEn: c.nameEn }])
+      components.map((c) => [c.code, { nameZh: c.nameZh, nameEn: c.nameEn, description: c.description }])
     );
 
-    // Enrich productSpec with bilingual names
-    return productSpec.map((spec: any) => ({
-      ...spec,
-      name: spec.name || componentMap.get(spec.code)?.nameZh || spec.code,
-      nameEn: componentMap.get(spec.code)?.nameEn || spec.name || spec.code,
-    }));
+    // Enrich productSpec with bilingual names and description from Component table
+    return productSpec.map((spec: any) => {
+      const component = componentMap.get(spec.code);
+      return {
+        ...spec,
+        name: component?.nameZh || spec.name || spec.code,
+        nameEn: component?.nameEn || spec.name || spec.code,
+        // Sync spec from Component description if exists, otherwise keep original
+        spec: component?.description || spec.spec || '',
+      };
+    });
   }
 
   /**
