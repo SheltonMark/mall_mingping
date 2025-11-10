@@ -137,6 +137,7 @@ function OrderFormContent() {
         quantity: item.quantity,
         unit_price: item.price,
         configuration: item.colorCombination || {},
+        mainImage: item.mainImage || '', // Add mainImage for profile page display
       }))
 
       const response = await fetch(`${API_URL}/order-forms`, {
