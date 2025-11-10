@@ -107,11 +107,13 @@ export default function ProductsPage() {
     }
 
     // 构建颜色组合 - 选择每个组件的第一个配色方案
-    // 首先从productSpec获取组件的双语名称
+    // 首先从productSpec获取组件和部件的双语名称
     const componentInfoMap = new Map<string, { name: string; spec?: string }>()
+    const partInfoMap = new Map<string, Map<string, string>>() // componentCode -> (partCode -> bilingualName)
+
     if (defaultSKU.productSpec && Array.isArray(defaultSKU.productSpec)) {
       defaultSKU.productSpec.forEach((comp: any) => {
-        // 合并中英文名称为"中文/English"格式
+        // 合并组件中英文名称为"中文/English"格式
         const bilingualName = comp.nameEn
           ? `${comp.name}/${comp.nameEn}`
           : comp.name
@@ -119,6 +121,18 @@ export default function ProductsPage() {
           name: bilingualName || comp.code,
           spec: comp.spec || ''
         })
+
+        // 处理部件（parts）的双语名称
+        if (comp.parts && Array.isArray(comp.parts)) {
+          const partsMap = new Map<string, string>()
+          comp.parts.forEach((part: any) => {
+            const partBilingualName = part.nameEn
+              ? `${part.name}/${part.nameEn}`
+              : part.name
+            partsMap.set(part.code, partBilingualName)
+          })
+          partInfoMap.set(comp.code, partsMap)
+        }
       })
     }
 
@@ -129,10 +143,29 @@ export default function ProductsPage() {
           const firstScheme = attr.colorSchemes[0]
           // 从productSpec获取双语组件名称
           const compInfo = componentInfoMap.get(attr.componentCode)
+          const partsMap = partInfoMap.get(attr.componentCode)
+
+          // 处理colors数组，合并部件和颜色的双语名称
+          const processedColors = firstScheme.colors.map((colorPart: any) => {
+            // 从productSpec获取部件的双语名称
+            const partBilingualName = partsMap?.get(colorPart.partCode) || colorPart.part
+
+            // 合并颜色的双语名称（如果有colorEn字段）
+            const colorBilingualName = colorPart.colorEn
+              ? `${colorPart.color}/${colorPart.colorEn}`
+              : colorPart.color
+
+            return {
+              ...colorPart,
+              part: partBilingualName,
+              color: colorBilingualName
+            }
+          })
+
           colorCombination[attr.componentCode] = {
-            componentName: compInfo?.name || attr.componentName || attr.componentCode,  // 优先使用productSpec的双语名称
+            componentName: compInfo?.name || attr.componentName || attr.componentCode,
             schemeName: firstScheme.name,
-            colors: firstScheme.colors
+            colors: processedColors
           }
         }
       })
