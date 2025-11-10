@@ -15,7 +15,7 @@ export default function Navbar() {
   const toast = useToast()
   const { language, setLanguage, t } = useLanguage()
   const { customer, isAuthenticated, logout } = useAuth()
-  const { totalItems, clearCart, syncCartOnLogin } = useCart()
+  const { totalItems, logoutCart, syncCartOnLogin } = useCart()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -41,7 +41,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout()
-    clearCart()
+    logoutCart()
     setIsUserMenuOpen(false)
     toast.success(t('auth.logout_success'))
   }

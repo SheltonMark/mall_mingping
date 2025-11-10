@@ -29,6 +29,7 @@ interface CartContextType {
   setSelectedItems: (items: string[]) => void
   loadUserCart: (userId: string, token: string) => Promise<void>
   syncCartOnLogin: (token: string) => Promise<void>
+  logoutCart: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -270,6 +271,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     setItems([])
     setSelectedItems([])
+  }
+
+  // Logout - clear local cart state but keep database cart
+  const logoutCart = () => {
+    setItems([])
+    setSelectedItems([])
     setIsAuthenticated(false)
     setAuthToken(null)
   }
@@ -298,6 +305,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setSelectedItems,
         loadUserCart,
         syncCartOnLogin,
+        logoutCart,
       }}
     >
       {children}
