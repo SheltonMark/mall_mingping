@@ -311,13 +311,17 @@ export default function ProfilePage() {
                         {order.items.map((item: any, idx: number) => (
                           <div key={idx} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
                             {/* Product Image */}
-                            {item.mainImage && (
-                              <img
-                                src={item.mainImage}
-                                alt={item.product_name}
-                                className="w-20 h-20 object-cover rounded flex-shrink-0"
-                              />
-                            )}
+                            <div className="w-20 h-20 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
+                              {item.mainImage ? (
+                                <img
+                                  src={item.mainImage}
+                                  alt={item.product_name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Package className="w-8 h-8 text-gray-400" />
+                              )}
+                            </div>
 
                             {/* Product Info */}
                             <div className="flex-1">
