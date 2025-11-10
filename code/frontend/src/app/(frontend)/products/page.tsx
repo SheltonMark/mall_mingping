@@ -144,8 +144,8 @@ export default function ProductsPage() {
   // Sort filtered products
   const sortedProductGroups = [...priceFilteredGroups].sort((a, b) => {
     if (sortBy === 'newest') {
-      // 默认按创建日期降序 (最新的在前面)
-      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      // 按 displayOrder 降序 (数值越大越新)
+      return (b.displayOrder || 0) - (a.displayOrder || 0)
     } else if (sortBy === 'price_low') {
       // 价格从低到高
       const priceA = a.skus?.[0]?.price || 0
