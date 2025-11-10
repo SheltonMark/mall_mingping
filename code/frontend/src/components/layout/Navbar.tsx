@@ -15,7 +15,7 @@ export default function Navbar() {
   const toast = useToast()
   const { language, setLanguage, t } = useLanguage()
   const { customer, isAuthenticated, logout } = useAuth()
-  const { totalItems, clearCart, loadUserCart } = useCart()
+  const { totalItems, clearCart, syncCartOnLogin } = useCart()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -27,12 +27,15 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Load user cart when customer changes
+  // Sync cart when customer logs in
   useEffect(() => {
-    if (customer?.id) {
-      loadUserCart(customer.id)
+    if (customer?.id && isAuthenticated) {
+      const token = localStorage.getItem('customer_token')
+      if (token) {
+        syncCartOnLogin(token)
+      }
     }
-  }, [customer?.id])
+  }, [customer?.id, isAuthenticated])
 
   const isActive = (path: string) => pathname === path
 
