@@ -17,11 +17,13 @@ export class CartService {
   // Add item to cart
   async addItem(customerId: string, dto: AddToCartDto) {
     // Check if item with same SKU and color scheme already exists
+    const colorSchemeToUse = dto.colorScheme || {}
+
     const existingItem = await this.prisma.cartItem.findFirst({
       where: {
         customerId,
         skuId: dto.skuId,
-        colorScheme: dto.colorScheme || null,
+        colorScheme: colorSchemeToUse,
       },
     })
 
@@ -43,7 +45,7 @@ export class CartService {
         skuId: dto.skuId,
         productCode: dto.productCode,
         productName: dto.productName,
-        colorScheme: dto.colorScheme,
+        colorScheme: colorSchemeToUse,
         quantity: dto.quantity,
         price: dto.price,
       },
