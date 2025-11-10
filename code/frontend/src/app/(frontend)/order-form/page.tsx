@@ -6,13 +6,14 @@ import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { parseBilingualText } from '@/lib/i18nHelper'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export default function OrderFormPage() {
-  const { customer, isAuthenticated } = useAuth()
-  const { items: cart, clearCart } = useCart()
-  const { t } = useLanguage()
+  const { customer, isAuthenticated, isLoading } = useAuth()
+  const { items: cart, clearCart, selectedItems, removeSelectedItems } = useCart()
+  const { t, language } = useLanguage()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -47,15 +48,21 @@ export default function OrderFormPage() {
         }
       }
     } else {
-      // 从购物车来的数据
-      if (cart && cart.length > 0) {
-        setOrderItems(cart)
+      // 从购物车来的数据 - 只显示选中的商品
+      if (cart && cart.length > 0 && selectedItems && selectedItems.length > 0) {
+        const selected = cart.filter(item => selectedItems.includes(item.skuId))
+        setOrderItems(selected)
       }
     }
-  }, [searchParams, cart])
+  }, [searchParams, cart, selectedItems])
 
-  // Check authentication and redirect if needed
+  // Check authentication and redirect if needed - BUT wait for auth to finish loading first
   useEffect(() => {
+    // Don't redirect while auth is still loading
+    if (isLoading) {
+      return
+    }
+
     if (!isAuthenticated) {
       // Save the current URL for redirect after login
       sessionStorage.setItem('redirect_after_login', window.location.pathname + window.location.search)
@@ -68,7 +75,7 @@ export default function OrderFormPage() {
         localStorage.removeItem('pendingOrder')
       }
     }
-  }, [isAuthenticated, router, searchParams])
+  }, [isAuthenticated, isLoading, router, searchParams])
 
   // Pre-fill form with customer data
   useEffect(() => {
@@ -156,10 +163,10 @@ export default function OrderFormPage() {
       setFormNumber(result.formNumber)
       setSuccess(true)
 
-      // 只有从购物车来的才清空购物车
+      // 只有从购物车来的才清除已选商品（保留未选中的商品）
       const orderType = searchParams.get('type')
       if (orderType !== 'buy-now') {
-        clearCart()
+        removeSelectedItems()
       }
     } catch (err: any) {
       setError(err.message || t('order_form.submit_error'))
@@ -320,15 +327,56 @@ export default function OrderFormPage() {
                           className="w-20 h-20 object-cover rounded"
                         />
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">{item.groupName}</p>
+                          <p className="font-medium text-gray-900">{parseBilingualText(item.groupName, language)}</p>
                           <p className="text-sm text-gray-600">{item.sku}</p>
-                          {item.colorCombination && (
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {Object.entries(item.colorCombination).map(([key, value]: [string, any]) => (
-                                <span key={key} className="text-xs text-gray-500">
-                                  {key}: {value.name || value}
-                                </span>
-                              ))}
+                          {item.colorCombination && Object.keys(item.colorCombination).length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-xs text-gray-500 mb-1.5">{language === 'zh' ? '配色方案' : 'Color Scheme'}:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {Object.entries(item.colorCombination).map(([componentCode, colorData]: [string, any]) => {
+                                  // 新格式: { schemeName, colors: ColorPart[] }
+                                  if (colorData.colors && Array.isArray(colorData.colors)) {
+                                    return (
+                                      <div
+                                        key={componentCode}
+                                        className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
+                                      >
+                                        <div className="text-xs font-semibold text-gray-700 mb-1">
+                                          [{componentCode}] {colorData.componentName ? parseBilingualText(colorData.componentName, language) : ''}
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                          {colorData.colors.map((colorPart: any, idx: number) => (
+                                            <div key={idx} className="flex items-center gap-1">
+                                              <div
+                                                className="w-3 h-3 rounded-full border border-gray-300"
+                                                style={{ backgroundColor: colorPart.hexColor }}
+                                              />
+                                              <span className="text-xs text-gray-600">
+                                                {parseBilingualText(colorPart.part, language)}: {parseBilingualText(colorPart.color, language)}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )
+                                  }
+                                  // 旧格式: { hex, name }
+                                  return (
+                                    <div
+                                      key={componentCode}
+                                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
+                                    >
+                                      <div
+                                        className="w-4 h-4 rounded-full border border-gray-300"
+                                        style={{ backgroundColor: colorData.hex }}
+                                      />
+                                      <span className="text-xs text-gray-700">
+                                        {componentCode}: {colorData.name}
+                                      </span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
                             </div>
                           )}
                         </div>

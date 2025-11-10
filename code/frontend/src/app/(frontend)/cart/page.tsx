@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react'
@@ -8,25 +7,20 @@ import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useToast } from '@/components/common/ToastContainer'
+import { parseBilingualText } from '@/lib/i18nHelper'
 
 export default function CartPage() {
   const router = useRouter()
   const toast = useToast()
-  const { items, removeItem, updateQuantity } = useCart()
+  const { items, removeItem, updateQuantity, selectedItems, setSelectedItems } = useCart()
   const { isAuthenticated, isLoading } = useAuth()
-  const { t } = useLanguage()
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
-
-  // Initialize all items as selected
-  useEffect(() => {
-    setSelectedItems(items.map(item => item.skuId))
-  }, [items])
+  const { t, language } = useLanguage()
 
   const handleCheckout = () => {
     // Check if user is authenticated
     if (!isAuthenticated) {
       toast.warning(t('auth.login'))
-      router.push('/login')
+      router.push('/login?redirect=/order-form')
       return
     }
 
@@ -38,7 +32,7 @@ export default function CartPage() {
 
     // Check if any items are selected
     if (selectedItems.length === 0) {
-      toast.warning('请选择至少一个商品')
+      toast.warning(t('cart.select_at_least_one'))
       return
     }
 
@@ -64,7 +58,7 @@ export default function CartPage() {
 
   const handleDeleteSelected = () => {
     if (selectedItems.length === 0) {
-      toast.warning('请先选择要删除的商品')
+      toast.warning(t('cart.select_items_to_delete'))
       return
     }
     selectedItems.forEach(skuId => removeItem(skuId))
@@ -142,7 +136,7 @@ export default function CartPage() {
                     className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
                   />
                   <span className="text-sm font-medium text-gray-700">
-                    全选 ({selectedItems.length}/{items.length})
+                    {t('cart.select_all')} ({selectedItems.length}/{items.length})
                   </span>
                 </div>
                 <button
@@ -151,7 +145,7 @@ export default function CartPage() {
                   className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Trash2 className="w-4 h-4" />
-                  删除选中
+                  {t('cart.delete_selected')}
                 </button>
               </div>
 
@@ -189,10 +183,10 @@ export default function CartPage() {
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div>
                           <h3 className="text-lg font-bold text-gray-900">
-                            {item.translationKey ? t(item.translationKey) : item.groupName}
+                            {parseBilingualText(item.groupName, language)}
                           </h3>
                           <p className="text-sm text-gray-500 mt-1">
-                            SKU: <span className="font-mono font-semibold text-primary">{item.sku}</span>
+                            {language === 'zh' ? '产品代码' : 'Product Code'}: <span className="font-mono font-semibold text-primary">{item.sku}</span>
                           </p>
                         </div>
                         <button
@@ -208,20 +202,49 @@ export default function CartPage() {
                       <div className="mb-4">
                         <p className="text-xs text-gray-500 mb-2">{t('cart.color_combination')}:</p>
                         <div className="flex flex-wrap gap-2">
-                          {Object.entries(item.colorCombination).map(([component, color]) => (
-                            <div
-                              key={component}
-                              className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
-                            >
+                          {Object.entries(item.colorCombination).map(([componentCode, colorData]: [string, any]) => {
+                            // 新格式: { schemeName, colors: ColorPart[] }
+                            if (colorData.colors && Array.isArray(colorData.colors)) {
+                              return (
+                                <div
+                                  key={componentCode}
+                                  className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
+                                >
+                                  <div className="text-xs font-semibold text-gray-700 mb-1">
+                                    [{componentCode}] {colorData.componentName ? parseBilingualText(colorData.componentName, language) : ''}
+                                  </div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {colorData.colors.map((colorPart: any, idx: number) => (
+                                      <div key={idx} className="flex items-center gap-1">
+                                        <div
+                                          className="w-3 h-3 rounded-full border border-gray-300"
+                                          style={{ backgroundColor: colorPart.hexColor }}
+                                        />
+                                        <span className="text-xs text-gray-600">
+                                          {parseBilingualText(colorPart.part, language)}: {parseBilingualText(colorPart.color, language)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )
+                            }
+                            // 旧格式: { hex, name }
+                            return (
                               <div
-                                className="w-4 h-4 rounded-full border border-gray-300"
-                                style={{ backgroundColor: color.hex }}
-                              />
-                              <span className="text-xs text-gray-700">
-                                {component}: {color.name}
-                              </span>
-                            </div>
-                          ))}
+                                key={componentCode}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
+                              >
+                                <div
+                                  className="w-4 h-4 rounded-full border border-gray-300"
+                                  style={{ backgroundColor: colorData.hex }}
+                                />
+                                <span className="text-xs text-gray-700">
+                                  {componentCode}: {colorData.name}
+                                </span>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
 
@@ -271,12 +294,12 @@ export default function CartPage() {
                     <span className="font-semibold">￥{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>已选商品</span>
+                    <span>{t('cart.selected_items')}</span>
                     <span className="font-semibold">
                       {selectedItems.reduce((sum, skuId) => {
                         const item = items.find(i => i.skuId === skuId)
                         return sum + (item?.quantity || 0)
-                      }, 0)} 件
+                      }, 0)} {t('cart.items')}
                     </span>
                   </div>
 

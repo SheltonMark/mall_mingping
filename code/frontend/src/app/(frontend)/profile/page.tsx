@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
 import { useRouter } from 'next/navigation'
-import { User, Mail, Calendar, Package, ChevronRight, ShoppingBag } from 'lucide-react'
+import { User, Mail, Calendar, Package, ChevronRight, ShoppingBag, ChevronDown, ChevronUp } from 'lucide-react'
+import { parseBilingualText } from '@/lib/i18nHelper'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -24,9 +26,11 @@ interface OrderForm {
 
 export default function ProfilePage() {
   const { customer, isAuthenticated, isLoading } = useAuth()
+  const { t, language } = useLanguage()
   const router = useRouter()
   const [orders, setOrders] = useState<OrderForm[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -59,10 +63,22 @@ export default function ProfilePage() {
     }
   }
 
+  const toggleOrderDetails = (orderId: string) => {
+    setExpandedOrders(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId)
+      } else {
+        newSet.add(orderId)
+      }
+      return newSet
+    })
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <div className="text-lg text-gray-600">{t('profile.loading')}</div>
       </div>
     )
   }
@@ -77,7 +93,7 @@ export default function ProfilePage() {
         {/* Page Header - 奢华标题 */}
         <div className="mb-12">
           <h1 className="text-5xl font-light text-black tracking-wide mb-3" style={{ fontFamily: 'var(--font-display)' }}>
-            MY ACCOUNT
+            {t('profile.my_account')}
           </h1>
           <div className="w-24 h-[2px] bg-gradient-to-r from-primary to-transparent"></div>
         </div>
@@ -104,7 +120,7 @@ export default function ProfilePage() {
                   {customer.name || customer.email?.split('@')[0] || 'Customer'}
                 </h2>
                 <p className="text-sm text-gray-500 uppercase tracking-widest" style={{ fontSize: '11px' }}>
-                  Valued Customer
+                  {t('profile.valued_customer')}
                 </p>
               </div>
 
@@ -115,13 +131,13 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-6 mt-auto">
                 <div className="text-center">
                   <div className="text-3xl font-light text-black mb-1">{orders.length}</div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider">Orders</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wider">{t('profile.orders')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-light text-black mb-1">
                     {customer.createdAt ? Math.floor((Date.now() - new Date(customer.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0}
                   </div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider">Days</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wider">{t('profile.days')}</div>
                 </div>
               </div>
             </div>
@@ -133,7 +149,7 @@ export default function ProfilePage() {
               {/* Section Title */}
               <div className="mb-8">
                 <h3 className="text-xl font-light text-black tracking-wide mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-                  ACCOUNT INFORMATION
+                  {t('profile.account_information')}
                 </h3>
                 <div className="w-16 h-[1px] bg-primary"></div>
               </div>
@@ -147,7 +163,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1 pt-1">
                       <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
-                        Email Address
+                        {t('profile.email_address')}
                       </label>
                       <p className="text-base text-black font-light">{customer.email}</p>
                     </div>
@@ -163,7 +179,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex-1 pt-1">
                         <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
-                          Full Name
+                          {t('profile.full_name')}
                         </label>
                         <p className="text-base text-black font-light">{customer.name}</p>
                       </div>
@@ -179,12 +195,12 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1 pt-1">
                       <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
-                        Member Since
+                        {t('profile.member_since')}
                       </label>
                       <p className="text-base text-black font-light">
-                        {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('en-US', {
+                        {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
                           year: 'numeric',
-                          month: 'long',
+                          month: language === 'zh' ? 'numeric' : 'long',
                           day: 'numeric'
                         }) : 'N/A'}
                       </p>
@@ -202,20 +218,20 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-xl font-light text-black tracking-wide mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-                MY ORDERS
+                {t('profile.my_orders')}
               </h3>
               <div className="w-16 h-[1px] bg-primary"></div>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Package className="w-4 h-4" strokeWidth={1.5} />
-              <span className="font-light">Total: {orders.length}</span>
+              <span className="font-light">{t('profile.total')}: {orders.length}</span>
             </div>
           </div>
 
           {loadingOrders ? (
             <div className="text-center py-20">
               <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-600 font-light">Loading orders...</p>
+              <p className="text-gray-600 font-light">{t('profile.loading_orders')}</p>
             </div>
           ) : orders.length === 0 ? (
             /* Empty State - 奢华空状态设计 */
@@ -227,17 +243,17 @@ export default function ProfilePage() {
               </div>
 
               <h4 className="text-2xl font-light text-black mb-3 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
-                No Orders Yet
+                {t('profile.no_orders_yet')}
               </h4>
               <p className="text-gray-500 mb-10 max-w-md mx-auto font-light leading-relaxed">
-                Discover our premium collection of luxury cleaning tools and start your journey to pristine perfection.
+                {t('profile.no_orders_desc')}
               </p>
 
               <button
                 onClick={() => router.push('/products')}
                 className="group inline-flex items-center gap-3 px-8 py-4 bg-primary text-white font-light tracking-wider uppercase text-sm transition-all duration-300 hover:bg-primary-dark hover:shadow-lg"
               >
-                <span>Explore Products</span>
+                <span>{t('profile.explore_products')}</span>
                 <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" strokeWidth={1.5} />
               </button>
             </div>
@@ -250,12 +266,12 @@ export default function ProfilePage() {
                   <div className="flex items-start justify-between mb-6 pb-6 border-b border-gray-100">
                     <div>
                       <h4 className="text-lg font-light text-black mb-2 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
-                        Order #{order.formNumber}
+                        {t('profile.order_number')}{order.formNumber}
                       </h4>
                       <p className="text-sm text-gray-500 font-light">
-                        {new Date(order.submittedAt).toLocaleDateString('en-US', {
+                        {new Date(order.submittedAt).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
                           year: 'numeric',
-                          month: 'long',
+                          month: language === 'zh' ? 'numeric' : 'long',
                           day: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit'
@@ -263,36 +279,132 @@ export default function ProfilePage() {
                       </p>
                     </div>
                     <div className="px-4 py-2 bg-gradient-to-r from-primary/10 to-primary/5 rounded-none border-l-2 border-primary">
-                      <span className="text-xs text-primary font-medium uppercase tracking-wider">Submitted</span>
+                      <span className="text-xs text-primary font-medium uppercase tracking-wider">{t('profile.submitted')}</span>
                     </div>
                   </div>
 
                   {/* Order Items Summary */}
                   <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Package className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
-                      <span className="text-sm text-gray-600 font-light">{order.items.length} item{order.items.length > 1 ? 's' : ''}</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-600 font-light">{order.items.length} {order.items.length > 1 ? t('profile.items') : t('profile.item')}</span>
+                      </div>
+                      <button
+                        onClick={() => toggleOrderDetails(order.id)}
+                        className="flex items-center gap-2 text-sm text-primary hover:text-primary-dark transition-colors"
+                      >
+                        <span className="font-light">{expandedOrders.has(order.id) ? (language === 'zh' ? '隐藏详情' : 'Hide Details') : (language === 'zh' ? '查看详情' : 'View Details')}</span>
+                        {expandedOrders.has(order.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
                     </div>
                     <div className="text-2xl font-light text-primary mb-4">¥{order.totalAmount}</div>
                   </div>
 
+                  {/* Order Items Details - Expandable */}
+                  {expandedOrders.has(order.id) && (
+                    <div className="mb-6 pb-6 border-b border-gray-100">
+                      <h5 className="text-sm font-medium text-gray-700 mb-4 uppercase tracking-wider">
+                        {language === 'zh' ? '订单详情' : 'Order Details'}
+                      </h5>
+                      <div className="space-y-4">
+                        {order.items.map((item: any, idx: number) => (
+                          <div key={idx} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+                            {/* Product Image */}
+                            {item.mainImage && (
+                              <img
+                                src={item.mainImage}
+                                alt={item.product_name}
+                                className="w-20 h-20 object-cover rounded flex-shrink-0"
+                              />
+                            )}
+
+                            {/* Product Info */}
+                            <div className="flex-1">
+                              <h6 className="font-medium text-gray-900 mb-1">{parseBilingualText(item.product_name, language)}</h6>
+                              <p className="text-sm text-gray-600 mb-2">{item.product_code}</p>
+
+                              {/* Configuration Details */}
+                              {item.configuration && Object.keys(item.configuration).length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-xs text-gray-500 mb-1.5">{language === 'zh' ? '配色方案' : 'Color Scheme'}:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {Object.entries(item.configuration).map(([componentCode, colorData]: [string, any]) => {
+                                      // 新格式: { schemeName, colors: ColorPart[] }
+                                      if (colorData.colors && Array.isArray(colorData.colors)) {
+                                        return (
+                                          <div
+                                            key={componentCode}
+                                            className="px-3 py-1.5 bg-white rounded-lg border border-gray-200"
+                                          >
+                                            <div className="text-xs font-semibold text-gray-700 mb-1">
+                                              [{componentCode}] {colorData.componentName ? parseBilingualText(colorData.componentName, language) : ''}
+                                            </div>
+                                            <div className="flex flex-wrap gap-1">
+                                              {colorData.colors.map((colorPart: any, colorIdx: number) => (
+                                                <div key={colorIdx} className="flex items-center gap-1">
+                                                  <div
+                                                    className="w-3 h-3 rounded-full border border-gray-300"
+                                                    style={{ backgroundColor: colorPart.hexColor }}
+                                                  />
+                                                  <span className="text-xs text-gray-600">
+                                                    {parseBilingualText(colorPart.part, language)}: {parseBilingualText(colorPart.color, language)}
+                                                  </span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )
+                                      }
+                                      // 旧格式: { hex, name }
+                                      return (
+                                        <div
+                                          key={componentCode}
+                                          className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200"
+                                        >
+                                          <div
+                                            className="w-4 h-4 rounded-full border border-gray-300"
+                                            style={{ backgroundColor: colorData.hex }}
+                                          />
+                                          <span className="text-xs text-gray-700">
+                                            {componentCode}: {colorData.name}
+                                          </span>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Quantity & Price */}
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-sm text-gray-600 font-light">x{item.quantity}</p>
+                              <p className="font-medium text-gray-900">¥{(item.unit_price * item.quantity).toFixed(2)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Contact Details */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500 font-light">Contact:</span>{' '}
+                      <span className="text-gray-500 font-light">{t('profile.contact')}:</span>{' '}
                       <span className="text-black font-light">{order.contactName}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 font-light">Phone:</span>{' '}
+                      <span className="text-gray-500 font-light">{t('profile.phone')}:</span>{' '}
                       <span className="text-black font-light">{order.phone}</span>
                     </div>
                     <div className="md:col-span-2">
-                      <span className="text-gray-500 font-light">Address:</span>{' '}
+                      <span className="text-gray-500 font-light">{t('profile.address')}:</span>{' '}
                       <span className="text-black font-light">{order.address}</span>
                     </div>
                     {order.notes && (
                       <div className="md:col-span-2">
-                        <span className="text-gray-500 font-light">Notes:</span>{' '}
+                        <span className="text-gray-500 font-light">{t('profile.notes')}:</span>{' '}
                         <span className="text-black font-light">{order.notes}</span>
                       </div>
                     )}
@@ -306,7 +418,7 @@ export default function ProfilePage() {
         {/* Footer Note - 奢华品牌提示 */}
         <div className="mt-12 text-center">
           <p className="text-xs text-gray-400 uppercase tracking-widest font-light">
-            Thank you for choosing LEMOPX
+            {t('profile.thank_you')}
           </p>
           <div className="flex justify-center mt-3">
             <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>

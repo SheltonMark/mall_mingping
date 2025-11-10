@@ -13,7 +13,7 @@ import CustomSelect from '@/components/common/CustomSelect'
 const PRODUCTS_PER_PAGE = 9
 
 export default function ProductsPage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const toast = useToast()
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [addedItem, setAddedItem] = useState<string | null>(null)
@@ -68,21 +68,58 @@ export default function ProductsPage() {
     e.preventDefault()
 
     if (!productGroup.skus || productGroup.skus.length === 0) {
-      toast.warning('This product has no SKUs available')
+      toast.warning(t('products.no_skus_available'))
       return
     }
 
     const defaultSKU = productGroup.skus[0]
 
+    // 解析图片
+    let mainImage = '/images/placeholder.jpg'
+    if (defaultSKU.images) {
+      if (Array.isArray(defaultSKU.images) && defaultSKU.images.length > 0) {
+        mainImage = defaultSKU.images[0].startsWith('http')
+          ? defaultSKU.images[0]
+          : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${defaultSKU.images[0]}`
+      } else if (typeof defaultSKU.images === 'string') {
+        try {
+          const imgs = JSON.parse(defaultSKU.images)
+          if (Array.isArray(imgs) && imgs.length > 0) {
+            mainImage = imgs[0].startsWith('http')
+              ? imgs[0]
+              : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${imgs[0]}`
+          }
+        } catch (e) {
+          console.error('Failed to parse images:', e)
+        }
+      }
+    }
+
+    // 构建颜色组合 - 选择每个组件的第一个配色方案
+    const colorCombination: Record<string, any> = {}
+    if (defaultSKU.additionalAttributes && Array.isArray(defaultSKU.additionalAttributes)) {
+      defaultSKU.additionalAttributes.forEach((attr: any) => {
+        if (attr.colorSchemes && Array.isArray(attr.colorSchemes) && attr.colorSchemes.length > 0) {
+          const firstScheme = attr.colorSchemes[0]
+          colorCombination[attr.componentCode] = {
+            schemeName: firstScheme.name,
+            colors: firstScheme.colors
+          }
+        }
+      })
+    }
+
     addItem({
       skuId: defaultSKU.id,
       sku: defaultSKU.productCode,
-      groupName: productGroup.groupNameZh,
+      groupName: productGroup.groupNameEn
+        ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
+        : productGroup.groupNameZh,
       translationKey: productGroup.translationKey || '',
-      colorCombination: (defaultSKU as any).colorCombination || {},
+      colorCombination,
       quantity: 1,
       price: Number(defaultSKU.price) || 0,
-      mainImage: defaultSKU.mainImage || '/images/placeholder.jpg',
+      mainImage,
     })
 
     // Show feedback
@@ -152,7 +189,7 @@ export default function ProductsPage() {
       <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading products...</p>
+          <p className="text-gray-600">{t('products.loading')}</p>
         </div>
       </div>
     )
@@ -164,13 +201,13 @@ export default function ProductsPage() {
       <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="text-red-500 text-5xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to Load Products</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('products.load_failed')}</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
           >
-            Retry
+            {t('common.retry')}
           </button>
         </div>
       </div>
@@ -213,7 +250,7 @@ export default function ProductsPage() {
                               : 'text-gray-600 hover:text-primary'
                           }`}
                         >
-                          {t('lang') === 'en' ? category.nameEn : category.nameZh}
+                          {language === 'en' ? category.nameEn : category.nameZh}
                         </button>
                       </li>
                     ))}
@@ -251,8 +288,8 @@ export default function ProductsPage() {
                     </div>
                   </div>
                   <div className="flex justify-between text-sm mt-4 text-gray-600">
-                    <span>${priceRange.min}</span>
-                    <span>${priceRange.max}</span>
+                    <span>¥{priceRange.min}</span>
+                    <span>¥{priceRange.max}</span>
                   </div>
                 </div>
               </div>
@@ -275,7 +312,7 @@ export default function ProductsPage() {
                   ]}
                   value={sortBy}
                   onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-[220px]"
                 />
               </div>
             </div>
@@ -286,8 +323,8 @@ export default function ProductsPage() {
                 <div className="col-span-full text-center py-12">
                   <p className="text-gray-500">
                     {selectedCategoryCode
-                      ? `No products found in category ${t(`category.${selectedCategoryCode}`)}`
-                      : 'No products available yet.'}
+                      ? t('products.no_products_in_category')
+                      : t('products.no_products_available')}
                   </p>
                 </div>
               ) : (
@@ -350,7 +387,7 @@ export default function ProductsPage() {
                       <Link href={`/products/${productGroup.id}`}>
                         <div>
                           <p className="text-base font-medium hover:text-primary transition-colors">
-                            {productGroup.groupNameZh}
+                            {language === 'zh' ? productGroup.groupNameZh : (productGroup.groupNameEn || productGroup.groupNameZh)}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             ￥{Number(defaultSKU.price).toFixed(2)}

@@ -9,6 +9,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { productApi, type ProductGroup, type ProductSku } from '@/lib/publicApi'
+import { parseBilingualText } from '@/lib/i18nHelper'
 
 // 解析部件化颜色属性 (多方案版本)
 interface ColorPart {
@@ -142,8 +143,13 @@ export default function ProductDetailPage() {
     const componentInfoMap = new Map<string, { name: string; spec: string }>()
     if (sku.productSpec && Array.isArray(sku.productSpec)) {
       sku.productSpec.forEach((comp: any) => {
+        // 合并中英文名称为"中文/English"格式
+        const bilingualName = comp.nameEn
+          ? `${comp.name}/${comp.nameEn}`
+          : comp.name;
+
         componentInfoMap.set(comp.code, {
-          name: comp.name || comp.code,
+          name: bilingualName || comp.code,
           spec: comp.spec || ''
         })
       })
@@ -230,7 +236,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!selectedSku || !productGroup) {
-      toast.error('请先选择规格')
+      toast.error(t('detail.select_sku_first'))
       return
     }
 
@@ -241,7 +247,8 @@ export default function ProductDetailPage() {
       const selectedScheme = component.colorSchemes[selectedSchemeIndex]
       if (selectedScheme) {
         colorCombination[component.componentCode] = {
-          schemeName: selectedScheme.name,
+          componentName: component.componentName, // 保存组件名称（双语格式）
+          schemeName: parseBilingualText(selectedScheme.name, language),
           colors: selectedScheme.colors
         }
       }
@@ -250,7 +257,9 @@ export default function ProductDetailPage() {
     addItem({
       skuId: selectedSku.id,
       sku: selectedSku.productCode,
-      groupName: productGroup.groupNameZh,
+      groupName: productGroup.groupNameEn
+        ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
+        : productGroup.groupNameZh,
       translationKey: '',
       colorCombination,
       quantity: quantity,
@@ -260,14 +269,28 @@ export default function ProductDetailPage() {
 
     setAddedToCart(true)
     setTimeout(() => setAddedToCart(false), 2000)
-    toast.success('已加入购物车')
+    toast.success(t('detail.added_to_cart'))
   }
 
   const handleBuyNow = () => {
     if (!selectedSku || !productGroup) {
-      toast.error('请先选择规格')
+      toast.error(t('detail.select_sku_first'))
       return
     }
+
+    // 构建颜色组合描述（使用选中的方案）- 与添加购物车相同的逻辑
+    const colorCombination: Record<string, any> = {}
+    componentColors.forEach((component, index) => {
+      const selectedSchemeIndex = selectedSchemeIndexes[index] || 0
+      const selectedScheme = component.colorSchemes[selectedSchemeIndex]
+      if (selectedScheme) {
+        colorCombination[component.componentCode] = {
+          componentName: component.componentName, // 保存组件名称（双语格式）
+          schemeName: parseBilingualText(selectedScheme.name, language),
+          colors: selectedScheme.colors
+        }
+      }
+    })
 
     // 准备订单数据 - 使用与购物车相同的 CartItem 结构
     const orderData = {
@@ -276,7 +299,7 @@ export default function ProductDetailPage() {
         sku: selectedSku.sku,
         groupName: language === 'zh' ? productGroup.groupNameZh : productGroup.groupNameEn,
         translationKey: productGroup.translationKey,
-        colorCombination: selectedSku.colorCombination,
+        colorCombination: colorCombination,
         quantity: quantity,
         price: selectedSku.price,
         mainImage: images[0] || '/images/placeholder.jpg'
@@ -330,7 +353,7 @@ export default function ProductDetailPage() {
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">
-            {productGroup.groupNameZh}
+            {language === 'zh' ? productGroup.groupNameZh : (productGroup.groupNameEn || productGroup.groupNameZh)}
           </span>
         </nav>
       </div>
@@ -408,14 +431,14 @@ export default function ProductDetailPage() {
 
               {viewMode === 'params' && (
                 <div className="w-full h-full bg-white p-8 overflow-y-auto">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6">产品参数</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('detail.parameters')}</h3>
                   <div className="space-y-4 text-gray-700">
                     <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                      <span className="font-semibold">产品系列:</span>
+                      <span className="font-semibold">{t('detail.product_series')}:</span>
                       <span>{productGroup.prefix}</span>
                     </div>
                     <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                      <span className="font-semibold">分类:</span>
+                      <span className="font-semibold">{t('detail.category')}:</span>
                       <span>{productGroup.category?.nameZh} / {productGroup.category?.nameEn}</span>
                     </div>
                     {(() => {
@@ -426,16 +449,16 @@ export default function ProductDetailPage() {
                       return (
                         <>
                           <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                            <span className="font-semibold">品号:</span>
+                            <span className="font-semibold">{t('detail.sku_code')}:</span>
                             <span className="font-mono">{skuToShow.productCode}</span>
                           </div>
                           <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                            <span className="font-semibold">品名:</span>
+                            <span className="font-semibold">{t('detail.product_name')}:</span>
                             <span>{skuToShow.productName}</span>
                           </div>
                           {skuToShow.specification && (
                             <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                              <span className="font-semibold">产品参数:</span>
+                              <span className="font-semibold">{t('detail.specifications')}:</span>
                               <div className="whitespace-pre-line">{skuToShow.specification}</div>
                             </div>
                           )}
@@ -477,7 +500,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <ImageIcon size={20} />
-                图集
+                {t('detail.gallery')}
               </button>
               <button
                 onClick={() => setViewMode('video')}
@@ -488,7 +511,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <Play size={20} />
-                视频
+                {t('detail.video')}
               </button>
               <button
                 onClick={() => setViewMode('params')}
@@ -499,7 +522,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <FileText size={20} />
-                参数
+                {t('detail.parameters')}
               </button>
             </div>
           </div>
@@ -521,16 +544,16 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 分类标签和品号 - 同一行，品号右对齐 */}
+            {/* 品名标签和品号 - 同一行，品号右对齐 */}
             <div className="flex items-center justify-between gap-4">
-              {productGroup.category && (
+              {productGroup.prefix && (
                 <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-                  {t(`category.${productGroup.category.code}`)}
+                  {productGroup.prefix}
                 </span>
               )}
               {selectedSku && (
                 <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-sm text-gray-500">品号:</span>
+                  <span className="text-sm text-gray-500">{t('detail.sku_code')}:</span>
                   <span className="px-3 py-1.5 bg-gray-100 text-gray-900 rounded-lg text-sm font-mono font-semibold border border-gray-300">
                     {selectedSku.productCode}
                   </span>
@@ -540,7 +563,7 @@ export default function ProductDetailPage() {
 
             {/* 规格选择器 */}
             <div className="space-y-4 bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900">选择规格 *</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t('detail.select_sku')} *</h3>
               <div className="grid grid-cols-1 gap-3">
                 {productGroup.skus.map((sku) => (
                   <button
@@ -575,7 +598,7 @@ export default function ProductDetailPage() {
             {/* 颜色选择器 - Apple风格渐进式 (新数据结构，但保留渐进式交互) */}
             {selectedSku && componentColors.length > 0 && (
               <div className="space-y-6 bg-gray-50 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-gray-900">选择颜色</h3>
+                <h3 className="text-lg font-bold text-gray-900">{t('detail.select_color')}</h3>
 
                 {/* 依次显示每个组件的颜色选择器 */}
                 <AnimatePresence>
@@ -600,11 +623,11 @@ export default function ProductDetailPage() {
                             [{component.componentCode}]
                           </span>
                           <span className="font-semibold text-gray-900">
-                            {component.componentName}
+                            {parseBilingualText(component.componentName, language)}
                           </span>
                           {component.spec && (
                             <span className="text-sm text-gray-600">
-                              {component.spec}
+                              {parseBilingualText(component.spec, language)}
                             </span>
                           )}
                           {isSelected && (
@@ -614,7 +637,7 @@ export default function ProductDetailPage() {
 
                         {/* 显示部件名称 */}
                         <div className="text-sm text-gray-600 mb-2">
-                          {component.colorSchemes[0]?.colors.map(c => c.part).join(' + ')}
+                          {component.colorSchemes[0]?.colors.map(c => parseBilingualText(c.part, language)).join(' + ')}
                         </div>
 
                         {/* 横向显示所有配色方案 */}
@@ -644,7 +667,7 @@ export default function ProductDetailPage() {
                                         style={{
                                           backgroundColor: hexColor
                                         }}
-                                        title={`${colorPart.part}: ${colorPart.color || colorPart.hexColor}`}
+                                        title={`${parseBilingualText(colorPart.part, language)}: ${colorPart.color || colorPart.hexColor}`}
                                       ></div>
                                     )
                                   })}
@@ -663,7 +686,7 @@ export default function ProductDetailPage() {
             {/* 数量选择器 */}
             <div className="space-y-4 pt-6 border-t border-gray-200">
               <div className="flex items-center gap-4">
-                <span className="text-gray-700 font-medium w-20">数量:</span>
+                <span className="text-gray-700 font-medium w-20">{t('detail.quantity')}:</span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -706,18 +729,18 @@ export default function ProductDetailPage() {
                   {addedToCart ? (
                     <>
                       <Check size={24} />
-                      已加入购物车
+                      {t('detail.added_to_cart')}
                     </>
                   ) : (
                     <>
                       <ShoppingCart size={24} />
-                      加入购物车
+                      {t('detail.add_to_cart')}
                     </>
                   )}
                 </button>
                 {showSpecHint && (
                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg">
-                    请先选择规格
+                    {t('detail.select_sku_first')}
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-neutral-900"></div>
                   </div>
                 )}
@@ -736,7 +759,7 @@ export default function ProductDetailPage() {
                   disabled={!selectedSku}
                   className={`w-full h-14 rounded-xl font-bold text-primary text-lg transition-all flex items-center justify-center gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
                 >
-                  立即购买
+                  {t('detail.buy_now')}
                 </button>
               </div>
             </div>
