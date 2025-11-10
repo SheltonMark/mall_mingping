@@ -157,18 +157,31 @@ export default function Navbar() {
             </div>
 
             {/* Cart Button with Badge */}
-            <Link
-              href="/cart"
-              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
-              style={{ boxShadow: 'var(--shadow-medium)' }}
-            >
-              <ShoppingCart className="text-white" size={18} />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 flex items-center justify-center w-[18px] h-[18px] bg-red-500 text-white rounded-full text-[0.625rem] font-bold border-2 border-white">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/cart"
+                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
+                style={{ boxShadow: 'var(--shadow-medium)' }}
+              >
+                <ShoppingCart className="text-white" size={18} />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-[18px] h-[18px] bg-red-500 text-white rounded-full text-[0.625rem] font-bold border-2 border-white">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  toast.warning(t('cart.please_login'))
+                  setTimeout(() => router.push('/login'), 1500)
+                }}
+                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
+                style={{ boxShadow: 'var(--shadow-medium)' }}
+              >
+                <ShoppingCart className="text-white" size={18} />
+              </button>
+            )}
           </div>
         </div>
       </div>
