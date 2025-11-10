@@ -35,8 +35,7 @@ export interface ProductGroup {
 export interface CartItem {
   skuId: string
   sku: string
-  groupName: string
-  translationKey?: string
+  groupName: string  // 双语格式: "中文/English"
   colorCombination: Record<string, { name: string; hex: string }>
   quantity: number
   price: number
