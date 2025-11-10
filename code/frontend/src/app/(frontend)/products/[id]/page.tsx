@@ -296,7 +296,7 @@ export default function ProductDetailPage() {
     const orderData = {
       items: [{
         skuId: selectedSku.id,
-        sku: selectedSku.sku,
+        sku: selectedSku.productCode,
         groupName: language === 'zh' ? productGroup.groupNameZh : productGroup.groupNameEn,
         translationKey: productGroup.translationKey,
         colorCombination: colorCombination,
