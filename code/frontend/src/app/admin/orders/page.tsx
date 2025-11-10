@@ -262,15 +262,69 @@ export default function OrdersPage() {
                                           {item.product_name || item.groupName || '-'}
                                         </td>
                                         <td className="px-4 py-2 text-sm text-gray-600">
-                                          {item.configuration
-                                            ? Object.entries(item.configuration)
-                                                .map(([key, value]) => `${key}: ${value}`)
-                                                .join(', ')
-                                            : item.colorCombination
-                                            ? Object.entries(item.colorCombination)
-                                                .map(([key, value]) => `${key}: ${value}`)
-                                                .join(', ')
-                                            : '-'}
+                                          {(() => {
+                                            // 优先使用 configuration，其次 colorCombination
+                                            const config = item.configuration || item.colorCombination;
+                                            if (!config || Object.keys(config).length === 0) return '-';
+
+                                            // 渲染配置（组件、部件、颜色圆圈和颜色名称）
+                                            return (
+                                              <div className="space-y-2">
+                                                {Object.entries(config).map(([componentCode, value]: [string, any]) => {
+                                                  if (typeof value === 'object' && value !== null) {
+                                                    const componentName = value.componentName || componentCode;
+                                                    const schemeName = value.schemeName || '';
+                                                    const colors = Array.isArray(value.colors) ? value.colors : [];
+
+                                                    return (
+                                                      <div key={componentCode} className="space-y-1">
+                                                        {/* 组件名称和部件名称 */}
+                                                        <div className="flex items-center gap-2 text-xs">
+                                                          <span className="font-medium text-gray-700">[{componentCode}]</span>
+                                                          <span className="text-gray-900 font-medium">{componentName}</span>
+                                                          {schemeName && (
+                                                            <>
+                                                              <span className="text-gray-400">·</span>
+                                                              <span className="text-gray-600">{schemeName}</span>
+                                                            </>
+                                                          )}
+                                                        </div>
+
+                                                        {/* 颜色列表（圆圈 + 颜色名称） */}
+                                                        {colors.length > 0 && (
+                                                          <div className="flex flex-wrap gap-2 ml-4">
+                                                            {colors.map((colorItem: any, idx: number) => {
+                                                              // 支持两种格式：字符串 "#fff" 或对象 {name: "冷灰", hex: "#fff"}
+                                                              const colorHex = typeof colorItem === 'string' ? colorItem : colorItem.hex;
+                                                              const colorName = typeof colorItem === 'object' && colorItem.name ? colorItem.name : '';
+
+                                                              return (
+                                                                <div key={idx} className="flex items-center gap-1">
+                                                                  <div
+                                                                    className="w-4 h-4 rounded-full border border-gray-300"
+                                                                    style={{ backgroundColor: colorHex }}
+                                                                    title={colorHex}
+                                                                  />
+                                                                  {colorName && (
+                                                                    <span className="text-xs text-gray-600">{colorName}</span>
+                                                                  )}
+                                                                </div>
+                                                              );
+                                                            })}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  }
+                                                  return (
+                                                    <div key={componentCode} className="text-xs">
+                                                      {componentCode}: {String(value)}
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            );
+                                          })()}
                                         </td>
                                         <td className="px-4 py-2 text-sm text-gray-900">
                                           {item.quantity}
