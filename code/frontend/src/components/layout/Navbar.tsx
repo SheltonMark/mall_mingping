@@ -15,7 +15,7 @@ export default function Navbar() {
   const toast = useToast()
   const { language, setLanguage, t } = useLanguage()
   const { customer, isAuthenticated, logout } = useAuth()
-  const { totalItems } = useCart()
+  const { totalItems, clearCart, loadUserCart } = useCart()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -27,10 +27,18 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Load user cart when customer changes
+  useEffect(() => {
+    if (customer?.id) {
+      loadUserCart(customer.id)
+    }
+  }, [customer?.id])
+
   const isActive = (path: string) => pathname === path
 
   const handleLogout = () => {
     logout()
+    clearCart()
     setIsUserMenuOpen(false)
     toast.success(t('auth.logout_success'))
   }

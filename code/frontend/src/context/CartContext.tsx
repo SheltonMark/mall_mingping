@@ -14,6 +14,7 @@ interface CartContextType {
   totalPrice: number
   selectedItems: string[]
   setSelectedItems: (items: string[]) => void
+  loadUserCart: (userId: string) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -22,10 +23,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  // Load cart from localStorage on mount
+  // Get cart storage key for current user
+  const getCartKey = (userId: string | null) => {
+    return userId ? `lemopx_cart_${userId}` : 'lemopx_cart_guest'
+  }
+
+  // Load cart from localStorage on mount (guest cart)
   useEffect(() => {
-    const savedCart = localStorage.getItem('lemopx_cart')
+    const savedCart = localStorage.getItem(getCartKey(null))
     if (savedCart) {
       try {
         const parsedItems = JSON.parse(savedCart)
@@ -42,9 +49,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem('lemopx_cart', JSON.stringify(items))
+      localStorage.setItem(getCartKey(currentUserId), JSON.stringify(items))
     }
-  }, [items, isLoaded])
+  }, [items, isLoaded, currentUserId])
 
   const addItem = (newItem: CartItem) => {
     setItems((prevItems) => {
@@ -83,6 +90,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setSelectedItems([])
   }
 
+  const loadUserCart = (userId: string) => {
+    // Load user-specific cart
+    const userCartKey = getCartKey(userId)
+    const savedCart = localStorage.getItem(userCartKey)
+
+    if (savedCart) {
+      try {
+        const parsedItems = JSON.parse(savedCart)
+        setItems(parsedItems)
+        setSelectedItems(parsedItems.map((item: CartItem) => item.skuId))
+      } catch (error) {
+        console.error('Failed to load user cart:', error)
+        setItems([])
+        setSelectedItems([])
+      }
+    } else {
+      // New user, empty cart
+      setItems([])
+      setSelectedItems([])
+    }
+
+    setCurrentUserId(userId)
+  }
+
   const removeSelectedItems = () => {
     setItems((prevItems) => prevItems.filter((item) => !selectedItems.includes(item.skuId)))
     setSelectedItems([])
@@ -104,6 +135,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalPrice,
         selectedItems,
         setSelectedItems,
+        loadUserCart,
       }}
     >
       {children}
