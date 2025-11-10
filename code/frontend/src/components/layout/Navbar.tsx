@@ -182,6 +182,8 @@ export default function Navbar() {
               <button
                 onClick={() => {
                   toast.warning(t('cart.please_login'))
+                  // Save current page for redirect after login
+                  sessionStorage.setItem('redirect_after_login', pathname)
                   setTimeout(() => router.push('/login'), 1500)
                 }}
                 className="relative flex items-center justify-center w-9 h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
