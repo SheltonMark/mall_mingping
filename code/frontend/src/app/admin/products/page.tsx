@@ -115,8 +115,12 @@ export default function ProductsPage() {
     if (scrollToId && !loading && skus.length > 0) {
       // 延迟执行以确保DOM已渲染
       setTimeout(() => {
-        // 滚动到页面最底部
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        // 滚动到页面最底部 - 使用documentElement获取更准确的滚动高度
+        const scrollHeight = Math.max(
+          document.body.scrollHeight,
+          document.documentElement.scrollHeight
+        );
+        window.scrollTo({ top: scrollHeight, behavior: 'smooth' });
 
         // 可选：高亮显示新增的SKU
         const element = document.getElementById(`sku-${scrollToId}`);
