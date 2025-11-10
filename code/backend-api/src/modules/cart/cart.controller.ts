@@ -20,12 +20,12 @@ export class CartController {
 
   @Get()
   async getCart(@Request() req) {
-    return this.cartService.getCartItems(req.user.userId)
+    return this.cartService.getCartItems(req.user.id)
   }
 
   @Post()
   async addItem(@Request() req, @Body() dto: AddToCartDto) {
-    return this.cartService.addItem(req.user.userId, dto)
+    return this.cartService.addItem(req.user.id, dto)
   }
 
   @Put(':id')
@@ -34,21 +34,21 @@ export class CartController {
     @Param('id') id: string,
     @Body() dto: UpdateCartItemDto,
   ) {
-    return this.cartService.updateItem(req.user.userId, id, dto)
+    return this.cartService.updateItem(req.user.id, id, dto)
   }
 
   @Delete(':id')
   async removeItem(@Request() req, @Param('id') id: string) {
-    return this.cartService.removeItem(req.user.userId, id)
+    return this.cartService.removeItem(req.user.id, id)
   }
 
   @Delete()
   async clearCart(@Request() req) {
-    return this.cartService.clearCart(req.user.userId)
+    return this.cartService.clearCart(req.user.id)
   }
 
   @Post('sync')
   async syncCart(@Request() req, @Body() dto: SyncCartDto) {
-    return this.cartService.syncCart(req.user.userId, dto)
+    return this.cartService.syncCart(req.user.id, dto)
   }
 }

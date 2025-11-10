@@ -16,14 +16,25 @@ export class CartService {
 
   // Add item to cart
   async addItem(customerId: string, dto: AddToCartDto) {
-    // Check if item with same SKU and color scheme already exists
-    const colorSchemeToUse = dto.colorScheme || {}
+    // Parse colorScheme if it's a string
+    let colorSchemeToUse = dto.colorScheme || {}
+    if (typeof colorSchemeToUse === 'string') {
+      try {
+        colorSchemeToUse = JSON.parse(colorSchemeToUse)
+      } catch (e) {
+        // If parse fails, use empty object
+        colorSchemeToUse = {}
+      }
+    }
 
+    // Check if item with same SKU and color scheme already exists
     const existingItem = await this.prisma.cartItem.findFirst({
       where: {
         customerId,
         skuId: dto.skuId,
-        colorScheme: colorSchemeToUse,
+        colorScheme: {
+          equals: colorSchemeToUse
+        },
       },
     })
 
