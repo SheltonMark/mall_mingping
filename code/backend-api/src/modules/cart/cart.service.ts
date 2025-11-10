@@ -10,6 +10,13 @@ export class CartService {
   async getCartItems(customerId: string) {
     return this.prisma.cartItem.findMany({
       where: { customerId },
+      include: {
+        sku: {
+          select: {
+            images: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     })
   }

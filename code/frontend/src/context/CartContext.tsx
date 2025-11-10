@@ -126,16 +126,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const dbItems = await response.json()
         // Convert database cart items to CartItem format
-        const cartItems: DBCartItem[] = dbItems.map((item: any) => ({
-          id: item.id,
-          skuId: item.skuId,
-          sku: item.productCode,
-          groupName: item.productName,
-          colorCombination: typeof item.colorScheme === 'string' ? JSON.parse(item.colorScheme) : item.colorScheme,
-          quantity: item.quantity,
-          price: parseFloat(item.price),
-          mainImage: '', // Will be populated by cart page if needed
-        }))
+        const cartItems: DBCartItem[] = dbItems.map((item: any) => {
+          // Extract mainImage from sku.images
+          let mainImage = ''
+          if (item.sku && item.sku.images) {
+            if (Array.isArray(item.sku.images) && item.sku.images.length > 0) {
+              mainImage = item.sku.images[0]
+            } else if (typeof item.sku.images === 'string') {
+              try {
+                const imgs = JSON.parse(item.sku.images)
+                if (Array.isArray(imgs) && imgs.length > 0) {
+                  mainImage = imgs[0]
+                }
+              } catch (e) {
+                console.error('Failed to parse images:', e)
+              }
+            }
+          }
+
+          return {
+            id: item.id,
+            skuId: item.skuId,
+            sku: item.productCode,
+            groupName: item.productName,
+            colorCombination: typeof item.colorScheme === 'string' ? JSON.parse(item.colorScheme) : item.colorScheme,
+            quantity: item.quantity,
+            price: parseFloat(item.price),
+            mainImage,
+          }
+        })
         setItems(cartItems)
         setSelectedItems(cartItems.map(item => item.skuId))
       }
