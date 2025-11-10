@@ -85,14 +85,16 @@ export default function AboutPage() {
   const totalSlides = factoryCarousel.length > 0 ? factoryCarousel.length : 3 // 默认3个占位
 
   // 根据当前语言获取对应字段的辅助函数
-  const getLocalizedField = (fieldName: string) => {
+  const getLocalizedField = (fieldName: string): string => {
     const zhField = `${fieldName}_zh` as keyof AboutConfig
     const enField = `${fieldName}_en` as keyof AboutConfig
 
     if (language === 'zh') {
-      return aboutConfig[zhField] || aboutConfig[enField] || ''
+      const value = aboutConfig[zhField] || aboutConfig[enField] || ''
+      return typeof value === 'string' ? value : ''
     } else {
-      return aboutConfig[enField] || aboutConfig[zhField] || ''
+      const value = aboutConfig[enField] || aboutConfig[zhField] || ''
+      return typeof value === 'string' ? value : ''
     }
   }
 
