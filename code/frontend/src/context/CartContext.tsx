@@ -1,7 +1,20 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { CartItem } from '@/types'
+export interface CartItem {
+  skuId: string
+  sku: string
+  groupName: string  // 双语格式: "中文/English"
+  colorCombination: Record<string, { name: string; hex: string }>
+  quantity: number
+  price: number
+  mainImage: string
+}
+
+// Database cart item with id
+interface DBCartItem extends CartItem {
+  id?: string
+}
 
 interface CartContextType {
   items: CartItem[]
@@ -23,7 +36,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
+  const [items, setItems] = useState<DBCartItem[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -66,9 +79,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           // Sync guest cart to database
           const syncData = guestItems.map((item: CartItem) => ({
             skuId: item.skuId,
-            productCode: item.productCode || '',
-            productName: item.productName || '',
-            colorScheme: item.colorScheme,
+            productCode: item.sku || '',
+            productName: item.groupName || '',
+            colorScheme: JSON.stringify(item.colorCombination),
             quantity: item.quantity,
             price: item.price,
           }))
@@ -112,15 +125,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const dbItems = await response.json()
         // Convert database cart items to CartItem format
-        const cartItems: CartItem[] = dbItems.map((item: any) => ({
+        const cartItems: DBCartItem[] = dbItems.map((item: any) => ({
           id: item.id,
           skuId: item.skuId,
-          productCode: item.productCode,
-          productName: item.productName,
-          colorScheme: item.colorScheme,
+          sku: item.productCode,
+          groupName: item.productName,
+          colorCombination: typeof item.colorScheme === 'string' ? JSON.parse(item.colorScheme) : item.colorScheme,
           quantity: item.quantity,
           price: parseFloat(item.price),
-          image: '', // Will be populated by cart page if needed
+          mainImage: '', // Will be populated by cart page if needed
         }))
         setItems(cartItems)
         setSelectedItems(cartItems.map(item => item.skuId))
@@ -143,9 +156,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           },
           body: JSON.stringify({
             skuId: newItem.skuId,
-            productCode: newItem.productCode || '',
-            productName: newItem.productName || '',
-            colorScheme: newItem.colorScheme,
+            productCode: newItem.sku || '',
+            productName: newItem.groupName || '',
+            colorScheme: JSON.stringify(newItem.colorCombination),
             quantity: newItem.quantity,
             price: newItem.price,
           }),
