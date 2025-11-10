@@ -102,6 +102,7 @@ export default function ProductsPage() {
         if (attr.colorSchemes && Array.isArray(attr.colorSchemes) && attr.colorSchemes.length > 0) {
           const firstScheme = attr.colorSchemes[0]
           colorCombination[attr.componentCode] = {
+            componentName: attr.componentName || attr.componentCode,  // 添加组件名称
             schemeName: firstScheme.name,
             colors: firstScheme.colors
           }
