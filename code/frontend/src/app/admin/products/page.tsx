@@ -447,7 +447,10 @@ export default function ProductsPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {groupSkus.map((sku) => (
+                          {groupSkus.sort((a, b) => {
+                            // 按创建时间降序排序，新增的SKU显示在最上面
+                            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                          }).map((sku) => (
                             <tr key={sku.id} className="hover:bg-blue-50/30 transition-colors">
                               <td className="px-6 py-4">
                                 <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
