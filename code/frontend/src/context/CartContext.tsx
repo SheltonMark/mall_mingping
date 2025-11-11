@@ -300,8 +300,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setAuthToken(null)
   }
 
-  // Remove selected items (only for guest cart, used in cart page)
-  const removeSelectedItems = () => {
+  // Remove selected items (delete from backend if authenticated)
+  const removeSelectedItems = async () => {
+    // If user is authenticated, delete from backend database
+    if (isAuthenticated && authToken) {
+      try {
+        // Delete each selected item from backend
+        const deletePromises = items
+          .filter((item) => selectedItems.includes(item.skuId))
+          .map((item) =>
+            fetch(`${API_URL}/cart/${item.id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${authToken}`,
+              },
+            })
+          )
+
+        await Promise.all(deletePromises)
+      } catch (error) {
+        console.error('Failed to delete cart items from backend:', error)
+      }
+    }
+
+    // Update frontend state
     setItems((prevItems) => prevItems.filter((item) => !selectedItems.includes(item.skuId)))
     setSelectedItems([])
   }
