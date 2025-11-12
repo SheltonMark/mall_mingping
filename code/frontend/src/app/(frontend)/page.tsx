@@ -204,7 +204,7 @@ export default function HomePage() {
             {/* Right Visual - Image */}
             <div className="relative opacity-0 animate-fade-slide-left" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
               <div
-                className="relative rounded-3xl overflow-hidden"
+                className="relative overflow-hidden"
                 style={{
                   boxShadow: 'var(--shadow-xlarge)',
                   transformStyle: 'preserve-3d',

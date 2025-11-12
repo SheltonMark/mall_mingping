@@ -242,12 +242,12 @@ export class ProductService {
     });
 
     if (!category) {
-      throw new NotFoundException('Category not found');
+      throw new NotFoundException('分类不存在');
     }
 
     if (category._count.productGroups > 0) {
       throw new BadRequestException(
-        'Cannot delete category with associated products',
+        `该分类下还有 ${category._count.productGroups} 个产品，请先删除或移动这些产品后再删除分类`,
       );
     }
 
