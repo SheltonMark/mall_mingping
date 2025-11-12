@@ -17,6 +17,7 @@ export class FileUploadService {
     const dirs = [
       this.uploadDir,
       path.join(this.uploadDir, 'images'),
+      path.join(this.uploadDir, 'videos'),
       path.join(this.uploadDir, 'documents'),
       path.join(this.uploadDir, 'excel'),
       path.join(this.uploadDir, 'temp'),

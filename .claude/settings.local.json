@@ -154,7 +154,8 @@
       "Bash(git log:*)",
       "Bash(where:*)",
       "Bash(timeout 300 ssh:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Read(//c/Users/95417/.ssh/**)"
     ],
     "deny": [],
     "ask": []
