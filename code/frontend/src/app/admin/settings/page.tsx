@@ -725,6 +725,14 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
     return [];
   };
 
+  // 构建媒体文件完整URL
+  const getMediaUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    // 对于相对路径，直接使用window.location.origin构建完整URL
+    return `${window.location.origin}${url}`;
+  };
+
   // 添加轮播项
   const addCarouselItem = () => {
     const carousel = getFactoryCarousel();
@@ -1125,31 +1133,6 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
                 </button>
               </div>
 
-              {/* 媒体类型选择 */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">媒体类型</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={item.media_type === 'image'}
-                      onChange={() => updateCarouselItem(index, 'media_type', 'image')}
-                      className="mr-2"
-                    />
-                    <span>图片</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      checked={item.media_type === 'video'}
-                      onChange={() => updateCarouselItem(index, 'media_type', 'video')}
-                      className="mr-2"
-                    />
-                    <span>视频</span>
-                  </label>
-                </div>
-              </div>
-
               {/* 媒体文件上传 */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">媒体文件</label>
@@ -1157,15 +1140,22 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
                   <div className="relative">
                     {item.media_type === 'video' ? (
                       <video
-                        src={item.media_url.startsWith('http') ? item.media_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.media_url}`}
-                        className="w-full h-40 object-cover rounded-lg"
+                        src={getMediaUrl(item.media_url)}
+                        className="w-full h-60 rounded-lg bg-black"
                         controls
-                      />
+                        preload="metadata"
+                      >
+                        <source src={getMediaUrl(item.media_url)} type="video/mp4" />
+                        您的浏览器不支持视频播放
+                      </video>
                     ) : (
                       <img
-                        src={item.media_url.startsWith('http') ? item.media_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.media_url}`}
+                        src={getMediaUrl(item.media_url)}
                         alt={`Carousel ${index + 1}`}
-                        className="w-full h-40 object-cover rounded-lg"
+                        className="w-full h-60 object-cover rounded-lg"
+                        onError={(e) => {
+                          console.error('图片加载失败:', item.media_url);
+                        }}
                       />
                     )}
                     <button
