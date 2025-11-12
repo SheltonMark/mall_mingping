@@ -675,11 +675,13 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
 
     if (!file.type.startsWith('video/')) {
       toast.error('请上传视频文件');
+      e.target.value = ''; // 重置input
       return;
     }
 
     if (file.size > 50 * 1024 * 1024) {
       toast.error('视频大小不能超过50MB');
+      e.target.value = ''; // 重置input
       return;
     }
 
@@ -687,7 +689,7 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
       setUploading(true);
       const result = await uploadApi.uploadSingle(file, 'video');
 
-      const carousel = getFactoryCarousel();
+      const carousel = [...getFactoryCarousel()]; // 创建新数组
       carousel[carouselIndex] = {
         ...carousel[carouselIndex],
         media_type: 'video',
@@ -695,9 +697,11 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
       };
       setConfig({ ...config, factory_carousel: carousel });
       toast.success('视频上传成功');
+      e.target.value = ''; // 重置input以允许重新选择同一文件
     } catch (error: any) {
       console.error('Upload failed:', error);
       toast.error(error.message || '视频上传失败');
+      e.target.value = ''; // 重置input
     } finally {
       setUploading(false);
     }
@@ -739,14 +743,14 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
 
   // 删除轮播项
   const removeCarouselItem = (index: number) => {
-    const carousel = getFactoryCarousel();
+    const carousel = [...getFactoryCarousel()]; // 创建新数组
     carousel.splice(index, 1);
     setConfig({ ...config, factory_carousel: carousel });
   };
 
   // 更新轮播项
   const updateCarouselItem = (index: number, field: string, value: any) => {
-    const carousel = getFactoryCarousel();
+    const carousel = [...getFactoryCarousel()]; // 创建新数组
     carousel[index] = { ...carousel[index], [field]: value };
     setConfig({ ...config, factory_carousel: carousel });
   };
