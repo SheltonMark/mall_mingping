@@ -729,8 +729,9 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
   const getMediaUrl = (url: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    // 对于相对路径，直接使用window.location.origin构建完整URL
-    return `${window.location.origin}${url}`;
+    // uploads目录通过后端static serve，直接返回相对路径即可
+    // Nginx会将/uploads代理到后端的uploads目录
+    return url;
   };
 
   // 添加轮播项
