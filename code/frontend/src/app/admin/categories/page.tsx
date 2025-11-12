@@ -229,13 +229,8 @@ export default function CategoriesPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(category)}
-                          className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={category._count && category._count.productGroups > 0}
-                          title={
-                            category._count && category._count.productGroups > 0
-                              ? '该分类下有产品，无法删除'
-                              : '删除分类'
-                          }
+                          className="text-red-600 hover:text-red-800"
+                          title="删除分类"
                         >
                           <Trash2 size={16} />
                         </button>
