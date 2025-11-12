@@ -475,7 +475,7 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'
