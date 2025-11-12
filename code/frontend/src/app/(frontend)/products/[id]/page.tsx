@@ -361,7 +361,7 @@ export default function ProductDetailPage() {
           {/* 左侧: 图片/视频/参数展示区 - 粘性布局 */}
           <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
             {/* 主显示区域 */}
-            <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden border border-gray-200">
+            <div className="relative aspect-square bg-gray-100 overflow-hidden border border-gray-200">
               {viewMode === 'gallery' && (
                 <img
                   src={currentImage}
@@ -468,19 +468,14 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 - 动态显示所有图片 */}
-            {viewMode === 'gallery' && images.length > 1 && (
-              <div className={`grid gap-3 ${
-                images.length === 2 ? 'grid-cols-2' :
-                images.length === 3 ? 'grid-cols-3' :
-                images.length === 4 ? 'grid-cols-4' :
-                'grid-cols-5'
-              }`}>
-                {images.map((img, index) => (
+            {/* 缩略图列表 - 5张及以上显示5个固定缩略图 */}
+            {viewMode === 'gallery' && images.length >= 5 && (
+              <div className="grid grid-cols-5 gap-3">
+                {images.slice(0, 5).map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`aspect-square rounded-sm overflow-hidden border-2 transition-all ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'
