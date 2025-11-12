@@ -155,7 +155,8 @@
       "Bash(where:*)",
       "Bash(timeout 300 ssh:*)",
       "Bash(echo:*)",
-      "Read(//c/Users/95417/.ssh/**)"
+      "Read(//c/Users/95417/.ssh/**)",
+      "Bash(rsync:*)"
     ],
     "deny": [],
     "ask": []
