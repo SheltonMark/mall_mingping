@@ -44,7 +44,7 @@ export default function CategoriesPage() {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const response = await productApi.getCategories();
+      const response = await productApi.getAllCategories();
       setCategories(Array.isArray(response) ? response : response.data || []);
     } catch (error: any) {
       toast.error(error.message || '加载分类失败');

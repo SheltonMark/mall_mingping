@@ -209,6 +209,9 @@ export const productApi = {
     return request<any>(`/products/categories${query}`);
   },
 
+  // 管理员专用：获取所有分类列表（包括未激活的）
+  getAllCategories: () => request<any>('/products/admin/categories'),
+
   createCategory: (data: any) =>
     request<any>('/products/categories', {
       method: 'POST',

@@ -34,6 +34,13 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   // ============ Category Endpoints ============
+  // 管理接口：获取所有分类列表（后台管理使用，包括未激活的分类）
+  @Get('admin/categories')
+  @UseGuards(JwtAuthGuard)
+  findAllCategoriesAdmin() {
+    return this.productService.findAllCategories(false); // false = 获取所有分类，包括未激活的
+  }
+
   // 公开接口：获取分类列表（前台商城使用）
   @Get('categories')
   findAllCategories(@Query('activeOnly') activeOnly?: string) {
