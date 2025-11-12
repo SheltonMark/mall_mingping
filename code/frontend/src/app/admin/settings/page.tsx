@@ -695,7 +695,10 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
         media_type: 'video',
         media_url: result.url,
       };
-      setConfig({ ...config, factory_carousel: carousel });
+      // 强制更新config触发重新渲染
+      const newConfig = { ...config, factory_carousel: [...carousel] };
+      setConfig(newConfig);
+      console.log('视频上传成功，新配置:', newConfig);
       toast.success('视频上传成功');
       e.target.value = ''; // 重置input以允许重新选择同一文件
     } catch (error: any) {
@@ -1195,7 +1198,10 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
                               media_url: result.url,
                               media_type: 'image'
                             };
-                            setConfig({ ...config, factory_carousel: carousel });
+                            // 强制更新config触发重新渲染
+                            const newConfig = { ...config, factory_carousel: [...carousel] };
+                            setConfig(newConfig);
+                            console.log('图片上传成功，新配置:', newConfig);
                             toast.success('图片上传成功');
                             e.target.value = '';
                           } catch (error: any) {
