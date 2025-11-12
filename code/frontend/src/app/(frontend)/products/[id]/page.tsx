@@ -74,18 +74,18 @@ export default function ProductDetailPage() {
         if (data.skus && data.skus.length > 0) {
           const firstSku = data.skus[0]
 
-          // 解析图片 (1-5张)
+          // 解析图片 (所有图片，不限制数量)
           let parsedImages: string[] = []
           if (firstSku.images) {
             if (Array.isArray(firstSku.images)) {
-              parsedImages = firstSku.images.slice(0, 5).map(img =>
+              parsedImages = firstSku.images.map(img =>
                 img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`
               )
             } else if (typeof firstSku.images === 'string') {
               try {
                 const imgs = JSON.parse(firstSku.images)
                 if (Array.isArray(imgs)) {
-                  parsedImages = imgs.slice(0, 5).map(img =>
+                  parsedImages = imgs.map(img =>
                     img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`
                   )
                 }
@@ -112,20 +112,20 @@ export default function ProductDetailPage() {
     setCurrentImageIndex(0)
     setViewMode('gallery')
 
-    // 解析图片 (1-5张)
+    // 解析图片 (所有图片，不限制数量)
     let parsedImages: string[] = []
     if (sku.images) {
       // Prisma已经自动解析JSON，所以images可能是数组或字符串
       if (Array.isArray(sku.images)) {
         // 添加服务器URL前缀
-        parsedImages = sku.images.slice(0, 5).map(img =>
+        parsedImages = sku.images.map(img =>
           img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`
         )
       } else if (typeof sku.images === 'string') {
         try {
           const imgs = JSON.parse(sku.images)
           if (Array.isArray(imgs)) {
-            parsedImages = imgs.slice(0, 5).map(img =>
+            parsedImages = imgs.map(img =>
               img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`
             )
           }
@@ -468,10 +468,15 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 - 4张小图 */}
+            {/* 缩略图列表 - 动态显示所有图片 */}
             {viewMode === 'gallery' && images.length > 1 && (
-              <div className="grid grid-cols-4 gap-3">
-                {images.slice(0, 4).map((img, index) => (
+              <div className={`grid gap-3 ${
+                images.length === 2 ? 'grid-cols-2' :
+                images.length === 3 ? 'grid-cols-3' :
+                images.length === 4 ? 'grid-cols-4' :
+                'grid-cols-5'
+              }`}>
+                {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
