@@ -38,16 +38,13 @@ interface AboutConfig {
   story2_desc2_zh?: string
   // 工厂展示区
   factory_carousel?: Array<{
-    type: 'image' | 'video'
-    url: string
+    media_type: 'image' | 'video'
+    media_url: string
     label_en?: string
     label_zh?: string
-    thumbnail?: string
-    settings?: {
-      autoplay?: boolean
-      loop?: boolean
-      muted?: boolean
-    }
+    video_autoplay?: boolean
+    video_loop?: boolean
+    video_muted?: boolean
   }> | string
   // 联系方式
   contact_email?: string
@@ -403,18 +400,18 @@ export default function AboutPage() {
                 {factoryCarousel.length > 0 ? (
                   factoryCarousel.map((item, idx) => {
                     const label = language === 'zh' ? (item.label_zh || item.label_en) : (item.label_en || item.label_zh)
-                    const mediaUrl = item.url?.startsWith('http') ? item.url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.url}`
+                    const mediaUrl = item.media_url?.startsWith('http') ? item.media_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.media_url}`
 
                     return (
                       <div key={idx} className="min-w-full aspect-video">
                         <div className="relative h-full overflow-hidden">
-                          {item.type === 'video' ? (
+                          {item.media_type === 'video' ? (
                             <video
                               src={mediaUrl}
                               className="w-full h-full object-cover"
-                              autoPlay={item.settings?.autoplay}
-                              loop={item.settings?.loop}
-                              muted={item.settings?.muted}
+                              autoPlay={item.video_autoplay}
+                              loop={item.video_loop}
+                              muted={item.video_muted}
                               playsInline
                             />
                           ) : (
@@ -428,7 +425,7 @@ export default function AboutPage() {
                           {label && (
                             <div className="absolute bottom-12 left-12 text-white">
                               <div className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-2">
-                                {item.type === 'video' ? 'Video' : 'Facility'}
+                                {item.media_type === 'video' ? 'Video' : 'Facility'}
                               </div>
                               <div className="text-4xl md:text-5xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
                                 {label}
