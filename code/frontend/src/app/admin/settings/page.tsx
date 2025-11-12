@@ -1188,11 +1188,19 @@ function AboutTab({ config, setConfig }: { config: AboutConfig; setConfig: (conf
                           try {
                             setUploading(true);
                             const result = await uploadApi.uploadSingle(file, 'image');
-                            updateCarouselItem(index, 'media_url', result.url);
-                            updateCarouselItem(index, 'media_type', 'image');
+                            // 一次性更新多个字段
+                            const carousel = [...getFactoryCarousel()];
+                            carousel[index] = {
+                              ...carousel[index],
+                              media_url: result.url,
+                              media_type: 'image'
+                            };
+                            setConfig({ ...config, factory_carousel: carousel });
                             toast.success('图片上传成功');
+                            e.target.value = '';
                           } catch (error: any) {
                             toast.error(error.message || '上传失败');
+                            e.target.value = '';
                           } finally {
                             setUploading(false);
                           }
