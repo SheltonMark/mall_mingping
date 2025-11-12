@@ -72,7 +72,8 @@ export class FileUploadService {
   }
 
   getFilePath(subDir: string, fileName: string): string {
-    return path.join(this.uploadDir, subDir, fileName);
+    // Use path.resolve to ensure absolute path
+    return path.resolve(this.uploadDir, subDir, fileName);
   }
 
   getFileUrl(subDir: string, fileName: string): string {
