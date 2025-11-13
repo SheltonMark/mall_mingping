@@ -468,10 +468,10 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 - 5张及以上显示5个固定缩略图 */}
-            {viewMode === 'gallery' && images.length >= 5 && (
+            {/* 缩略图列表 - 2张及以上显示缩略图 */}
+            {viewMode === 'gallery' && images.length >= 2 && (
               <div className="grid grid-cols-5 gap-3">
-                {images.slice(0, 5).map((img, index) => (
+                {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
