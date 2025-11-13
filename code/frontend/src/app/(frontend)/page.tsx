@@ -54,16 +54,22 @@ export default function HomePage() {
       try {
         // 调用公开API获取首页配置（不需要鉴权）
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/homepage`)
+
+        // 从关于我们配置获取hero图片(逻辑互换)
+        const aboutResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/about`)
+
         if (response.ok) {
           const data = await response.json()
 
-          // 加载hero图片
-          if (data.hero_image) {
-            // 如果是相对路径,添加后端API URL前缀
-            const imageUrl = data.hero_image.startsWith('http')
-              ? data.hero_image
-              : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${data.hero_image}`;
-            setHeroImage(imageUrl)
+          // 加载hero图片 - 从关于我们配置读取
+          if (aboutResponse.ok) {
+            const aboutData = await aboutResponse.json()
+            if (aboutData.hero_image) {
+              const imageUrl = aboutData.hero_image.startsWith('http')
+                ? aboutData.hero_image
+                : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutData.hero_image}`;
+              setHeroImage(imageUrl)
+            }
           }
 
           // 加载featured_products配置
@@ -104,137 +110,118 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section - 100% Final Version Design */}
+      {/* Hero Section - 深色版本 (原关于我们风格) */}
       <section
-        className="relative min-h-screen flex items-center overflow-hidden"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, var(--neutral-50) 0%, white 50%, var(--gold-50) 100%)'
+          background: 'linear-gradient(135deg, var(--neutral-900) 0%, #1a1a1a 50%, var(--neutral-900) 100%)'
         }}
       >
         {/* Animated Grid Background */}
         <div
-          className="absolute inset-0 opacity-100"
+          className="absolute inset-0 opacity-10"
           style={{
-            backgroundImage: 'linear-gradient(rgba(189, 183, 107, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(189, 183, 107, 0.03) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(189, 183, 107, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(189, 183, 107, 0.1) 1px, transparent 1px)',
             backgroundSize: '60px 60px',
             animation: 'gridMove 20s linear infinite'
           }}
         />
 
+        {/* Hero Image with Overlay */}
+        <img
+          src={heroImage}
+          className="absolute top-0 left-0 w-full h-full object-cover opacity-30"
+          alt="Factory"
+        />
+
         {/* Floating Light Effect */}
         <div
-          className="absolute top-[-50%] right-[-20%] w-[1000px] h-[1000px] rounded-full opacity-100"
+          className="absolute top-[-30%] right-[-10%] w-[800px] h-[800px] rounded-full opacity-20"
           style={{
-            background: 'radial-gradient(circle, rgba(189, 183, 107, 0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(189, 183, 107, 0.3) 0%, transparent 70%)',
             animation: 'float 8s ease-in-out infinite'
           }}
         />
 
-        <div className="relative container max-w-[1440px] mx-auto px-6 py-32 z-10">
-          <div className="grid md:grid-cols-[1fr_1.15fr] items-center gap-16">
-            {/* Left Content */}
-            <div className="text-center md:text-left opacity-0 animate-fade-slide-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
-              {/* Innovation Badge */}
-              <div className="inline-flex items-center gap-4 px-6 py-2 bg-white border border-neutral-200 rounded-full mb-8 shadow-soft">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow"></span>
-                <span className="text-xs font-semibold tracking-[0.1em] uppercase text-neutral-600">
-                  {t('home.hero.title').includes('Future') ? 'Innovation in Cleaning' : '清洁领域的创新者'}
+        <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
+          {/* Innovation Badge */}
+          <div
+            className="inline-flex items-center gap-4 px-6 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full mb-8 opacity-0 animate-fade-slide-up"
+            style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
+          >
+            <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow"></span>
+            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-white/90">
+              {t('home.hero.title').includes('Future') ? 'Innovation in Cleaning' : '清洁领域的创新者'}
+            </span>
+          </div>
+
+          {/* Hero Title */}
+          <h1
+            className="text-6xl md:text-8xl lg:text-9xl font-light leading-tight mb-6 opacity-0 animate-fade-slide-up"
+            style={{
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '-0.02em',
+              animationDelay: '0.4s',
+              animationFillMode: 'forwards'
+            }}
+          >
+            {t('home.hero.title').includes('Future') ? (
+              <>
+                Redefining<br />
+                <span
+                  className="text-primary italic"
+                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}
+                >
+                  Cleaning Excellence
                 </span>
-              </div>
-
-              {/* Hero Title */}
-              <h1
-                className="text-6xl md:text-7xl lg:text-8xl font-light leading-tight mb-8"
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  letterSpacing: '-0.02em'
-                }}
-              >
-                {t('home.hero.title').includes('Future') ? (
-                  <>
-                    Redefining<br />
-                    <span
-                      className="inline-block text-primary italic"
-                      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500, letterSpacing: '0.02em' }}
-                    >
-                      Cleaning Excellence
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    重新定义<br />
-                    <span
-                      className="inline-block text-primary"
-                      style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500, letterSpacing: '0.02em' }}
-                    >
-                      清洁卓越
-                    </span>
-                  </>
-                )}
-              </h1>
-
-              {/* Subtitle */}
-              <p
-                className="text-2xl md:text-3xl font-light text-neutral-700 mb-12"
-                style={{ fontFamily: 'var(--font-body)', lineHeight: 1.6 }}
-              >
-                {t('home.hero.subtitle').includes('Stunningly') ? 'Crafting Perfection · Innovation in Every Detail' : '匠心品质 · 始终如一'}
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="flex gap-6 justify-center md:justify-start flex-wrap">
-                <Link
-                  href="/products"
-                  className="relative inline-flex items-center gap-4 px-10 py-5 bg-neutral-900 text-white border-2 border-neutral-900 rounded-full font-semibold text-base tracking-[0.05em] uppercase overflow-hidden group hover:bg-primary hover:border-primary hover:-translate-y-1 transition-all duration-250"
-                  style={{ boxShadow: 'var(--shadow-large)' }}
+              </>
+            ) : (
+              <>
+                重新定义<br />
+                <span
+                  className="text-primary italic"
+                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}
                 >
-                  <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-[left] duration-[600ms]"></span>
-                  <span className="relative z-10">{t('home.hero.cta')}</span>
-                  <ArrowRight className="relative z-10" size={20} />
-                </Link>
-                <Link
-                  href="/about"
-                  className="inline-flex items-center gap-4 px-10 py-5 bg-transparent text-neutral-900 border-2 border-neutral-300 rounded-full font-semibold text-base tracking-[0.05em] uppercase hover:bg-neutral-900 hover:text-white hover:border-neutral-900 hover:-translate-y-1 transition-all duration-250"
-                >
-                  {t('home.hero.title').includes('Future') ? 'Contact Us' : '联系我们'}
-                </Link>
-              </div>
-            </div>
+                  清洁卓越
+                </span>
+              </>
+            )}
+          </h1>
 
-            {/* Right Visual - Image */}
-            <div className="relative opacity-0 animate-fade-slide-left" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
-              <div
-                className="relative overflow-hidden"
-                style={{
-                  boxShadow: 'var(--shadow-xlarge)',
-                  transformStyle: 'preserve-3d',
-                  perspective: '1000px'
-                }}
-              >
-                <img
-                  src={heroImage}
-                  alt="LEMOPX Product"
-                  className="w-full h-auto object-cover transition-transform duration-600 hover:scale-105"
-                />
-              </div>
+          {/* Subtitle */}
+          <p
+            className="text-2xl md:text-3xl font-light opacity-90 mb-12 opacity-0 animate-fade-slide-up"
+            style={{
+              animationDelay: '0.6s',
+              animationFillMode: 'forwards'
+            }}
+          >
+            {t('home.hero.subtitle').includes('Stunningly') ? 'Crafting Perfection · Innovation in Every Detail' : '匠心品质 · 始终如一'}
+          </p>
 
-              {/* Floating Stat Cards */}
-              <div
-                className="absolute top-[10%] right-[-8%] bg-white/95 backdrop-blur-xl p-8 rounded-2xl border border-white/50 hidden lg:block"
-                style={{ boxShadow: 'var(--shadow-large)', animation: 'floatSlow 6s ease-in-out infinite' }}
-              >
-                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">{language === 'zh' ? '全球客户' : 'Global Clients'}</div>
-                <div className="text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-display)' }}>500+</div>
-              </div>
-
-              <div
-                className="absolute bottom-[15%] left-[-8%] bg-white/95 backdrop-blur-xl p-8 rounded-2xl border border-white/50 hidden lg:block"
-                style={{ boxShadow: 'var(--shadow-large)', animation: 'floatSlow 6s ease-in-out infinite 1s' }}
-              >
-                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">{language === 'zh' ? '产品系列' : 'Products'}</div>
-                <div className="text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-display)' }}>200+</div>
-              </div>
-            </div>
+          {/* CTA Buttons */}
+          <div
+            className="flex gap-6 justify-center flex-wrap opacity-0 animate-fade-slide-up"
+            style={{
+              animationDelay: '0.8s',
+              animationFillMode: 'forwards'
+            }}
+          >
+            <Link
+              href="/products"
+              className="relative inline-flex items-center gap-4 px-10 py-5 bg-primary text-white border-2 border-primary rounded-full font-semibold text-base tracking-[0.05em] uppercase overflow-hidden group hover:bg-white hover:text-primary hover:border-white hover:-translate-y-1 transition-all duration-250"
+              style={{ boxShadow: 'var(--shadow-large)' }}
+            >
+              <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-[left] duration-[600ms]"></span>
+              <span className="relative z-10">{t('home.hero.cta')}</span>
+              <ArrowRight className="relative z-10" size={20} />
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-4 px-10 py-5 bg-transparent text-white border-2 border-white/30 rounded-full font-semibold text-base tracking-[0.05em] uppercase hover:bg-white hover:text-neutral-900 hover:border-white hover:-translate-y-1 transition-all duration-250"
+            >
+              {t('home.hero.title').includes('Future') ? 'Contact Us' : '联系我们'}
+            </Link>
           </div>
         </div>
       </section>

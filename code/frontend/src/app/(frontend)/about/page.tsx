@@ -101,6 +101,15 @@ export default function AboutPage() {
       try {
         const config = await publicApi.system.getAbout()
 
+        // 从首页配置获取hero图片(逻辑互换)
+        const homepageResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/homepage`)
+        if (homepageResponse.ok) {
+          const homepageData = await homepageResponse.json()
+          if (homepageData.hero_image) {
+            config.hero_image = homepageData.hero_image
+          }
+        }
+
         // 如果 factory_carousel 是字符串，解析为数组
         if (config.factory_carousel && typeof config.factory_carousel === 'string') {
           try {
@@ -182,75 +191,105 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section - 参考首页风格 */}
+      {/* Hero Section - 浅色版本 (原首页风格) */}
       <section
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        className="relative min-h-screen flex items-center overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, var(--neutral-900) 0%, #1a1a1a 50%, var(--neutral-900) 100%)'
+          background: 'linear-gradient(135deg, var(--neutral-50) 0%, white 50%, var(--gold-50) 100%)'
         }}
       >
         {/* Animated Grid Background */}
         <div
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-100"
           style={{
-            backgroundImage: 'linear-gradient(rgba(189, 183, 107, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(189, 183, 107, 0.1) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(189, 183, 107, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(189, 183, 107, 0.03) 1px, transparent 1px)',
             backgroundSize: '60px 60px',
             animation: 'gridMove 20s linear infinite'
           }}
         />
 
-        {/* Hero Image with Overlay */}
-        <img
-          src={aboutConfig.hero_image?.startsWith('http') ? aboutConfig.hero_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.hero_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI"}
-          className="absolute top-0 left-0 w-full h-full object-cover opacity-30"
-          alt="Factory"
-        />
-
         {/* Floating Light Effect */}
         <div
-          className="absolute top-[-30%] right-[-10%] w-[800px] h-[800px] rounded-full opacity-20"
+          className="absolute top-[-50%] right-[-20%] w-[1000px] h-[1000px] rounded-full opacity-100"
           style={{
-            background: 'radial-gradient(circle, rgba(189, 183, 107, 0.3) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(189, 183, 107, 0.15) 0%, transparent 70%)',
             animation: 'float 8s ease-in-out infinite'
           }}
         />
 
-        <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
-          {/* Innovation Badge */}
-          <div
-            className="inline-flex items-center gap-4 px-6 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full mb-8 opacity-0 animate-fade-slide-up"
-            style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
-          >
-            <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow"></span>
-            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-white/90">
-              {t('about.our_story')}
-            </span>
-          </div>
+        <div className="relative container max-w-[1440px] mx-auto px-6 py-32 z-10">
+          <div className="grid md:grid-cols-[1fr_1.15fr] items-center gap-16">
+            {/* Left Content */}
+            <div className="text-center md:text-left opacity-0 animate-fade-slide-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+              {/* Innovation Badge */}
+              <div className="inline-flex items-center gap-4 px-6 py-2 bg-white border border-neutral-200 rounded-full mb-8 shadow-soft">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow"></span>
+                <span className="text-xs font-semibold tracking-[0.1em] uppercase text-neutral-600">
+                  {t('about.our_story')}
+                </span>
+              </div>
 
-          <h1
-            className="text-6xl md:text-8xl lg:text-9xl font-light leading-tight mb-6 opacity-0 animate-fade-slide-up"
-            style={{
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '-0.02em',
-              animationDelay: '0.4s',
-              animationFillMode: 'forwards'
-            }}
-          >
-            {getLocalizedField('hero_title_line1') || t('about.hero_title_1')}
-            <br />
-            <span className="text-primary italic" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}>
-              {getLocalizedField('hero_title_line2') || t('about.hero_title_2')}
-            </span>
-          </h1>
-          <p
-            className="text-2xl md:text-3xl font-light opacity-90 opacity-0 animate-fade-slide-up"
-            style={{
-              animationDelay: '0.6s',
-              animationFillMode: 'forwards'
-            }}
-          >
-            {getLocalizedField('hero_subtitle') || t('about.hero_subtitle')}
-          </p>
+              {/* Hero Title */}
+              <h1
+                className="text-6xl md:text-7xl lg:text-8xl font-light leading-tight mb-8"
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '-0.02em'
+                }}
+              >
+                {getLocalizedField('hero_title_line1') || t('about.hero_title_1')}<br />
+                <span
+                  className="inline-block text-primary italic"
+                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500, letterSpacing: '0.02em' }}
+                >
+                  {getLocalizedField('hero_title_line2') || t('about.hero_title_2')}
+                </span>
+              </h1>
+
+              {/* Subtitle */}
+              <p
+                className="text-2xl md:text-3xl font-light text-neutral-700 mb-12"
+                style={{ fontFamily: 'var(--font-body)', lineHeight: 1.6 }}
+              >
+                {getLocalizedField('hero_subtitle') || t('about.hero_subtitle')}
+              </p>
+            </div>
+
+            {/* Right Visual - Image */}
+            <div className="relative opacity-0 animate-fade-slide-left" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
+              <div
+                className="relative overflow-hidden"
+                style={{
+                  boxShadow: 'var(--shadow-xlarge)',
+                  transformStyle: 'preserve-3d',
+                  perspective: '1000px'
+                }}
+              >
+                <img
+                  src={aboutConfig.hero_image?.startsWith('http') ? aboutConfig.hero_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.hero_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI"}
+                  alt="LEMOPX Product"
+                  className="w-full h-auto object-cover transition-transform duration-600 hover:scale-105"
+                />
+              </div>
+
+              {/* Floating Stat Cards */}
+              <div
+                className="absolute top-[10%] right-[-8%] bg-white/95 backdrop-blur-xl p-8 rounded-2xl border border-white/50 hidden lg:block"
+                style={{ boxShadow: 'var(--shadow-large)', animation: 'floatSlow 6s ease-in-out infinite' }}
+              >
+                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">{language === 'zh' ? '全球客户' : 'Global Clients'}</div>
+                <div className="text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-display)' }}>500+</div>
+              </div>
+
+              <div
+                className="absolute bottom-[15%] left-[-8%] bg-white/95 backdrop-blur-xl p-8 rounded-2xl border border-white/50 hidden lg:block"
+                style={{ boxShadow: 'var(--shadow-large)', animation: 'floatSlow 6s ease-in-out infinite 1s' }}
+              >
+                <div className="text-xs text-neutral-500 uppercase tracking-[0.1em] mb-2">{language === 'zh' ? '产品系列' : 'Products'}</div>
+                <div className="text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-display)' }}>200+</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
