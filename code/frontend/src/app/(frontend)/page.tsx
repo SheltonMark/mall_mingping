@@ -226,27 +226,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Philosophy Section - 品牌理念 */}
-      <section className="py-32 px-6 bg-neutral-900 text-white relative overflow-hidden">
-        {/* Top gradient line */}
-        <div
-          className="absolute top-0 left-0 right-0 h-[1px]"
-          style={{ background: 'linear-gradient(90deg, transparent, var(--primary), transparent)' }}
-        />
-
-        <div className="max-w-[1200px] mx-auto text-center">
-          <blockquote
-            className="text-4xl md:text-6xl font-light leading-[1.4] text-white mb-12 italic"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            "{t('home.quote.text')}"
-          </blockquote>
-          <p className="text-base text-neutral-500 tracking-[0.1em] uppercase">
-            — {t('home.quote.author')}
-          </p>
-        </div>
-      </section>
-
       {/* Excellence in Every Detail - Features Section */}
       <section className="py-32 bg-white">
         <div className="max-w-[1440px] mx-auto px-6">
