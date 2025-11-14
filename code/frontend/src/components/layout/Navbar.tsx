@@ -52,9 +52,9 @@ export default function Navbar() {
         isScrolled ? 'py-4 border-b border-black/5' : 'py-6'
       }`}
       style={{
-        backdropFilter: isScrolled ? 'blur(30px) saturate(180%)' : 'none',
-        WebkitBackdropFilter: isScrolled ? 'blur(30px) saturate(180%)' : 'none',
-        backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.8)' : 'transparent',
+        backdropFilter: 'blur(30px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+        backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.6)',
         boxShadow: isScrolled ? 'var(--shadow-soft)' : 'none',
       }}
     >
@@ -68,7 +68,7 @@ export default function Navbar() {
             <img
               src="/images/logo.svg"
               alt="LEMOPX"
-              className="h-8 w-auto"
+              className="h-12 md:h-16 w-auto"
             />
           </Link>
 

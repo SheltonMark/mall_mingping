@@ -567,7 +567,7 @@ export default function ProductDetailPage() {
                   <button
                     key={sku.id}
                     onClick={() => handleSkuSelect(sku)}
-                    className={`p-4 rounded-xl border-2 transition-all text-left ${
+                    className={`p-4 rounded-md border-2 transition-all text-left ${
                       selectedSku?.id === sku.id
                         ? 'border-primary bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -718,7 +718,7 @@ export default function ProductDetailPage() {
                     }
                   }}
                   disabled={!selectedSku || addedToCart}
-                  className={`w-full h-14 rounded-xl font-bold text-white text-lg transition-all flex items-center justify-center gap-3 ${
+                  className={`w-full h-14 font-bold text-white text-lg transition-all flex items-center justify-center gap-3 ${
                     addedToCart
                       ? 'bg-green-500'
                       : 'bg-primary hover:bg-primary-dark'
@@ -755,7 +755,7 @@ export default function ProductDetailPage() {
                     }
                   }}
                   disabled={!selectedSku}
-                  className={`w-full h-14 rounded-xl font-bold text-primary text-lg transition-all flex items-center justify-center gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
+                  className={`w-full h-14 font-bold text-primary text-lg transition-all flex items-center justify-center gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
                 >
                   {t('detail.buy_now')}
                 </button>

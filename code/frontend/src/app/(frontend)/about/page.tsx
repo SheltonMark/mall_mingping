@@ -101,10 +101,10 @@ export default function AboutPage() {
       try {
         const config = await publicApi.system.getAbout()
 
-        // 从首页配置获取hero图片(逻辑互换)
-        const homepageResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/homepage`)
-        if (homepageResponse.ok) {
-          const homepageData = await homepageResponse.json()
+        // 从首页配置获取hero图片（因为后端配置是反的）
+        const homepageHeroResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/homepage`)
+        if (homepageHeroResponse.ok) {
+          const homepageData = await homepageHeroResponse.json()
           if (homepageData.hero_image) {
             config.hero_image = homepageData.hero_image
           }
