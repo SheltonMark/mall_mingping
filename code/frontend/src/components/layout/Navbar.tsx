@@ -68,7 +68,7 @@ export default function Navbar() {
             <img
               src="/images/logo.svg"
               alt="LEMOPX"
-              className="h-20 md:h-32 w-auto"
+              className="h-8 w-auto"
             />
           </Link>
 
