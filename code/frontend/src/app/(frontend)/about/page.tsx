@@ -418,7 +418,7 @@ export default function AboutPage() {
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
               <div className="px-6 py-2 border-2 border-primary rounded-md">
                 <span className="text-sm font-bold tracking-[0.2em] uppercase text-primary">
-                  Our Facilities
+                  {language === 'zh' ? '我们的设施' : 'Our Facilities'}
                 </span>
               </div>
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>

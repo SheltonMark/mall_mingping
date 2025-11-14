@@ -36,12 +36,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-16 mb-16">
           {/* Brand Column */}
           <div>
-            <h3
-              className="text-3xl font-light text-primary mb-6 tracking-[0.08em]"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              LEMOPX
-            </h3>
+            <Link href="/" className="inline-block mb-6">
+              <img
+                src="/images/logo-light.svg"
+                alt="LEMOPX"
+                className="h-12 w-auto"
+              />
+            </Link>
             <p className="text-neutral-500 leading-relaxed">
               {t('footer.tagline') || 'Crafting excellent cleaning solutions with artisan spirit, creating elegant living experiences for global clients.'}
             </p>

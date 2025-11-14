@@ -60,14 +60,16 @@ export default function Navbar() {
     >
       <div className="max-w-[1440px] mx-auto px-6">
         <div className="flex items-center justify-between relative z-10">
-          {/* Logo with underline effect */}
+          {/* Logo */}
           <Link
             href="/"
-            className="relative text-[2rem] tracking-[0.08em] text-neutral-900 transition-colors duration-250 group"
-            style={{ fontFamily: 'var(--font-display)', fontWeight: 300 }}
+            className="relative transition-opacity duration-250 hover:opacity-80"
           >
-            LEMOPX
-            <span className="absolute bottom-[-2px] left-0 h-[1px] w-0 bg-primary transition-all duration-250 group-hover:w-full"></span>
+            <img
+              src="/images/logo.svg"
+              alt="LEMOPX"
+              className="h-10 md:h-12 w-auto"
+            />
           </Link>
 
           {/* Center Navigation with dot indicators */}
