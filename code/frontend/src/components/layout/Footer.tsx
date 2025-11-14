@@ -33,14 +33,14 @@ export default function Footer() {
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-16 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-16 mb-16 items-start">
           {/* Brand Column */}
           <div>
             <Link href="/" className="inline-block mb-6">
               <img
                 src="/images/logo-light.svg"
                 alt="LEMOPX"
-                className="h-24 w-auto"
+                className="h-36 md:h-48 w-auto"
               />
             </Link>
             <p className="text-neutral-500 leading-relaxed">
