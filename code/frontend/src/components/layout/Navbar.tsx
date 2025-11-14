@@ -49,7 +49,7 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-250 ${
-        isScrolled ? 'py-2 border-b border-black/5' : 'py-3'
+        isScrolled ? 'py-4 border-b border-black/5' : 'py-6'
       }`}
       style={{
         backdropFilter: isScrolled ? 'blur(30px) saturate(180%)' : 'none',

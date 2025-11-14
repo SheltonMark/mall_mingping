@@ -40,7 +40,7 @@ export default function Footer() {
               <img
                 src="/images/logo-light.svg"
                 alt="LEMOPX"
-                className="h-32 md:h-36 w-auto mb-6"
+                className="h-32 md:h-36 w-auto mb-6 -mt-2"
               />
             </Link>
             <p className="text-neutral-500 leading-relaxed">
