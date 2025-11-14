@@ -49,7 +49,7 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-250 ${
-        isScrolled ? 'py-4 border-b border-black/5' : 'py-6'
+        isScrolled ? 'py-2 border-b border-black/5' : 'py-3'
       }`}
       style={{
         backdropFilter: isScrolled ? 'blur(30px) saturate(180%)' : 'none',
@@ -68,7 +68,7 @@ export default function Navbar() {
             <img
               src="/images/logo.svg"
               alt="LEMOPX"
-              className="h-30 md:h-48 w-auto"
+              className="h-20 md:h-32 w-auto"
             />
           </Link>
 

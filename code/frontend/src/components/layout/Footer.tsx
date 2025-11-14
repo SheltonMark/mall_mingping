@@ -36,11 +36,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-16 mb-16 items-start">
           {/* Brand Column */}
           <div>
-            <Link href="/" className="inline-block mb-6">
+            <Link href="/" className="inline-block">
               <img
                 src="/images/logo-light.svg"
                 alt="LEMOPX"
-                className="h-36 md:h-48 w-auto"
+                className="h-32 md:h-36 w-auto mb-6"
               />
             </Link>
             <p className="text-neutral-500 leading-relaxed">
