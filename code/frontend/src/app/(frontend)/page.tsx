@@ -55,15 +55,15 @@ export default function HomePage() {
         // 调用公开API获取首页配置（不需要鉴权）
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/homepage`)
 
-        // 从关于我们配置获取hero图片(逻辑互换)
-        const aboutResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/about`)
+        // 从关于我们配置获取hero图片（修复bug：之前调用错了）
+        const aboutHeroResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/about`)
 
         if (response.ok) {
           const data = await response.json()
 
           // 加载hero图片 - 从关于我们配置读取
-          if (aboutResponse.ok) {
-            const aboutData = await aboutResponse.json()
+          if (aboutHeroResponse.ok) {
+            const aboutData = await aboutHeroResponse.json()
             if (aboutData.hero_image) {
               const imageUrl = aboutData.hero_image.startsWith('http')
                 ? aboutData.hero_image
@@ -109,119 +109,59 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="flex flex-col">
-      {/* Hero Section - 深色版本 (原关于我们风格) */}
-      <section
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, var(--neutral-900) 0%, #1a1a1a 50%, var(--neutral-900) 100%)'
-        }}
-      >
-        {/* Animated Grid Background */}
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(189, 183, 107, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(189, 183, 107, 0.1) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
-            animation: 'gridMove 20s linear infinite'
-          }}
-        />
-
-        {/* Hero Image with Overlay */}
+    <div className="flex flex-col bg-white">
+      {/* Hero Section - Dyson-inspired: Full screen with subtle overlay */}
+      <section className="relative h-screen w-full overflow-hidden">
+        {/* Full-screen Hero Image */}
         <img
           src={heroImage}
-          className="absolute top-0 left-0 w-full h-full object-cover opacity-30"
-          alt="Factory"
+          className="w-full h-full object-cover"
+          alt="Hero"
         />
 
-        {/* Floating Light Effect */}
-        <div
-          className="absolute top-[-30%] right-[-10%] w-[800px] h-[800px] rounded-full opacity-20"
-          style={{
-            background: 'radial-gradient(circle, rgba(189, 183, 107, 0.3) 0%, transparent 70%)',
-            animation: 'float 8s ease-in-out infinite'
-          }}
-        />
+        {/* Dark overlay for text readability - Dyson style */}
+        <div className="absolute inset-0 bg-black/40"></div>
 
-        <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
-          {/* Innovation Badge */}
-          <div
-            className="inline-flex items-center gap-4 px-6 py-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full mb-8 opacity-0 animate-fade-slide-up"
-            style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
-          >
-            <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow"></span>
-            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-white/90">
-              {t('home.hero.title').includes('Future') ? 'Innovation in Cleaning' : '清洁领域的创新者'}
-            </span>
-          </div>
+        {/* Text content - Left aligned, smaller fonts like Dyson */}
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-[1440px] mx-auto px-8 md:px-12 w-full">
+            <div className="max-w-2xl">
+              {/* Main Title - Smaller, cleaner */}
+              <h1 className="text-white mb-4">
+                {t('home.hero.title').includes('Future') ? (
+                  <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+                    Excellence in Every Clean
+                  </span>
+                ) : (
+                  <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+                    卓越清洁 始于细节
+                  </span>
+                )}
+              </h1>
 
-          {/* Hero Title */}
-          <h1
-            className="text-6xl md:text-8xl lg:text-9xl font-light leading-tight mb-6 opacity-0 animate-fade-slide-up"
-            style={{
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '-0.02em',
-              animationDelay: '0.4s',
-              animationFillMode: 'forwards'
-            }}
-          >
-            {t('home.hero.title').includes('Future') ? (
-              <>
-                Redefining<br />
-                <span
-                  className="text-primary italic"
-                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}
-                >
-                  Cleaning Excellence
-                </span>
-              </>
-            ) : (
-              <>
-                重新定义<br />
-                <span
-                  className="text-primary italic"
-                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500 }}
-                >
-                  清洁卓越
-                </span>
-              </>
-            )}
-          </h1>
+              {/* Subtitle - Concise like Dyson */}
+              <p className="text-white/90 text-base md:text-lg font-normal mb-2 leading-relaxed">
+                {t('home.hero.title').includes('Future')
+                  ? 'Premium cleaning solutions for modern living'
+                  : '为现代生活而生的高端清洁方案'}
+              </p>
 
-          {/* Subtitle */}
-          <p
-            className="text-2xl md:text-3xl font-light opacity-90 mb-12 opacity-0 animate-fade-slide-up"
-            style={{
-              animationDelay: '0.6s',
-              animationFillMode: 'forwards'
-            }}
-          >
-            {t('home.hero.subtitle').includes('Stunningly') ? 'Crafting Perfection · Innovation in Every Detail' : '匠心品质 · 始终如一'}
-          </p>
+              {/* Terms text - Small */}
+              <p className="text-white/70 text-sm mb-8">
+                {t('home.hero.title').includes('Future')
+                  ? 'Discover our premium collection'
+                  : '探索我们的高端系列'}
+              </p>
 
-          {/* CTA Buttons */}
-          <div
-            className="flex gap-6 justify-center flex-wrap opacity-0 animate-fade-slide-up"
-            style={{
-              animationDelay: '0.8s',
-              animationFillMode: 'forwards'
-            }}
-          >
-            <Link
-              href="/products"
-              className="relative inline-flex items-center gap-4 px-10 py-5 bg-primary text-white border-2 border-primary rounded-full font-semibold text-base tracking-[0.05em] uppercase overflow-hidden group hover:bg-white hover:text-primary hover:border-white hover:-translate-y-1 transition-all duration-250"
-              style={{ boxShadow: 'var(--shadow-large)' }}
-            >
-              <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-[left] duration-[600ms]"></span>
-              <span className="relative z-10">{t('home.hero.cta')}</span>
-              <ArrowRight className="relative z-10" size={20} />
-            </Link>
-            <Link
-              href="/about"
-              className="inline-flex items-center gap-4 px-10 py-5 bg-transparent text-white border-2 border-white/30 rounded-full font-semibold text-base tracking-[0.05em] uppercase hover:bg-white hover:text-neutral-900 hover:border-white hover:-translate-y-1 transition-all duration-250"
-            >
-              {t('home.hero.title').includes('Future') ? 'Contact Us' : '联系我们'}
-            </Link>
+              {/* CTA Button - Rounded with glow effect on hover */}
+              <Link
+                href="/products"
+                className="group relative inline-block px-8 py-3.5 bg-primary text-neutral-900 font-semibold text-sm rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
+              >
+                <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'View products' : '查看产品'}</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
