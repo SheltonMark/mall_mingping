@@ -101,13 +101,12 @@ export default function AboutPage() {
       try {
         const config = await publicApi.system.getAbout()
 
-        // 从首页配置获取hero图片（因为后端配置是反的）
-        const homepageHeroResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/homepage`)
-        if (homepageHeroResponse.ok) {
-          const homepageData = await homepageHeroResponse.json()
-          if (homepageData.hero_image) {
-            config.hero_image = homepageData.hero_image
-          }
+        // 处理hero图片URL - 从关于我们配置读取
+        if (config.hero_image) {
+          const imageUrl = config.hero_image.startsWith('http')
+            ? config.hero_image
+            : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${config.hero_image}`;
+          config.hero_image = imageUrl
         }
 
         // 如果 factory_carousel 是字符串，解析为数组

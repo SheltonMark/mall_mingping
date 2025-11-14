@@ -271,15 +271,30 @@ export default function ProductsPage() {
         </nav>
 
         <div className="flex flex-col md:flex-row gap-12">
-          {/* Filtering Sidebar */}
+          {/* Filtering Sidebar - 排序框移到顶部 */}
           <aside className="w-full md:w-56 lg:w-64 shrink-0">
             <div className="sticky top-32">
               <h3 className="text-lg font-bold mb-8 text-gray-900">{t('products.filters')}</h3>
-              <div className="space-y-10">
+              <div className="space-y-12">
+                {/* Sort Dropdown - 移到顶部 */}
+                <div>
+                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.sort_by')}</h4>
+                  <CustomSelect
+                    options={[
+                      { value: 'newest', label: t('products.sort_new') },
+                      { value: 'price_low', label: t('products.sort_price_low') },
+                      { value: 'price_high', label: t('products.sort_price_high') },
+                    ]}
+                    value={sortBy}
+                    onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
+                    className="w-full"
+                  />
+                </div>
+
                 {/* Categories */}
                 <div>
                   <h4 className="font-semibold mb-4 text-gray-900">{t('products.categories')}</h4>
-                  <ul className="space-y-3 text-sm">
+                  <ul className="space-y-4 text-sm">
                     {categories.map((category) => (
                       <li key={category.id}>
                         <button
@@ -336,25 +351,20 @@ export default function ProductsPage() {
             </div>
           </aside>
 
-          {/* Product Grid */}
+          {/* Product Grid - 删除标题行，保留移动端排序 */}
           <div className="flex-1">
-            {/* 标题和排序行 - iPad和移动端优化 */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-6">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('products.title')}</h1>
-
-              {/* Custom Sort Dropdown - 圆角统一设计 */}
-              <div className="sm:ml-auto w-full sm:w-auto">
-                <CustomSelect
-                  options={[
-                    { value: 'newest', label: t('products.sort_new') },
-                    { value: 'price_low', label: t('products.sort_price_low') },
-                    { value: 'price_high', label: t('products.sort_price_high') },
-                  ]}
-                  value={sortBy}
-                  onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
-                  className="w-full sm:w-[220px]"
-                />
-              </div>
+            {/* 仅在移动端显示排序下拉框 */}
+            <div className="md:hidden mb-6">
+              <CustomSelect
+                options={[
+                  { value: 'newest', label: t('products.sort_new') },
+                  { value: 'price_low', label: t('products.sort_price_low') },
+                  { value: 'price_high', label: t('products.sort_price_high') },
+                ]}
+                value={sortBy}
+                onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
+                className="w-full"
+              />
             </div>
 
             {/* Products Grid */}

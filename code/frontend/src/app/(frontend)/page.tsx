@@ -52,24 +52,18 @@ export default function HomePage() {
   useEffect(() => {
     const loadHomepageConfig = async () => {
       try {
-        // 调用公开API获取首页配置（不需要鉴权）
+        // 调用公开API获取首页配置
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/homepage`)
-
-        // 从关于我们配置获取hero图片（修复bug：之前调用错了）
-        const aboutHeroResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/system/about`)
 
         if (response.ok) {
           const data = await response.json()
 
-          // 加载hero图片 - 从关于我们配置读取
-          if (aboutHeroResponse.ok) {
-            const aboutData = await aboutHeroResponse.json()
-            if (aboutData.hero_image) {
-              const imageUrl = aboutData.hero_image.startsWith('http')
-                ? aboutData.hero_image
-                : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutData.hero_image}`;
-              setHeroImage(imageUrl)
-            }
+          // 加载hero图片 - 从首页配置读取
+          if (data.hero_image) {
+            const imageUrl = data.hero_image.startsWith('http')
+              ? data.hero_image
+              : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${data.hero_image}`;
+            setHeroImage(imageUrl)
           }
 
           // 加载featured_products配置
