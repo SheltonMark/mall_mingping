@@ -156,7 +156,12 @@
       "Bash(timeout 300 ssh:*)",
       "Bash(echo:*)",
       "Read(//c/Users/95417/.ssh/**)",
-      "Bash(rsync:*)"
+      "Bash(rsync:*)",
+      "Bash(del Navbar.tsx Footer.tsx)",
+      "Bash(timeout 60 ssh root@8.141.127.26 \"cd /root/mall_mingping/code/frontend && \necho ''=== 停止构建进程 ==='' &&\npkill -f ''next build'' 2>/dev/null || true &&\nsleep 2 &&\necho ''=== 恢复备份文件 ==='' &&\ncp src/components/layout/Navbar.tsx.backup src/components/layout/Navbar.tsx &&\ncp src/components/layout/Footer.tsx.backup src/components/layout/Footer.tsx &&\necho ''✅ 文件已恢复到原始文本logo版本'' &&\nrm -rf .next &&\necho ''✅ 清理了构建缓存''\")",
+      "Bash(timeout 20 ssh root@8.141.127.26 \"echo ''=== 系统资源 ==='' && free -h && echo '''' && echo ''=== 杀掉所有node/pnpm进程 ==='' && pkill -9 node && pkill -9 pnpm && sleep 2 && echo ''✅ 进程已清理''\")",
+      "Bash(timeout 20 ssh:*)",
+      "Bash(timeout 60 ssh root@8.141.127.26 \"\ncd /root/mall_mingping &&\necho ''=== 停止所有node进程 ==='' &&\nkillall -9 node 2>/dev/null || true &&\nsleep 3 &&\necho ''=== 从远程强制拉取 ==='' &&\ngit fetch origin &&\ngit reset --hard origin/feature/external-site &&\ncd code/frontend &&\necho ''=== 检查文件完整性 ==='' &&\nls -lh src/components/layout/Navbar.tsx src/components/layout/Footer.tsx\n\")"
     ],
     "deny": [],
     "ask": []
