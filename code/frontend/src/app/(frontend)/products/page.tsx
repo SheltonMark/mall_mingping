@@ -275,10 +275,10 @@ export default function ProductsPage() {
           <aside className="w-full md:w-56 lg:w-64 shrink-0">
             <div className="sticky top-32">
               <h3 className="text-lg font-bold mb-8 text-gray-900">{t('products.filters')}</h3>
-              <div className="space-y-12">
+              <div className="space-y-14">
                 {/* Sort Dropdown - 移到顶部 */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.sort_by')}</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">{t('home.hero.title').includes('Future') ? 'Sort' : '排序'}</h4>
                   <CustomSelect
                     options={[
                       { value: 'newest', label: t('products.sort_new') },
