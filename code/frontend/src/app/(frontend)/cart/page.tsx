@@ -65,9 +65,7 @@ export default function CartPage() {
     setSelectedItems([])
   }
 
-  const subtotal = items
-    .filter(item => selectedItems.includes(item.skuId))
-    .reduce((sum, item) => sum + (Number(item.price) || 0) * item.quantity, 0)
+  const subtotal = 0 // 价格已移除，不再计算
 
   // Show loading while checking auth
   if (isLoading) {
@@ -181,13 +179,20 @@ export default function CartPage() {
                     {/* Product Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4 mb-3">
-                        <div>
+                        <div className="flex-1">
                           <h3 className="text-lg font-bold text-gray-900">
                             {parseBilingualText(item.groupName, language)}
                           </h3>
                           <p className="text-sm text-gray-500 mt-1">
                             {language === 'zh' ? '产品代码' : 'Product Code'}: <span className="font-mono font-semibold text-primary">{item.sku}</span>
                           </p>
+                          {/* 品名 */}
+                          {item.productName && (
+                            <p className="text-sm text-gray-700 mt-2">
+                              <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>{' '}
+                              {language === 'zh' ? item.productName : (item.productNameEn || item.productName)}
+                            </p>
+                          )}
                         </div>
                         <button
                           onClick={() => removeItem(item.skuId)}
@@ -198,54 +203,48 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      {/* Optional Attributes */}
-                      {item.colorCombination && Object.keys(item.colorCombination).length > 0 && (
-                        <div className="mb-4">
-                          <p className="text-xs text-gray-500 mb-2">
-                            {language === 'zh' ? '附加属性' : 'Optional Attributes'}:
+                      {/* 货品规格 */}
+                      {((language === 'zh' && item.specification) || (language === 'en' && item.specificationEn)) && (
+                        <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <p className="text-xs text-gray-500 mb-1 font-semibold">
+                            {language === 'zh' ? '货品规格' : 'Specifications'}:
                           </p>
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(item.colorCombination).map(([key, value]: [string, any]) => (
-                              <div
-                                key={key}
-                                className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700"
-                              >
-                                {typeof value === 'string' ? value : JSON.stringify(value)}
-                              </div>
-                            ))}
+                          <div className="text-sm text-gray-700 whitespace-pre-line">
+                            {language === 'zh' ? item.specification : (item.specificationEn || item.specification)}
                           </div>
                         </div>
                       )}
 
-
-                      {/* Quantity and Price */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => updateQuantity(item.skuId, Math.max(1, item.quantity - 1))}
-                            className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="w-12 text-center font-bold text-gray-900">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.skuId, item.quantity + 1)}
-                            className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-primary">
-                            ￥{((Number(item.price) || 0) * item.quantity).toFixed(2)}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {t('cart.unit_price')} ￥{(Number(item.price) || 0).toFixed(2)}
+                      {/* 附加属性 */}
+                      {item.optionalAttributes && (
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-500 mb-2">
+                            {language === 'zh' ? '附加属性' : 'Optional Attributes'}:
+                          </p>
+                          <div className="px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200 text-sm text-blue-900 inline-block">
+                            {item.optionalAttributes}
                           </div>
                         </div>
+                      )}
+
+                      {/* 数量控制 */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-600">{language === 'zh' ? '数量' : 'Quantity'}:</span>
+                        <button
+                          onClick={() => updateQuantity(item.skuId, Math.max(1, item.quantity - 1))}
+                          className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-12 text-center font-bold text-gray-900">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.skuId, item.quantity + 1)}
+                          className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -260,26 +259,13 @@ export default function CartPage() {
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-gray-600">
-                    <span>{t('cart.subtotal')}</span>
-                    <span className="font-semibold">￥{subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>{t('cart.selected_items')}</span>
+                    <span>{language === 'zh' ? '已选商品' : 'Selected Items'}</span>
                     <span className="font-semibold">
                       {selectedItems.reduce((sum, skuId) => {
                         const item = items.find(i => i.skuId === skuId)
                         return sum + (item?.quantity || 0)
                       }, 0)} {t('cart.items')}
                     </span>
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">{t('cart.total')}</span>
-                      <span className="text-3xl font-bold text-primary">
-                        ￥{subtotal.toFixed(2)}
-                      </span>
-                    </div>
                   </div>
                 </div>
 

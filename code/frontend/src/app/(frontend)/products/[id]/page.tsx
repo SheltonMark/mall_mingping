@@ -125,6 +125,11 @@ export default function ProductDetailPage() {
       groupName: productGroup.groupNameEn
         ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
         : productGroup.groupNameZh,
+      productName: selectedSku.productName,
+      productNameEn: selectedSku.productNameEn,
+      specification: selectedSku.specification,
+      specificationEn: selectedSku.specificationEn,
+      optionalAttributes: selectedAttribute,
       colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
       quantity: quantity,
       price: Number(selectedSku.price),
@@ -147,6 +152,11 @@ export default function ProductDetailPage() {
         skuId: selectedSku.id,
         sku: selectedSku.productCode,
         groupName: `${productGroup.groupNameZh}/${productGroup.groupNameEn}`,
+        productName: selectedSku.productName,
+        productNameEn: selectedSku.productNameEn,
+        specification: selectedSku.specification,
+        specificationEn: selectedSku.specificationEn,
+        optionalAttributes: selectedAttribute,
         colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
         quantity: quantity,
         price: selectedSku.price,
@@ -184,9 +194,14 @@ export default function ProductDetailPage() {
 
   const currentImage = images[currentImageIndex] || (productGroup as any).mainImage || '/images/placeholder.jpg'
   const skuOptions = productGroup.skus.map(sku => sku.productName)
-  const optionalAttributes = selectedSku?.optionalAttributes && Array.isArray(selectedSku.optionalAttributes)
+
+  // 提取附加属性并转换为双语数组
+  const optionalAttributesRaw = selectedSku?.optionalAttributes && Array.isArray(selectedSku.optionalAttributes)
     ? selectedSku.optionalAttributes
     : []
+  const optionalAttributes = optionalAttributesRaw.map((attr: any) =>
+    language === 'zh' ? attr.nameZh : (attr.nameEn || attr.nameZh)
+  )
 
   return (
     <div className="min-h-screen bg-white pt-32">
@@ -283,7 +298,7 @@ export default function ProductDetailPage() {
                     </div>
                     <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
                       <span className="font-semibold">{language === 'zh' ? '分类' : 'Category'}:</span>
-                      <span>{productGroup.category?.nameZh} / {productGroup.category?.nameEn}</span>
+                      <span>{language === 'zh' ? productGroup.category?.nameZh : (productGroup.category?.nameEn || productGroup.category?.nameZh)}</span>
                     </div>
                     {selectedSku && (
                       <>
@@ -295,10 +310,12 @@ export default function ProductDetailPage() {
                           <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>
                           <span>{selectedSku.productName}</span>
                         </div>
-                        {selectedSku.specification && (
+                        {((language === 'zh' && selectedSku.specification) || (language === 'en' && selectedSku.specificationEn)) && (
                           <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
                             <span className="font-semibold">{language === 'zh' ? '货品规格' : 'Specifications'}:</span>
-                            <div className="whitespace-pre-line">{selectedSku.specification}</div>
+                            <div className="whitespace-pre-line">
+                              {language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification)}
+                            </div>
                           </div>
                         )}
                       </>
@@ -308,19 +325,14 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 */}
+            {/* 缩略图列表 - 固定大小居中显示 */}
             {viewMode === 'gallery' && images.length >= 2 && (
-              <div className={`grid gap-3 justify-center ${
-                images.length === 2 ? 'grid-cols-2' :
-                images.length === 3 ? 'grid-cols-3' :
-                images.length === 4 ? 'grid-cols-4' :
-                'grid-cols-5'
-              }`}>
+              <div className="flex gap-3 justify-center">
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'
@@ -420,13 +432,13 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 货品规格 - 选择品名后显示 */}
-            {selectedSku && selectedSku.specification && (
+            {selectedSku && ((language === 'zh' && selectedSku.specification) || (language === 'en' && selectedSku.specificationEn)) && (
               <div className="space-y-4 bg-gray-50 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-gray-900">
                   {language === 'zh' ? '货品规格' : 'Product Specification'}
                 </h3>
                 <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-                  {selectedSku.specification}
+                  {language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification)}
                 </div>
               </div>
             )}

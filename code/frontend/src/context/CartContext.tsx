@@ -3,8 +3,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 export interface CartItem {
   skuId: string
-  sku: string
+  sku: string  // 品号
   groupName: string  // 双语格式: "中文/English"
+  productName: string  // 品名 (中文)
+  productNameEn?: string  // 品名英文
+  specification?: string  // 货品规格 (中文)
+  specificationEn?: string  // 货品规格英文
+  optionalAttributes?: string  // 选中的附加属性 (双语)
   colorCombination: Record<string, any> // 附加属性（可选）
   quantity: number
   price: number
