@@ -488,7 +488,6 @@ export default function ProductsPage() {
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">图片</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">品号</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">品名</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">价格</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">状态</th>
                             <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">操作</th>
                           </tr>
@@ -536,15 +535,6 @@ export default function ProductsPage() {
                                 <div className="text-sm font-medium text-gray-900 max-w-xs">
                                   {sku.productName}
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                {sku.price ? (
-                                  <span className="text-sm font-bold text-green-600">
-                                    ¥{Number(sku.price).toFixed(2)}
-                                  </span>
-                                ) : (
-                                  <span className="text-sm text-gray-400">未设置</span>
-                                )}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`px-3 py-1 text-xs font-semibold rounded-full ${

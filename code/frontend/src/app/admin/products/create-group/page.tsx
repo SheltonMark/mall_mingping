@@ -132,6 +132,11 @@ export default function CreateGroupPage() {
       return;
     }
 
+    if (!formData.groupNameEn.trim()) {
+      toast.error('请输入系列英文名称');
+      return;
+    }
+
     if (!formData.categoryId) {
       toast.error('请选择产品分类');
       return;
@@ -147,7 +152,7 @@ export default function CreateGroupPage() {
       const payload = {
         prefix: formData.prefix.trim().toUpperCase(),
         groupNameZh: formData.groupNameZh.trim(),
-        groupNameEn: formData.groupNameEn.trim() || undefined,
+        groupNameEn: formData.groupNameEn.trim(),
         categoryId: formData.categoryId,
         isPublished: formData.isPublished,
         optionalAttributes: optionalAttributes,
@@ -256,14 +261,15 @@ export default function CreateGroupPage() {
               {/* 英文名称 */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  系列英文名称
+                  系列英文名称 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.groupNameEn}
                   onChange={(e) => setFormData({ ...formData, groupNameEn: e.target.value })}
-                  placeholder="输入系列英文名称（可选）"
+                  placeholder="输入系列英文名称"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                  required
                 />
               </div>
 

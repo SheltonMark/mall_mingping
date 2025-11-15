@@ -128,6 +128,10 @@ export class CreateProductGroupDto {
   @IsEnum(ProductVisibility)
   @IsOptional()
   visibilityTier?: ProductVisibility; // NEW: 产品可见性
+
+  @IsArray()
+  @IsOptional()
+  optionalAttributes?: any[]; // 附加属性 (中英文)
 }
 
 export class UpdateProductGroupDto {
@@ -181,6 +185,10 @@ export class UpdateProductGroupDto {
   @IsEnum(ProductVisibility)
   @IsOptional()
   visibilityTier?: ProductVisibility; // NEW: 产品可见性
+
+  @IsArray()
+  @IsOptional()
+  optionalAttributes?: any[]; // 附加属性 (中英文)
 }
 
 // Product SKU DTOs (2025-10-31 updated)
