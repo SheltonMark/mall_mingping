@@ -97,9 +97,6 @@ function OrderFormContent() {
     }
   }, [success])
 
-  // Calculate total
-  const totalAmount = orderItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -134,10 +131,15 @@ function OrderFormContent() {
         product_id: item.skuId,
         product_code: item.sku,
         product_name: item.groupName,
+        productName: item.productName,
+        productNameEn: item.productNameEn,
+        specification: item.specification,
+        specificationEn: item.specificationEn,
+        optionalAttributes: item.optionalAttributes,
         quantity: item.quantity,
         unit_price: item.price,
         configuration: item.colorCombination || {},
-        mainImage: item.mainImage || '', // Add mainImage for profile page display
+        mainImage: item.mainImage || '',
       }))
 
       const response = await fetch(`${API_URL}/order-forms`, {
@@ -149,7 +151,6 @@ function OrderFormContent() {
         body: JSON.stringify({
           ...formData,
           items,
-          totalAmount: totalAmount.toFixed(2),
         }),
       })
 
@@ -327,34 +328,43 @@ function OrderFormContent() {
                           alt={item.groupName}
                           className="w-20 h-20 object-cover rounded"
                         />
-                        <div className="flex-1">
+                        <div className="flex-1 space-y-2">
                           <p className="font-medium text-gray-900">{parseBilingualText(item.groupName, language)}</p>
                           <p className="text-sm text-gray-600">{item.sku}</p>
-                          {item.colorCombination && Object.keys(item.colorCombination).length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs text-gray-500 mb-1.5">{language === 'zh' ? '附加属性' : 'Optional Attributes'}:</p>
-                              <div className="flex flex-wrap gap-2">
-                                {Object.entries(item.colorCombination).map(([key, value]: [string, any]) => (
-                                  <div key={key} className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700">
-                                    {typeof value === 'string' ? value : JSON.stringify(value)}
-                                  </div>
-                                ))}
+
+                          {/* 品名 */}
+                          {item.productName && (
+                            <p className="text-sm text-gray-700">
+                              <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>{' '}
+                              {language === 'zh' ? item.productName : (item.productNameEn || item.productName)}
+                            </p>
+                          )}
+
+                          {/* 货品规格 */}
+                          {((language === 'zh' && item.specification) || (language === 'en' && item.specificationEn)) && (
+                            <div className="p-2 bg-gray-50 rounded border border-gray-200">
+                              <p className="text-xs text-gray-500 font-semibold mb-1">
+                                {language === 'zh' ? '货品规格' : 'Specifications'}:
+                              </p>
+                              <div className="text-sm text-gray-700 whitespace-pre-line">
+                                {language === 'zh' ? item.specification : (item.specificationEn || item.specification)}
                               </div>
                             </div>
                           )}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-gray-600">x{item.quantity}</p>
-                          <p className="font-medium text-gray-900">￥{((item.price || 0) * (item.quantity || 0)).toFixed(2)}</p>
+
+                          {/* 附加属性 */}
+                          {item.optionalAttributes && (
+                            <p className="text-sm text-gray-700">
+                              <span className="font-semibold">{language === 'zh' ? '附加属性' : 'Optional Attributes'}:</span>{' '}
+                              {language === 'zh' ? item.optionalAttributes.nameZh : (item.optionalAttributes.nameEn || item.optionalAttributes.nameZh)}
+                            </p>
+                          )}
+
+                          {/* 数量 */}
+                          <p className="text-sm text-gray-600">x{item.quantity}</p>
                         </div>
                       </div>
                     ))}
-                  </div>
-                  <div className="bg-gray-50 p-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">{t('order_form.total_amount')}</span>
-                      <span className="text-2xl font-bold text-primary">￥{totalAmount.toFixed(2)}</span>
-                    </div>
                   </div>
                 </div>
               </div>

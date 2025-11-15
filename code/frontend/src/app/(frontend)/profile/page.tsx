@@ -298,7 +298,7 @@ export default function ProfilePage() {
                         {expandedOrders.has(order.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
                     </div>
-                    <div className="text-2xl font-light text-primary mb-4">¥{order.totalAmount}</div>
+                    
                   </div>
 
                   {/* Order Items Details - Expandable */}
@@ -309,85 +309,49 @@ export default function ProfilePage() {
                       </h5>
                       <div className="space-y-4">
                         {order.items.map((item: any, idx: number) => (
+                        {order.items.map((item: any, idx: number) => (
                           <div key={idx} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
-                            {/* Product Image */}
-                            <div className="w-20 h-20 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
-                              {item.mainImage ? (
-                                <img
-                                  src={item.mainImage}
-                                  alt={item.product_name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Package className="w-8 h-8 text-gray-400" />
+                            <img
+                              src={item.mainImage}
+                              alt={parseBilingualText(item.product_name, language)}
+                              className="w-20 h-20 object-cover rounded"
+                            />
+                            <div className="flex-1 space-y-2">
+                              <p className="font-medium text-gray-900">{parseBilingualText(item.product_name, language)}</p>
+                              <p className="text-sm text-gray-600">{item.product_code}</p>
+
+                              {/* 品名 */}
+                              {item.productName && (
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>{'  '}
+                                  {language === 'zh' ? item.productName : (item.productNameEn || item.productName)}
+                                </p>
                               )}
-                            </div>
 
-                            {/* Product Info */}
-                            <div className="flex-1">
-                              <h6 className="font-medium text-gray-900 mb-1">{parseBilingualText(item.product_name, language)}</h6>
-                              <p className="text-sm text-gray-600 mb-2">{item.product_code}</p>
-
-                              {/* Configuration Details */}
-                              {item.configuration && Object.keys(item.configuration).length > 0 && (
-                                <div className="mt-2">
-                                  <p className="text-xs text-gray-500 mb-1.5">{language === 'zh' ? '配色方案' : 'Color Scheme'}:</p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {Object.entries(item.configuration).map(([componentCode, colorData]: [string, any]) => {
-                                      // 新格式: { schemeName, colors: ColorPart[] }
-                                      if (colorData.colors && Array.isArray(colorData.colors)) {
-                                        return (
-                                          <div
-                                            key={componentCode}
-                                            className="px-3 py-1.5 bg-white rounded-lg border border-gray-200"
-                                          >
-                                            <div className="text-xs font-semibold text-gray-700 mb-1">
-                                              [{componentCode}] {colorData.componentName ? parseBilingualText(colorData.componentName, language) : ''}
-                                            </div>
-                                            <div className="flex flex-wrap gap-1">
-                                              {colorData.colors.map((colorPart: any, colorIdx: number) => (
-                                                <div key={colorIdx} className="flex items-center gap-1">
-                                                  <div
-                                                    className="w-3 h-3 rounded-full border border-gray-300"
-                                                    style={{ backgroundColor: colorPart.hexColor }}
-                                                  />
-                                                  <span className="text-xs text-gray-600">
-                                                    {parseBilingualText(colorPart.part, language)}: {parseBilingualText(colorPart.color, language)}
-                                                  </span>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        )
-                                      }
-                                      // 旧格式: { hex, name }
-                                      return (
-                                        <div
-                                          key={componentCode}
-                                          className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200"
-                                        >
-                                          <div
-                                            className="w-4 h-4 rounded-full border border-gray-300"
-                                            style={{ backgroundColor: colorData.hex }}
-                                          />
-                                          <span className="text-xs text-gray-700">
-                                            {componentCode}: {colorData.name}
-                                          </span>
-                                        </div>
-                                      )
-                                    })}
+                              {/* 货品规格 */}
+                              {((language === 'zh' && item.specification) || (language === 'en' && item.specificationEn)) && (
+                                <div className="p-2 bg-white rounded border border-gray-200">
+                                  <p className="text-xs text-gray-500 font-semibold mb-1">
+                                    {language === 'zh' ? '货品规格' : 'Specifications'}:
+                                  </p>
+                                  <div className="text-sm text-gray-700 whitespace-pre-line">
+                                    {language === 'zh' ? item.specification : (item.specificationEn || item.specification)}
                                   </div>
                                 </div>
                               )}
-                            </div>
 
-                            {/* Quantity & Price */}
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-sm text-gray-600 font-light">x{item.quantity}</p>
-                              <p className="font-medium text-gray-900">¥{(item.unit_price * item.quantity).toFixed(2)}</p>
+                              {/* 附加属性 */}
+                              {item.optionalAttributes && (
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-semibold">{language === 'zh' ? '附加属性' : 'Optional Attributes'}:</span>{'  '}
+                                  {language === 'zh' ? item.optionalAttributes.nameZh : (item.optionalAttributes.nameEn || item.optionalAttributes.nameZh)}
+                                </p>
+                              )}
+
+                              {/* 数量 */}
+                              <p className="text-sm text-gray-600">x{item.quantity}</p>
                             </div>
                           </div>
-                        ))}
                       </div>
                     </div>
                   )}
