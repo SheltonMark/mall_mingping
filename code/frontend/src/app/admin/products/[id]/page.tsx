@@ -26,10 +26,12 @@ interface ProductSku {
   id: string;
   productCode: string;
   productName: string;
+  productNameEn?: string;
   title?: string;        // 主标题
   subtitle?: string;     // 副标题
   brand?: string;
   specification?: string;
+  specificationEn?: string;
   productSpec?: any;
   additionalAttributes?: any;
   images?: string;
