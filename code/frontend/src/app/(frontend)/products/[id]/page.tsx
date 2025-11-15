@@ -119,9 +119,9 @@ export default function ProductDetailPage() {
   const handleAttributeSelect = (displayValue: string) => {
     setSelectedAttributeDisplay(displayValue)
 
-    // 从原始数组中找到对应的双语对象
-    const optionalAttributesRaw = selectedSku?.optionalAttributes && Array.isArray(selectedSku.optionalAttributes)
-      ? selectedSku.optionalAttributes
+    // 从产品组的原始数组中找到对应的双语对象
+    const optionalAttributesRaw = productGroup?.optionalAttributes && Array.isArray(productGroup.optionalAttributes)
+      ? productGroup.optionalAttributes
       : []
 
     const selectedAttr = optionalAttributesRaw.find((attr: any) => {
@@ -214,9 +214,9 @@ export default function ProductDetailPage() {
   const currentImage = images[currentImageIndex] || (productGroup as any).mainImage || '/images/placeholder.jpg'
   const skuOptions = productGroup.skus.map(sku => sku.productName)
 
-  // 提取附加属性并转换为双语数组
-  const optionalAttributesRaw = selectedSku?.optionalAttributes && Array.isArray(selectedSku.optionalAttributes)
-    ? selectedSku.optionalAttributes
+  // 提取附加属性并转换为双语数组 - 从产品组获取，不是SKU
+  const optionalAttributesRaw = productGroup.optionalAttributes && Array.isArray(productGroup.optionalAttributes)
+    ? productGroup.optionalAttributes
     : []
   const optionalAttributes = optionalAttributesRaw.map((attr: any) =>
     language === 'zh' ? attr.nameZh : (attr.nameEn || attr.nameZh)
