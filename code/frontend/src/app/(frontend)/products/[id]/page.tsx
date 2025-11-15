@@ -353,14 +353,14 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 缩略图列表 - 固定大小，相对于大图居中显示，宽度800px */}
-            {/* 小图固定153x153，5张小图+4个间距(8px)正好797px，少于5张时居中显示左右留白 */}
+            {/* 小图固定149x149(含4px边框)，5张小图+4个间距(8px)正好797px，少于5张时居中显示左右留白 */}
             {viewMode === 'gallery' && images.length >= 2 && (
               <div className="flex gap-2 justify-center w-[800px]" style={{ maxWidth: '100%' }}>
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`w-[153px] h-[153px] rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    className={`w-[149px] h-[149px] rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'
