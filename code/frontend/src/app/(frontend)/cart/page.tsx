@@ -184,7 +184,7 @@ export default function CartPage() {
                             {parseBilingualText(item.groupName, language)}
                           </h3>
                           <p className="text-sm text-gray-500 mt-1">
-                            {language === 'zh' ? '产品代码' : 'Product Code'}: <span className="font-mono font-semibold text-primary">{item.sku}</span>
+                            {language === 'zh' ? '品号' : 'Product Code'}: <span className="font-mono font-semibold text-primary">{item.sku}</span>
                           </p>
                           {/* 品名 */}
                           {item.productName && (

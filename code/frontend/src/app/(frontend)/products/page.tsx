@@ -166,7 +166,7 @@ export default function ProductsPage() {
       specification: defaultSKU.specification,
       specificationEn: defaultSKU.specificationEn,
       optionalAttributes: firstOptionalAttribute,
-      colorCombination,
+      colorCombination: firstOptionalAttribute ? { ...colorCombination, attribute: firstOptionalAttribute } : colorCombination,
       quantity: 1,
       price: Number(defaultSKU.price) || 0,
       mainImage,
