@@ -416,8 +416,6 @@ export default function ProductDetailPage() {
             </div>
 
             {/* SKU组前缀标签 + 品号 */}
-            <div className="flex items-center justify-between gap-4">
-              {productGroup.prefix && (
                 <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
                   {productGroup.prefix}
                 </span>
@@ -445,7 +443,9 @@ export default function ProductDetailPage() {
                 onChange={handleSkuSelect}
                 placeholder={language === 'zh' ? '请选择品名' : 'Please select'}
               />
+                language={language}
             </div>
+                language={language}
 
             {/* 货品规格 - 选择品名后显示 */}
             {selectedSku && ((language === 'zh' && selectedSku.specification) || (language === 'en' && selectedSku.specificationEn)) && (

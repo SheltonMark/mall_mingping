@@ -9,6 +9,7 @@ interface IOSPickerProps {
   onChange: (value: string) => void
   placeholder?: string
   disabled?: boolean
+  language?: 'zh' | 'en' // 语言参数
 }
 
 const ITEM_HEIGHT = 44 // 每个选项的高度 (px)
@@ -20,6 +21,7 @@ export default function IOSPicker({
   value,
   onChange,
   placeholder = '请选择',
+  language = 'zh',
   disabled = false
 }: IOSPickerProps) {
   const [selectedIndex, setSelectedIndex] = useState(() => {
@@ -218,7 +220,7 @@ export default function IOSPicker({
       {/* 当前选中值显示（可选） */}
       {!disabled && (
         <div className="mt-2 text-center text-sm text-gray-600">
-          已选择: <span className="font-semibold text-gray-900">{options[selectedIndex]}</span>
+          {language === 'zh' ? '已选择' : 'Selected'}: <span className="font-semibold text-gray-900">{options[selectedIndex]}</span>
         </div>
       )}
     </div>
