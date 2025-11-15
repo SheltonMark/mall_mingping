@@ -85,6 +85,7 @@ export interface ProductSku {
   specification?: string; // 规格原始文本
   productSpec?: any; // 解析后的部件规格 (JSON)
   additionalAttributes?: any; // 解析后的颜色属性 (JSON)
+  optionalAttributes?: any; // 可选属性配置 (JSON数组)
   price: number;
   stock?: number;
   images?: any; // 图片集 (JSON数组)
