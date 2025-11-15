@@ -322,53 +322,27 @@ export default function ProductsPage() {
       <PageHeader
         title="产品管理"
         subtitle={`共 ${groups.length} 个产品系列，${skus.length} 个规格`}
-        actions={
-          <>
-            <button
-              onClick={handleDownloadTemplate}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
-            >
-              <Upload size={18} />
-              下载模板
-            </button>
-            <button
-              onClick={handleImportClick}
-              disabled={importing}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {importing ? (
-                <>
-                  <ButtonLoader />
-                  <span>导入中...</span>
-                </>
-              ) : (
-                <>
-                  <Upload size={18} />
-                  导入Excel
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => router.push('/admin/products/create-group')}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-gold-600 transition-all flex items-center gap-2"
-            >
-              <Plus size={18} />
-              新增SKU
-            </button>
-          </>
-        }
       />
 
-      {/* 搜索栏 */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="搜索品号、品名..."
-          className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-        />
+      {/* 搜索栏和新增SKU按钮 */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative max-w-md flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索品号、品名..."
+            className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          />
+        </div>
+        <button
+          onClick={() => router.push('/admin/products/create-group')}
+          className="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-gold-600 transition-all flex items-center gap-2"
+        >
+          <Plus size={18} />
+          新增SKU
+        </button>
       </div>
 
       {/* 主内容 */}
