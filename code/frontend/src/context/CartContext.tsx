@@ -9,7 +9,10 @@ export interface CartItem {
   productNameEn?: string  // 品名英文
   specification?: string  // 货品规格 (中文)
   specificationEn?: string  // 货品规格英文
-  optionalAttributes?: string  // 选中的附加属性 (双语)
+  optionalAttributes?: {
+    nameZh: string
+    nameEn: string
+  } | null  // 选中的附加属性 (双语对象)
   colorCombination: Record<string, any> // 附加属性（可选）
   quantity: number
   price: number

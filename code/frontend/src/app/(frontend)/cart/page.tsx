@@ -222,7 +222,7 @@ export default function CartPage() {
                             {language === 'zh' ? '附加属性' : 'Optional Attributes'}:
                           </p>
                           <div className="px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200 text-sm text-blue-900 inline-block">
-                            {item.optionalAttributes}
+                            {language === 'zh' ? item.optionalAttributes.nameZh : (item.optionalAttributes.nameEn || item.optionalAttributes.nameZh)}
                           </div>
                         </div>
                       )}

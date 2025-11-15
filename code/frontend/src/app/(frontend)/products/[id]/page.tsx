@@ -22,7 +22,8 @@ export default function ProductDetailPage() {
 
   const [productGroup, setProductGroup] = useState<ProductGroup | null>(null)
   const [selectedSku, setSelectedSku] = useState<ProductSku | null>(null)
-  const [selectedAttribute, setSelectedAttribute] = useState<string>('')
+  const [selectedAttribute, setSelectedAttribute] = useState<{nameZh: string, nameEn: string} | null>(null)
+  const [selectedAttributeDisplay, setSelectedAttributeDisplay] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -88,7 +89,8 @@ export default function ProductDetailPage() {
     setSelectedSku(sku)
     setCurrentImageIndex(0)
     setViewMode('gallery')
-    setSelectedAttribute('') // 重置附加属性选择
+    setSelectedAttribute(null) // 重置附加属性选择
+    setSelectedAttributeDisplay('') // 重置显示文本
 
     // 解析图片
     let parsedImages: string[] = []
@@ -111,6 +113,23 @@ export default function ProductDetailPage() {
       }
     }
     setImages(parsedImages)
+  }
+
+  // 处理附加属性选择
+  const handleAttributeSelect = (displayValue: string) => {
+    setSelectedAttributeDisplay(displayValue)
+
+    // 从原始数组中找到对应的双语对象
+    const optionalAttributesRaw = selectedSku?.optionalAttributes && Array.isArray(selectedSku.optionalAttributes)
+      ? selectedSku.optionalAttributes
+      : []
+
+    const selectedAttr = optionalAttributesRaw.find((attr: any) => {
+      const attrDisplay = language === 'zh' ? attr.nameZh : (attr.nameEn || attr.nameZh)
+      return attrDisplay === displayValue
+    })
+
+    setSelectedAttribute(selectedAttr || null)
   }
 
   const handleAddToCart = () => {
@@ -452,8 +471,8 @@ export default function ProductDetailPage() {
                 </h3>
                 <IOSPicker
                   options={optionalAttributes}
-                  value={selectedAttribute}
-                  onChange={setSelectedAttribute}
+                  value={selectedAttributeDisplay}
+                  onChange={handleAttributeSelect}
                   placeholder={language === 'zh' ? '请选择' : 'Please select'}
                 />
               </div>
