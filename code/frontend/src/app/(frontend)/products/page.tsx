@@ -150,6 +150,11 @@ export default function ProductsPage() {
       })
     }
 
+    // 获取产品组的第一个附加属性（如果有的话）
+    const firstOptionalAttribute = productGroup.optionalAttributes && Array.isArray(productGroup.optionalAttributes) && productGroup.optionalAttributes.length > 0
+      ? productGroup.optionalAttributes[0]
+      : null
+
     addItem({
       skuId: defaultSKU.id,
       sku: defaultSKU.productCode,
@@ -160,7 +165,7 @@ export default function ProductsPage() {
       productNameEn: defaultSKU.productNameEn,
       specification: defaultSKU.specification,
       specificationEn: defaultSKU.specificationEn,
-      optionalAttributes: null,
+      optionalAttributes: firstOptionalAttribute,
       colorCombination,
       quantity: 1,
       price: Number(defaultSKU.price) || 0,
