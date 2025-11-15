@@ -283,6 +283,7 @@ model ProductSku {
   groupId               String   @map("group_id") // 所属SKU组
   productCode           String   @unique @map("product_code") // 品号/SKU编码 (如: C10.01.0013)
   productName           String   @map("product_name") // 品名 (如: MP007-清洁四件套)
+  productNameEn         String?  @map("product_name_en") // 品名英文
 
   // 主标题和副标题 (后台可编辑)
   title                 String?  // 主标题 (显示在规格选择器第一行，默认为productName)
@@ -293,6 +294,7 @@ model ProductSku {
   // 规格信息 (从Excel导入) - 2025-11-01 更新: 支持部件化规格
   specification         String?  // 货品规格原始文本 (Excel原始内容)
   productSpec           Json?    @map("product_spec") // 解析后的部件规格 (JSON数组)
+  specificationEn       String?  @map("specification_en") // 货品规格英文
   /*
   productSpec 格式:
   [

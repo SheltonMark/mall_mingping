@@ -198,6 +198,10 @@ export class CreateProductSkuDto {
 
   @IsString()
   @IsOptional()
+  productNameEn?: string; // 品名英文
+
+  @IsString()
+  @IsOptional()
   title?: string; // NEW: 主标题 (规格选择器显示)
 
   @IsString()
@@ -211,6 +215,10 @@ export class CreateProductSkuDto {
   @IsString()
   @IsOptional()
   specification?: string; // NEW: 货品规格原始文本
+
+  @IsString()
+  @IsOptional()
+  specificationEn?: string; // 货品规格英文
 
   @IsOptional()
   productSpec?: any; // NEW: 解析后的部件规格 (JSON数组) - 不用@IsObject因为它是数组
@@ -257,6 +265,10 @@ export class UpdateProductSkuDto {
 
   @IsString()
   @IsOptional()
+  productNameEn?: string; // 品名英文
+
+  @IsString()
+  @IsOptional()
   title?: string; // NEW: 主标题
 
   @IsString()
@@ -266,6 +278,10 @@ export class UpdateProductSkuDto {
   @IsString()
   @IsOptional()
   brand?: string;
+  @IsString()
+  @IsOptional()
+  specificationEn?: string; // 货品规格英文
+
 
   @IsString()
   @IsOptional()
