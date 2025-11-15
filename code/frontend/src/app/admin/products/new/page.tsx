@@ -128,6 +128,8 @@ export default function NewSkuPage() {
   }, [groupId]);
 
   const loadGroup = async () => {
+    if (!groupId) return;
+
     try {
       setLoading(true);
       const data = await productApi.getGroup(groupId);
