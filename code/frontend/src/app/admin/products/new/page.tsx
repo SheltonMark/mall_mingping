@@ -767,6 +767,20 @@ export default function NewSkuPage() {
               )}
             </div>
 
+            {/* 配置说明 */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+              <h3 className="text-sm font-bold text-blue-900 mb-3 flex items-center gap-2">
+                <span>📋</span>
+                <span>配置说明</span>
+              </h3>
+              <div className="space-y-2 text-sm text-blue-800">
+                <p>• <strong>货品规格</strong>：在前端商品详情页的"参数"标签页中展示</p>
+                <p>• <strong>产品图片</strong>：在商品列表页和详情页展示，第一张为主图</p>
+                <p>• <strong>产品视频</strong>：在商品详情页的"视频"标签页中播放</p>
+                <p className="pt-2 border-t border-blue-300 text-xs">所有配置保存后立即在前端生效</p>
+              </div>
+            </div>
+
           </div>
 
           {/* 右侧：基本信息（可编辑） */}
