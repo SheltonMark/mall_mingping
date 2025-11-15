@@ -142,6 +142,11 @@ function OrderFormContent() {
         mainImage: item.mainImage || '',
       }))
 
+      // Calculate total amount
+      const totalAmount = items.reduce((sum, item) => {
+        return sum + (Number(item.unit_price) || 0) * (Number(item.quantity) || 0)
+      }, 0).toFixed(2)
+
       const response = await fetch(`${API_URL}/order-forms`, {
         method: 'POST',
         headers: {
@@ -151,6 +156,7 @@ function OrderFormContent() {
         body: JSON.stringify({
           ...formData,
           items,
+          totalAmount,
         }),
       })
 
@@ -316,25 +322,40 @@ function OrderFormContent() {
                 </div>
               </div>
 
-              {/* Products Summary */}
+              {/* Products Summary - 复用购物车样式 */}
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-4">{t('order_form.products')}</h2>
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
                   <div className="max-h-96 overflow-y-auto">
                     {orderItems.map((item, index) => (
-                      <div key={index} className="flex items-center gap-4 p-4 border-b border-gray-200">
+                      <div key={index} className="flex gap-4 p-4 border-b border-gray-200 last:border-b-0">
+                        {/* 商品图片 */}
                         <img
                           src={item.mainImage}
                           alt={item.groupName}
-                          className="w-20 h-20 object-cover rounded"
+                          className="w-24 h-24 object-cover rounded-lg border border-gray-200 flex-shrink-0"
                         />
-                        <div className="flex-1 space-y-2">
-                          <p className="font-medium text-gray-900">{parseBilingualText(item.groupName, language)}</p>
-                          <p className="text-sm text-gray-600">{item.sku}</p>
+
+                        {/* 商品信息 */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-4 mb-2">
+                            <div className="flex-1">
+                              <h3 className="text-base font-bold text-gray-900">
+                                {parseBilingualText(item.groupName, language)}
+                              </h3>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {language === 'zh' ? '品号' : 'Product Code'}: <span className="font-mono font-semibold text-primary">{item.sku}</span>
+                              </p>
+                            </div>
+                            {/* 数量显示在右边 */}
+                            <div className="text-gray-700 font-semibold text-lg flex-shrink-0">
+                              x{item.quantity}
+                            </div>
+                          </div>
 
                           {/* 品名 */}
                           {item.productName && (
-                            <p className="text-sm text-gray-700">
+                            <p className="text-sm text-gray-700 mb-2">
                               <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>{' '}
                               {language === 'zh' ? item.productName : (item.productNameEn || item.productName)}
                             </p>
@@ -342,8 +363,8 @@ function OrderFormContent() {
 
                           {/* 货品规格 */}
                           {((language === 'zh' && item.specification) || (language === 'en' && item.specificationEn)) && (
-                            <div className="p-2 bg-gray-50 rounded border border-gray-200">
-                              <p className="text-xs text-gray-500 font-semibold mb-1">
+                            <div className="mb-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <p className="text-xs text-gray-500 mb-1 font-semibold">
                                 {language === 'zh' ? '货品规格' : 'Specifications'}:
                               </p>
                               <div className="text-sm text-gray-700 whitespace-pre-line">
@@ -354,16 +375,15 @@ function OrderFormContent() {
 
                           {/* 附加属性 */}
                           {item.optionalAttributes && (
-                            <p className="text-sm text-gray-700">
-                              <span className="font-semibold">{language === 'zh' ? '附加属性' : 'Optional Attributes'}:</span>{' '}
-                              {language === 'zh' ? item.optionalAttributes.nameZh : (item.optionalAttributes.nameEn || item.optionalAttributes.nameZh)}
-                            </p>
+                            <div>
+                              <p className="text-xs text-gray-500 mb-2">
+                                {language === 'zh' ? '附加属性' : 'Optional Attributes'}:
+                              </p>
+                              <div className="px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200 text-sm text-blue-900 inline-block">
+                                {language === 'zh' ? item.optionalAttributes.nameZh : (item.optionalAttributes.nameEn || item.optionalAttributes.nameZh)}
+                              </div>
+                            </div>
                           )}
-
-                          {/* 数量 */}
-                          <p className="text-sm text-gray-600">
-                            <span className="font-semibold">{language === 'zh' ? '数量' : 'Quantity'}:</span> {item.quantity}
-                          </p>
                         </div>
                       </div>
                     ))}
