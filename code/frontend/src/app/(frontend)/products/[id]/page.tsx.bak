@@ -22,8 +22,7 @@ export default function ProductDetailPage() {
 
   const [productGroup, setProductGroup] = useState<ProductGroup | null>(null)
   const [selectedSku, setSelectedSku] = useState<ProductSku | null>(null)
-  const [selectedAttribute, setSelectedAttribute] = useState<{nameZh: string, nameEn: string} | null>(null)
-  const [selectedAttributeDisplay, setSelectedAttributeDisplay] = useState<string>('')
+  const [selectedAttribute, setSelectedAttribute] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -82,19 +81,14 @@ export default function ProductDetailPage() {
   }, [productId])
 
   // 处理品名选择
-  const handleSkuSelect = (displayName: string) => {
-    // 根据显示的名称（中文或英文）查找对应的SKU
-    const sku = productGroup?.skus.find(s => {
-      const skuDisplay = language === 'zh' ? s.productName : (s.productNameEn || s.productName)
-      return skuDisplay === displayName
-    })
+  const handleSkuSelect = (productName: string) => {
+    const sku = productGroup?.skus.find(s => s.productName === productName)
     if (!sku) return
 
     setSelectedSku(sku)
     setCurrentImageIndex(0)
     setViewMode('gallery')
-    setSelectedAttribute(null) // 重置附加属性选择
-    setSelectedAttributeDisplay('') // 重置显示文本
+    setSelectedAttribute('') // 重置附加属性选择
 
     // 解析图片
     let parsedImages: string[] = []
@@ -119,23 +113,6 @@ export default function ProductDetailPage() {
     setImages(parsedImages)
   }
 
-  // 处理附加属性选择
-  const handleAttributeSelect = (displayValue: string) => {
-    setSelectedAttributeDisplay(displayValue)
-
-    // 从产品组的原始数组中找到对应的双语对象
-    const optionalAttributesRaw = productGroup?.optionalAttributes && Array.isArray(productGroup.optionalAttributes)
-      ? productGroup.optionalAttributes
-      : []
-
-    const selectedAttr = optionalAttributesRaw.find((attr: any) => {
-      const attrDisplay = language === 'zh' ? attr.nameZh : (attr.nameEn || attr.nameZh)
-      return attrDisplay === displayValue
-    })
-
-    setSelectedAttribute(selectedAttr || null)
-  }
-
   const handleAddToCart = () => {
     if (!selectedSku || !productGroup) {
       toast.error(language === 'zh' ? '请先选择品名' : 'Please select a product name first')
@@ -148,11 +125,6 @@ export default function ProductDetailPage() {
       groupName: productGroup.groupNameEn
         ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
         : productGroup.groupNameZh,
-      productName: selectedSku.productName,
-      productNameEn: selectedSku.productNameEn,
-      specification: selectedSku.specification,
-      specificationEn: selectedSku.specificationEn,
-      optionalAttributes: selectedAttribute,
       colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
       quantity: quantity,
       price: Number(selectedSku.price),
@@ -175,11 +147,6 @@ export default function ProductDetailPage() {
         skuId: selectedSku.id,
         sku: selectedSku.productCode,
         groupName: `${productGroup.groupNameZh}/${productGroup.groupNameEn}`,
-        productName: selectedSku.productName,
-        productNameEn: selectedSku.productNameEn,
-        specification: selectedSku.specification,
-        specificationEn: selectedSku.specificationEn,
-        optionalAttributes: selectedAttribute,
         colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
         quantity: quantity,
         price: selectedSku.price,
@@ -216,18 +183,10 @@ export default function ProductDetailPage() {
   }
 
   const currentImage = images[currentImageIndex] || (productGroup as any).mainImage || '/images/placeholder.jpg'
-  // 品名选择器选项 - 根据语言显示
-  const skuOptions = productGroup.skus.map(sku =>
-    language === 'zh' ? sku.productName : (sku.productNameEn || sku.productName)
-  )
-
-  // 提取附加属性并转换为双语数组 - 从产品组获取，不是SKU
-  const optionalAttributesRaw = productGroup.optionalAttributes && Array.isArray(productGroup.optionalAttributes)
-    ? productGroup.optionalAttributes
+  const skuOptions = productGroup.skus.map(sku => sku.productName)
+  const optionalAttributes = selectedSku?.optionalAttributes && Array.isArray(selectedSku.optionalAttributes)
+    ? selectedSku.optionalAttributes
     : []
-  const optionalAttributes = optionalAttributesRaw.map((attr: any) =>
-    language === 'zh' ? attr.nameZh : (attr.nameEn || attr.nameZh)
-  )
 
   return (
     <div className="min-h-screen bg-white pt-32">
@@ -252,9 +211,8 @@ export default function ProductDetailPage() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* 左侧: 图片/视频/参数展示区 */}
           <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
-            {/* 主显示区域 - 固定宽度，与5张小图总宽度对齐 */}
-            {/* 计算：5张小图(88px×5) + 4个间距(8px×4) = 440 + 32 = 472px */}
-            <div className="relative aspect-square bg-gray-100 overflow-hidden border border-gray-200 mx-auto" style={{ width: '472px', maxWidth: '100%' }}>
+            {/* 主显示区域 */}
+            <div className="relative aspect-square bg-gray-100 overflow-hidden border border-gray-200">
               {viewMode === 'gallery' && (
                 <img
                   src={currentImage}
@@ -325,7 +283,7 @@ export default function ProductDetailPage() {
                     </div>
                     <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
                       <span className="font-semibold">{language === 'zh' ? '分类' : 'Category'}:</span>
-                      <span>{language === 'zh' ? productGroup.category?.nameZh : (productGroup.category?.nameEn || productGroup.category?.nameZh)}</span>
+                      <span>{productGroup.category?.nameZh} / {productGroup.category?.nameEn}</span>
                     </div>
                     {selectedSku && (
                       <>
@@ -335,14 +293,12 @@ export default function ProductDetailPage() {
                         </div>
                         <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
                           <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>
-                          <span>{language === 'zh' ? selectedSku.productName : (selectedSku.productNameEn || selectedSku.productName)}</span>
+                          <span>{selectedSku.productName}</span>
                         </div>
-                        {((language === 'zh' && selectedSku.specification) || (language === 'en' && selectedSku.specificationEn)) && (
+                        {selectedSku.specification && (
                           <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
                             <span className="font-semibold">{language === 'zh' ? '货品规格' : 'Specifications'}:</span>
-                            <div className="whitespace-pre-line">
-                              {language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification)}
-                            </div>
+                            <div className="whitespace-pre-line">{selectedSku.specification}</div>
                           </div>
                         )}
                       </>
@@ -352,14 +308,19 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 - 固定大小，居中显示，宽度对齐大图 */}
+            {/* 缩略图列表 */}
             {viewMode === 'gallery' && images.length >= 2 && (
-              <div className="flex gap-2 justify-center mx-auto" style={{ width: '472px', maxWidth: '100%' }}>
+              <div className={`grid gap-3 justify-center ${
+                images.length === 2 ? 'grid-cols-2' :
+                images.length === 3 ? 'grid-cols-3' :
+                images.length === 4 ? 'grid-cols-4' :
+                'grid-cols-5'
+              }`}>
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`w-[88px] h-[88px] rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'
@@ -411,19 +372,24 @@ export default function ProductDetailPage() {
 
           {/* 右侧: 产品信息 */}
           <div className="space-y-6">
-            {/* 标题 - 仅显示当前语言 */}
+            {/* 标题 */}
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
                 {language === 'zh' ? productGroup.groupNameZh : (productGroup.groupNameEn || productGroup.groupNameZh)}
               </h1>
+              {productGroup.groupNameEn && language === 'zh' && (
+                <p className="text-xl text-gray-600">{productGroup.groupNameEn}</p>
+              )}
               {productGroup.descriptionZh && (
                 <p className="text-lg text-gray-600 mt-4">
-                  {language === 'zh' ? productGroup.descriptionZh : (productGroup.descriptionEn || productGroup.descriptionZh)}
+                  {language === 'zh' ? productGroup.descriptionZh : productGroup.descriptionEn}
                 </p>
               )}
             </div>
 
             {/* SKU组前缀标签 + 品号 */}
+            <div className="flex items-center justify-between gap-4">
+              {productGroup.prefix && (
                 <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
                   {productGroup.prefix}
                 </span>
@@ -447,37 +413,36 @@ export default function ProductDetailPage() {
               </h3>
               <IOSPicker
                 options={skuOptions}
-                value={selectedSku ? (language === 'zh' ? selectedSku.productName : (selectedSku.productNameEn || selectedSku.productName)) : undefined}
+                value={selectedSku?.productName}
                 onChange={handleSkuSelect}
                 placeholder={language === 'zh' ? '请选择品名' : 'Please select'}
-                language={language}
               />
             </div>
 
             {/* 货品规格 - 选择品名后显示 */}
-            {selectedSku && ((language === 'zh' && selectedSku.specification) || (language === 'en' && selectedSku.specificationEn)) && (
+            {selectedSku && selectedSku.specification && (
               <div className="space-y-4 bg-gray-50 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-gray-900">
                   {language === 'zh' ? '货品规格' : 'Product Specification'}
                 </h3>
                 <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-                  {language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification)}
+                  {selectedSku.specification}
                 </div>
               </div>
             )}
 
-            {/* 附加属性选择器 (iOS风格) */}
+            {/* 附加属性选择器 (可选，iOS风格) */}
             {selectedSku && optionalAttributes.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-gray-900">
-                  {language === 'zh' ? '附加属性' : 'Optional Attributes'}
+                  {language === 'zh' ? '附加属性' : 'Optional Attributes'}{' '}
+                  <span className="text-sm text-gray-500 font-normal">{language === 'zh' ? '(可选)' : '(Optional)'}</span>
                 </h3>
                 <IOSPicker
                   options={optionalAttributes}
-                  value={selectedAttributeDisplay}
-                  onChange={handleAttributeSelect}
+                  value={selectedAttribute}
+                  onChange={setSelectedAttribute}
                   placeholder={language === 'zh' ? '请选择' : 'Please select'}
-                  language={language}
                 />
               </div>
             )}
