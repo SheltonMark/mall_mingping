@@ -473,7 +473,7 @@ export default function ProductDetailPage() {
             {selectedSku && optionalAttributes.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-gray-900">
-                  {language === 'zh' ? '附加属性' : 'Optional Attributes'}
+                  {language === 'zh' ? '附加属性（潘通色号）' : 'Optional Attributes (Pantone Number)'}
                 </h3>
                 <IOSPicker
                   options={optionalAttributes}
