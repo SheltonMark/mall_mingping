@@ -252,9 +252,9 @@ export default function ProductDetailPage() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* 左侧: 图片/视频/参数展示区 */}
           <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
-            {/* 主显示区域 - 固定宽度，与5张小图总宽度对齐 */}
-            {/* 计算：5张小图(88px×5) + 4个间距(8px×4) = 440 + 32 = 472px */}
-            <div className="relative aspect-square bg-gray-100 overflow-hidden border border-gray-200 mx-auto" style={{ width: '472px', maxWidth: '100%' }}>
+            {/* 主显示区域 - 左对齐与面包屑导航 */}
+            {/* 大图宽度800px，5张小图(154px×5) + 4个间距(8px×4) = 770 + 32 = 802px ≈ 800px */}
+            <div className="relative aspect-square bg-gray-100 overflow-hidden border border-gray-200 w-[800px]" style={{ maxWidth: '100%' }}>
               {viewMode === 'gallery' && (
                 <img
                   src={currentImage}
@@ -352,14 +352,15 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 - 固定大小，居中显示，宽度对齐大图 */}
+            {/* 缩略图列表 - 固定大小，相对于大图居中显示，宽度800px */}
+            {/* 小图固定154x154，5张小图+4个间距(8px)正好800px，少于5张时居中显示左右留白 */}
             {viewMode === 'gallery' && images.length >= 2 && (
-              <div className="flex gap-2 justify-center mx-auto" style={{ width: '472px', maxWidth: '100%' }}>
+              <div className="flex gap-2 justify-center w-[800px]" style={{ maxWidth: '100%' }}>
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`w-[88px] h-[88px] rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    className={`w-[154px] h-[154px] rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'

@@ -152,12 +152,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }
           }
 
+          // Parse optionalAttributes from colorScheme if it contains attribute data
+          let optionalAttributes = null
+          const colorScheme = typeof item.colorScheme === 'string' ? JSON.parse(item.colorScheme) : item.colorScheme
+          if (colorScheme?.attribute) {
+            optionalAttributes = colorScheme.attribute
+          }
+
           return {
             id: item.id,
             skuId: item.skuId,
             sku: item.productCode,
             groupName: item.productName,
-            colorCombination: typeof item.colorScheme === 'string' ? JSON.parse(item.colorScheme) : item.colorScheme,
+            productName: item.sku?.productName || '',
+            productNameEn: item.sku?.productNameEn || '',
+            specification: item.sku?.specification || '',
+            specificationEn: item.sku?.specificationEn || '',
+            optionalAttributes,
+            colorCombination: colorScheme,
             quantity: item.quantity,
             price: parseFloat(item.price),
             mainImage,

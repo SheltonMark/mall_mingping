@@ -19,6 +19,10 @@ export class CartService {
         const sku = await this.prisma.productSku.findUnique({
           where: { id: item.skuId },
           select: {
+            productName: true,
+            productNameEn: true,
+            specification: true,
+            specificationEn: true,
             images: true,
             productSpec: true,
             additionalAttributes: true,
