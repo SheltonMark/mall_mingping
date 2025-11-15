@@ -104,61 +104,65 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* Hero Section - Dyson-inspired: Full screen with subtle overlay */}
-      <section className="relative h-screen w-full overflow-hidden">
-        {/* Full-screen Hero Image */}
-        <img
-          src={heroImage}
-          className="w-full h-full object-cover"
-          alt="Hero"
-        />
+      {/* Hero Section - 带留白的版本 */}
+      <div className="pt-32 pb-16 bg-white">
+        <div className="max-w-[1440px] mx-auto px-6">
+          <section className="relative h-[65vh] md:h-[75vh] overflow-hidden">
+            {/* Hero Image */}
+            <img
+              src={heroImage}
+              className="w-full h-full object-cover"
+              alt="Hero"
+            />
 
-        {/* Dark overlay for text readability - Dyson style */}
-        <div className="absolute inset-0 bg-black/40"></div>
+            {/* Dark overlay - ONLY on image */}
+            <div className="absolute inset-0 bg-black/40"></div>
 
-        {/* Text content - Left aligned, smaller fonts like Dyson */}
-        <div className="absolute inset-0 flex items-center">
-          <div className="max-w-[1440px] mx-auto px-8 md:px-12 w-full">
-            <div className="max-w-2xl">
-              {/* Main Title - Smaller, cleaner */}
-              <h1 className="text-white mb-4">
-                {t('home.hero.title').includes('Future') ? (
-                  <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
-                    Excellence in Every Clean
-                  </span>
-                ) : (
-                  <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
-                    卓越清洁 始于细节
-                  </span>
-                )}
-              </h1>
+            {/* Text content - Left aligned */}
+            <div className="absolute inset-0 flex items-center">
+              <div className="max-w-full mx-auto px-8 md:px-12 w-full">
+                <div className="max-w-2xl">
+                  {/* Main Title */}
+                  <h1 className="text-white mb-4">
+                    {t('home.hero.title').includes('Future') ? (
+                      <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+                        Excellence in Every Clean
+                      </span>
+                    ) : (
+                      <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+                        卓越清洁 始于细节
+                      </span>
+                    )}
+                  </h1>
 
-              {/* Subtitle - Concise like Dyson */}
-              <p className="text-white/90 text-base md:text-lg font-normal mb-2 leading-relaxed">
-                {t('home.hero.title').includes('Future')
-                  ? 'Premium cleaning solutions for modern living'
-                  : '为现代生活而生的高端清洁方案'}
-              </p>
+                  {/* Subtitle */}
+                  <p className="text-white/90 text-base md:text-lg font-normal mb-2 leading-relaxed">
+                    {t('home.hero.title').includes('Future')
+                      ? 'Premium cleaning solutions for modern living'
+                      : '为现代生活而生的高端清洁方案'}
+                  </p>
 
-              {/* Terms text - Small */}
-              <p className="text-white/70 text-sm mb-8">
-                {t('home.hero.title').includes('Future')
-                  ? 'Discover our premium collection'
-                  : '探索我们的高端系列'}
-              </p>
+                  {/* Terms text */}
+                  <p className="text-white/70 text-sm mb-8">
+                    {t('home.hero.title').includes('Future')
+                      ? 'Discover our premium collection'
+                      : '探索我们的高端系列'}
+                  </p>
 
-              {/* CTA Button - Rounded with glow effect on hover */}
-              <Link
-                href="/products"
-                className="group relative inline-block px-8 py-3.5 bg-primary text-neutral-900 font-semibold text-sm rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
-              >
-                <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'View products' : '查看产品'}</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-              </Link>
+                  {/* CTA Button */}
+                  <Link
+                    href="/products"
+                    className="group relative inline-block px-8 py-3.5 bg-primary text-neutral-900 font-semibold text-sm rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
+                  >
+                    <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'View products' : '查看产品'}</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  </Link>
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Excellence in Every Detail - Features Section */}
       <section className="py-32 bg-white">
