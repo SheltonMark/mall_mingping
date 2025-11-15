@@ -332,51 +332,13 @@ function OrderFormContent() {
                           <p className="text-sm text-gray-600">{item.sku}</p>
                           {item.colorCombination && Object.keys(item.colorCombination).length > 0 && (
                             <div className="mt-2">
-                              <p className="text-xs text-gray-500 mb-1.5">{language === 'zh' ? '配色方案' : 'Color Scheme'}:</p>
+                              <p className="text-xs text-gray-500 mb-1.5">{language === 'zh' ? '附加属性' : 'Optional Attributes'}:</p>
                               <div className="flex flex-wrap gap-2">
-                                {Object.entries(item.colorCombination).map(([componentCode, colorData]: [string, any]) => {
-                                  // 新格式: { schemeName, colors: ColorPart[] }
-                                  if (colorData.colors && Array.isArray(colorData.colors)) {
-                                    return (
-                                      <div
-                                        key={componentCode}
-                                        className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
-                                      >
-                                        <div className="text-xs font-semibold text-gray-700 mb-1">
-                                          [{componentCode}] {colorData.componentName ? parseBilingualText(colorData.componentName, language) : ''}
-                                        </div>
-                                        <div className="flex flex-wrap gap-1">
-                                          {colorData.colors.map((colorPart: any, idx: number) => (
-                                            <div key={idx} className="flex items-center gap-1">
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{ backgroundColor: colorPart.hexColor }}
-                                              />
-                                              <span className="text-xs text-gray-600">
-                                                {parseBilingualText(colorPart.part, language)}: {parseBilingualText(colorPart.color, language)}
-                                              </span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )
-                                  }
-                                  // 旧格式: { hex, name }
-                                  return (
-                                    <div
-                                      key={componentCode}
-                                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200"
-                                    >
-                                      <div
-                                        className="w-4 h-4 rounded-full border border-gray-300"
-                                        style={{ backgroundColor: colorData.hex }}
-                                      />
-                                      <span className="text-xs text-gray-700">
-                                        {componentCode}: {colorData.name}
-                                      </span>
-                                    </div>
-                                  )
-                                })}
+                                {Object.entries(item.colorCombination).map(([key, value]: [string, any]) => (
+                                  <div key={key} className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700">
+                                    {typeof value === 'string' ? value : JSON.stringify(value)}
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           )}

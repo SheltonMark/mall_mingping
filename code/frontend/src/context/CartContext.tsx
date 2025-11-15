@@ -5,7 +5,7 @@ export interface CartItem {
   skuId: string
   sku: string
   groupName: string  // 双语格式: "中文/English"
-  colorCombination: Record<string, { name: string; hex: string }>
+  colorCombination: Record<string, any> // 附加属性（可选）
   quantity: number
   price: number
   mainImage: string

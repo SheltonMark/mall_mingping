@@ -14,7 +14,7 @@ export interface ProductSKU {
   mainImage: string
   detailImages: string[]
   price: number
-  colorCombination: Record<string, { name: string; hex: string }>
+  colorCombination: Record<string, any>
   status: 'active' | 'inactive'
 }
 
@@ -36,7 +36,7 @@ export interface CartItem {
   skuId: string
   sku: string
   groupName: string  // 双语格式: "中文/English"
-  colorCombination: Record<string, { name: string; hex: string }>
+  colorCombination: Record<string, any>
   quantity: number
   price: number
   mainImage: string
