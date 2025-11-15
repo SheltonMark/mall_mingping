@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { productApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
-import { ArrowLeft, Plus, FolderPlus } from 'lucide-react';
+import { ArrowLeft, Plus, FolderPlus, X, Trash2 } from 'lucide-react';
 import CustomSelect from '@/components/common/CustomSelect';
 
 interface Category {
@@ -15,8 +15,15 @@ interface Category {
   nameEn?: string;
 }
 
+interface OptionalAttribute {
+  nameZh: string;
+  nameEn: string;
+}
+
 export default function CreateGroupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const groupId = searchParams.get('id'); // 如果有ID，则是编辑模式
   const toast = useToast();
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -30,9 +37,52 @@ export default function CreateGroupPage() {
     isPublished: true,
   });
 
+  // 附加属性管理
+  const [optionalAttributes, setOptionalAttributes] = useState<OptionalAttribute[]>([]);
+  const [currentAttribute, setCurrentAttribute] = useState<OptionalAttribute>({
+    nameZh: '',
+    nameEn: ''
+  });
+
   useEffect(() => {
     loadCategories();
-  }, []);
+    if (groupId) {
+      loadGroupData();
+    }
+  }, [groupId]);
+
+  const loadGroupData = async () => {
+    try {
+      setLoading(true);
+      const data = await productApi.getGroup(groupId!);
+      setFormData({
+        prefix: data.prefix,
+        groupNameZh: data.groupNameZh,
+        groupNameEn: data.groupNameEn || '',
+        categoryId: data.categoryId,
+        isPublished: data.isPublished !== false,
+      });
+
+      // 加载附加属性
+      if (data.optionalAttributes) {
+        try {
+          const attrs = typeof data.optionalAttributes === 'string'
+            ? JSON.parse(data.optionalAttributes)
+            : data.optionalAttributes;
+          setOptionalAttributes(Array.isArray(attrs) ? attrs : []);
+        } catch (e) {
+          console.error('Failed to parse optionalAttributes:', e);
+          setOptionalAttributes([]);
+        }
+      }
+    } catch (error: any) {
+      console.error('Failed to load group:', error);
+      toast.error('加载产品组失败: ' + error.message);
+      router.push('/admin/products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadCategories = async () => {
     try {
@@ -45,6 +95,28 @@ export default function CreateGroupPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 添加附加属性
+  const handleAddAttribute = () => {
+    if (!currentAttribute.nameZh.trim()) {
+      toast.error('请输入中文名称');
+      return;
+    }
+    if (!currentAttribute.nameEn.trim()) {
+      toast.error('请输入英文名称');
+      return;
+    }
+
+    setOptionalAttributes([...optionalAttributes, currentAttribute]);
+    setCurrentAttribute({ nameZh: '', nameEn: '' });
+    toast.success('附加属性已添加');
+  };
+
+  // 删除附加属性
+  const handleDeleteAttribute = (index: number) => {
+    setOptionalAttributes(optionalAttributes.filter((_, i) => i !== index));
+    toast.success('附加属性已删除');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,21 +137,36 @@ export default function CreateGroupPage() {
       return;
     }
 
+    if (optionalAttributes.length === 0) {
+      toast.error('请至少添加一个附加属性');
+      return;
+    }
+
     setCreating(true);
     try {
-      await productApi.createGroup({
+      const payload = {
         prefix: formData.prefix.trim().toUpperCase(),
         groupNameZh: formData.groupNameZh.trim(),
         groupNameEn: formData.groupNameEn.trim() || undefined,
         categoryId: formData.categoryId,
         isPublished: formData.isPublished,
-      });
+        optionalAttributes: optionalAttributes,
+      };
 
-      toast.success('产品系列创建成功！');
+      if (groupId) {
+        // 编辑模式
+        await productApi.updateGroup(groupId, payload);
+        toast.success('产品系列更新成功！');
+      } else {
+        // 创建模式
+        await productApi.createGroup(payload);
+        toast.success('产品系列创建成功！');
+      }
+
       router.push('/admin/products?scrollToBottom=true');
     } catch (error: any) {
-      console.error('Failed to create group:', error);
-      toast.error(`创建失败: ${error.message || '未知错误'}`);
+      console.error('Failed to save group:', error);
+      toast.error(`${groupId ? '更新' : '创建'}失败: ${error.message || '未知错误'}`);
     } finally {
       setCreating(false);
     }
@@ -117,9 +204,11 @@ export default function CreateGroupPage() {
               <FolderPlus className="text-emerald-600" size={32} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">新增产品系列</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {groupId ? '编辑产品系列' : '新增产品系列'}
+              </h1>
               <p className="text-gray-600 mt-1">
-                创建新的产品系列（SKU），用于管理同类产品
+                {groupId ? '修改产品系列信息和附加属性' : '创建新的产品系列（SKU），用于管理同类产品'}
               </p>
             </div>
           </div>
@@ -201,6 +290,93 @@ export default function CreateGroupPage() {
                 )}
               </div>
 
+              {/* 附加属性管理 */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  附加属性 <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  用户在前端购买时会从这些选项中选择一个（例如：不同的颜色组合方案）
+                </p>
+
+                {/* 已添加的属性列表 */}
+                {optionalAttributes.length > 0 && (
+                  <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-2">
+                    {optionalAttributes.map((attr, index) => (
+                      <div key={index} className="flex items-center justify-between bg-white px-4 py-3 rounded-lg border border-gray-200">
+                        <div className="flex-1">
+                          <div className="text-gray-900 font-medium">{attr.nameZh}</div>
+                          <div className="text-sm text-gray-500">{attr.nameEn}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAttribute(index)}
+                          className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 添加新属性 */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        中文名称 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={currentAttribute.nameZh}
+                        onChange={(e) => setCurrentAttribute({ ...currentAttribute, nameZh: e.target.value })}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddAttribute();
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                        placeholder="例如：全部3C冷灰"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        英文名称 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={currentAttribute.nameEn}
+                        onChange={(e) => setCurrentAttribute({ ...currentAttribute, nameEn: e.target.value })}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddAttribute();
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                        placeholder="例如：All 3C Cool Gray"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddAttribute}
+                    className="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Plus size={18} />
+                    添加属性
+                  </button>
+                </div>
+
+                {optionalAttributes.length === 0 && (
+                  <p className="text-xs text-red-600 mt-2">
+                    ⚠️ 至少需要添加一个附加属性
+                  </p>
+                )}
+              </div>
+
               {/* 发布状态 */}
               <div>
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -262,12 +438,12 @@ export default function CreateGroupPage() {
               {creating ? (
                 <>
                   <ButtonLoader />
-                  <span>创建中...</span>
+                  <span>{groupId ? '更新中...' : '创建中...'}</span>
                 </>
               ) : (
                 <>
                   <Plus size={18} />
-                  <span>创建系列</span>
+                  <span>{groupId ? '更新系列' : '创建系列'}</span>
                 </>
               )}
             </button>

@@ -32,7 +32,6 @@ interface ProductSku {
   specification?: string;
   productSpec?: any;
   additionalAttributes?: any;
-  price?: string;
   images?: string;
   mainImage?: string;
   video?: string;
@@ -106,10 +105,6 @@ export default function EditSkuPage() {
 
   // 可选组件列表（从组件配置管理表中加载）
   const [availableComponents, setAvailableComponents] = useState<any[]>([]);
-
-  // 附加属性管理状态
-  const [optionalAttributes, setOptionalAttributes] = useState<string[]>([]);
-  const [newAttribute, setNewAttribute] = useState('');
 
   useEffect(() => {
     loadSku();
@@ -225,22 +220,6 @@ export default function EditSkuPage() {
           console.error('Failed to parse additionalAttributes:', e);
           setComponentColors([]);
         }
-      }
-
-      // 解析附加属性数据
-      if (data.optionalAttributes) {
-        try {
-          const attrs = typeof data.optionalAttributes === 'string'
-            ? JSON.parse(data.optionalAttributes)
-            : data.optionalAttributes;
-
-          setOptionalAttributes(Array.isArray(attrs) ? attrs : []);
-        } catch (e) {
-          console.error('Failed to parse optionalAttributes:', e);
-          setOptionalAttributes([]);
-        }
-      } else {
-        setOptionalAttributes([]);
       }
     } catch (error: any) {
       console.error('Failed to load SKU:', error);
@@ -633,18 +612,12 @@ export default function EditSkuPage() {
       return;
     }
 
-    if (!sku.price || Number(sku.price) <= 0) {
-      toast.error('请输入有效的价格');
-      return;
-    }
-
     setSaving(true);
     try {
       // 准备更新数据
       const updateData: any = {
         productCode: sku.productCode,
         productName: sku.productName,
-        price: Number(sku.price),
         status: sku.status,
         images: images,
         specification: sku.specification || null,
@@ -658,9 +631,6 @@ export default function EditSkuPage() {
       }
       if (componentColors.length > 0) {
         updateData.additionalAttributes = componentColors;
-      }
-      if (optionalAttributes.length > 0) {
-        updateData.optionalAttributes = optionalAttributes;
       }
 
       // 如果有新上传的视频文件，先上传视频（使用带认证的API）
@@ -908,83 +878,6 @@ export default function EditSkuPage() {
                 />
               </div>
 
-              {/* 价格 */}
-              <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">价格 (¥) *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={sku.price || ''}
-                  onChange={(e) => setSku({ ...sku, price: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* 附加属性 */}
-              <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">
-                  附加属性（可选）
-                </label>
-                <div className="space-y-3">
-                  {optionalAttributes.length > 0 && (
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                      {optionalAttributes.map((attr, index) => (
-                        <div key={index} className="flex items-center justify-between bg-white px-4 py-2 rounded-lg border border-gray-200">
-                          <span className="text-gray-900">{attr}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOptionalAttributes(optionalAttributes.filter((_, i) => i !== index));
-                              toast.success('附加属性已删除');
-                            }}
-                            className="text-red-500 hover:text-red-700 transition-colors"
-                          >
-                            <X size={18} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newAttribute}
-                      onChange={(e) => setNewAttribute(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          if (newAttribute.trim() && !optionalAttributes.includes(newAttribute.trim())) {
-                            setOptionalAttributes([...optionalAttributes, newAttribute.trim()]);
-                            setNewAttribute('');
-                            toast.success('附加属性已添加');
-                          }
-                        }
-                      }}
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="例如: 全部3C冷灰 / 手柄/按钮571C 其他全部:10C"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (newAttribute.trim() && !optionalAttributes.includes(newAttribute.trim())) {
-                          setOptionalAttributes([...optionalAttributes, newAttribute.trim()]);
-                          setNewAttribute('');
-                          toast.success('附加属性已添加');
-                        }
-                      }}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold flex items-center gap-2"
-                    >
-                      <Plus size={18} />
-                      添加
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    用户在前端购买时会从这些选项中选择一个（例如：不同的颜色组合方案）
-                  </p>
-                </div>
-              </div>
 
               {/* 状态 */}
               <div>
