@@ -361,7 +361,9 @@ function OrderFormContent() {
                           )}
 
                           {/* 数量 */}
-                          <p className="text-sm text-gray-600">x{item.quantity}</p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-semibold">{language === 'zh' ? '数量' : 'Quantity'}:</span> {item.quantity}
+                          </p>
                         </div>
                       </div>
                     ))}
