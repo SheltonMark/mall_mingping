@@ -78,11 +78,13 @@ export interface ProductSku {
   id: string;
   groupId: string;
   productCode: string; // 品号
-  productName: string; // 品名
+  productName: string; // 品名 (中文)
+  productNameEn?: string; // 品名英文
   title?: string; // 主标题 (显示在规格选择器)
   subtitle?: string; // 副标题 (显示在主标题下方)
   brand?: string; // 商标
-  specification?: string; // 规格原始文本
+  specification?: string; // 规格原始文本 (中文)
+  specificationEn?: string; // 规格原始文本 (英文)
   productSpec?: any; // 解析后的部件规格 (JSON)
   additionalAttributes?: any; // 解析后的颜色属性 (JSON)
   optionalAttributes?: any; // 可选属性配置 (JSON数组)
