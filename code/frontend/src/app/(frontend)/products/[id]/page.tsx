@@ -459,12 +459,11 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* 附加属性选择器 (可选，iOS风格) */}
+            {/* 附加属性选择器 (iOS风格) */}
             {selectedSku && optionalAttributes.length > 0 && (
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-gray-900">
-                  {language === 'zh' ? '附加属性' : 'Optional Attributes'}{' '}
-                  <span className="text-sm text-gray-500 font-normal">{language === 'zh' ? '(可选)' : '(Optional)'}</span>
+                  {language === 'zh' ? '附加属性' : 'Optional Attributes'}
                 </h3>
                 <IOSPicker
                   options={optionalAttributes}
