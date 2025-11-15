@@ -253,7 +253,7 @@ export default function ProductDetailPage() {
           {/* 左侧: 图片/视频/参数展示区 */}
           <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
             {/* 主显示区域 - 左对齐与面包屑导航 */}
-            {/* 大图宽度800px，5张小图(154px×5) + 4个间距(8px×4) = 770 + 32 = 802px ≈ 800px */}
+            {/* 大图宽度800px，5张小图(153px×5) + 4个间距(8px×4) = 765 + 32 = 797px ≈ 800px */}
             <div className="relative aspect-square bg-gray-100 overflow-hidden border border-gray-200 w-[800px]" style={{ maxWidth: '100%' }}>
               {viewMode === 'gallery' && (
                 <img
@@ -353,14 +353,14 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 缩略图列表 - 固定大小，相对于大图居中显示，宽度800px */}
-            {/* 小图固定154x154，5张小图+4个间距(8px)正好800px，少于5张时居中显示左右留白 */}
+            {/* 小图固定153x153，5张小图+4个间距(8px)正好797px，少于5张时居中显示左右留白 */}
             {viewMode === 'gallery' && images.length >= 2 && (
               <div className="flex gap-2 justify-center w-[800px]" style={{ maxWidth: '100%' }}>
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`w-[154px] h-[154px] rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
+                    className={`w-[153px] h-[153px] rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'
