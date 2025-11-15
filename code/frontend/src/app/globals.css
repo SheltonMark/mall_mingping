@@ -11,17 +11,17 @@
    🎨 设计系统 - Design Tokens
    ==================== */
 :root {
-  /* 品牌色彩 - 奢华金色系 */
-  --gold-50: #FFF9E6;
-  --gold-100: #FFF3CC;
-  --gold-200: #FFE799;
-  --gold-300: #FFDB66;
-  --gold-400: #CFBA5C;
-  --gold-500: #BDB76B;
-  --gold-600: #A89B4D;
-  --gold-700: #8A7E3B;
-  --gold-800: #6B612D;
-  --gold-900: #4D451F;
+  /* 品牌色彩 - 潘通3252C青绿色系 */
+  --gold-50: #E6F9F8;
+  --gold-100: #CCF3F1;
+  --gold-200: #99E7E3;
+  --gold-300: #66DBD5;
+  --gold-400: #33CFC7;
+  --gold-500: #00B5AD;
+  --gold-600: #009B94;
+  --gold-700: #00827C;
+  --gold-800: #006863;
+  --gold-900: #004E4A;
 
   /* 中性色 - 深邃黑系 */
   --neutral-50: #FAFAF9;
@@ -36,8 +36,8 @@
   --neutral-900: #1C1917;
 
   /* 语义色彩 */
-  --primary: #BDB76B;
-  --primary-dark: #8A7E3B;
+  --primary: #00B5AD;
+  --primary-dark: #009B94;
   --secondary: #8B8970;
   --accent: #FFD700;
   --text-primary: #1C1917;

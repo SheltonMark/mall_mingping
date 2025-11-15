@@ -468,9 +468,14 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 - 2张及以上显示缩略图 */}
+            {/* 缩略图列表 - 2张及以上显示缩略图，且根据数量居中 */}
             {viewMode === 'gallery' && images.length >= 2 && (
-              <div className="grid grid-cols-5 gap-3">
+              <div className={`grid gap-3 justify-center ${
+                images.length === 2 ? 'grid-cols-2' :
+                images.length === 3 ? 'grid-cols-3' :
+                images.length === 4 ? 'grid-cols-4' :
+                'grid-cols-5'
+              }`}>
                 {images.map((img, index) => (
                   <button
                     key={index}
@@ -584,9 +589,7 @@ export default function ProductDetailPage() {
                           <div className="text-sm text-gray-600 mt-1">{sku.subtitle}</div>
                         )}
                       </div>
-                      <div className="text-2xl font-bold text-primary ml-4">
-                        ¥{Number(sku.price).toFixed(2)}
-                      </div>
+                      {/* 价格已隐藏 */}
                     </div>
                   </button>
                 ))}
