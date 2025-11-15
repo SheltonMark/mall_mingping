@@ -69,6 +69,7 @@ export interface ProductGroup {
   materialId?: string;
   isPublished: boolean;
   displayOrder: number;
+  optionalAttributes?: any; // 产品组级别的可选属性 (JSON数组, 包含nameZh, nameEn)
   category?: Category;
   material?: Material;
   skus: ProductSku[];
