@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { productApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
-import { ArrowLeft, Plus, Package, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft, Plus, Package, Trash2, Edit2, X } from 'lucide-react';
 import { useConfirm } from '@/hooks/useConfirm';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import CustomSelect from '@/components/common/CustomSelect';
@@ -64,6 +64,10 @@ export default function NewProductSkuPage() {
   const [componentColors, setComponentColors] = useState<ComponentColor[]>([]);
   const [editingColor, setEditingColor] = useState<ComponentColor | null>(null);
   const [isColorModalOpen, setIsColorModalOpen] = useState(false);
+
+  // 附加属性管理状态
+  const [optionalAttributes, setOptionalAttributes] = useState<string[]>([]);
+  const [newAttribute, setNewAttribute] = useState('');
 
   useEffect(() => {
     if (!groupId) {
@@ -239,6 +243,7 @@ export default function NewProductSkuPage() {
         price: formData.price ? parseFloat(formData.price) : undefined,
         productSpec: components.length > 0 ? components : undefined,
         additionalAttributes: componentColors.length > 0 ? componentColors : undefined,
+        optionalAttributes: optionalAttributes.length > 0 ? optionalAttributes : undefined,
       });
 
       toast.success('产品规格创建成功！');
@@ -393,6 +398,70 @@ export default function NewProductSkuPage() {
                       placeholder="0.00"
                       className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     />
+                  </div>
+                </div>
+
+                {/* 附加属性 */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    附加属性（可选）
+                  </label>
+                  <div className="space-y-3">
+                    {optionalAttributes.length > 0 && (
+                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        {optionalAttributes.map((attr, index) => (
+                          <div key={index} className="flex items-center justify-between bg-white px-4 py-2 rounded-lg border border-gray-200">
+                            <span className="text-gray-900">{attr}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOptionalAttributes(optionalAttributes.filter((_, i) => i !== index));
+                                toast.success('附加属性已删除');
+                              }}
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                            >
+                              <X size={18} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newAttribute}
+                        onChange={(e) => setNewAttribute(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (newAttribute.trim() && !optionalAttributes.includes(newAttribute.trim())) {
+                              setOptionalAttributes([...optionalAttributes, newAttribute.trim()]);
+                              setNewAttribute('');
+                              toast.success('附加属性已添加');
+                            }
+                          }
+                        }}
+                        className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        placeholder="例如: 深蓝色 / 塑料材质"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newAttribute.trim() && !optionalAttributes.includes(newAttribute.trim())) {
+                            setOptionalAttributes([...optionalAttributes, newAttribute.trim()]);
+                            setNewAttribute('');
+                            toast.success('附加属性已添加');
+                          }
+                        }}
+                        className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-semibold flex items-center gap-2"
+                      >
+                        <Plus size={18} />
+                        添加
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      每个附加属性对应一个可选配置项（例如：颜色、材质等）
+                    </p>
                   </div>
                 </div>
 

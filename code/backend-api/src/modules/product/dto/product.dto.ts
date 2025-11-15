@@ -235,6 +235,10 @@ export class CreateProductSkuDto {
   @IsOptional()
   useSharedVideo?: boolean; // NEW: 是否使用SKU组共用视频
 
+  @IsArray()
+  @IsOptional()
+  optionalAttributes?: string[]; // NEW: 附加属性选项 (字符串数组)
+
   @IsEnum(['ACTIVE', 'INACTIVE'])
   @IsOptional()
   status?: 'ACTIVE' | 'INACTIVE'; // Default: INACTIVE
@@ -289,6 +293,10 @@ export class UpdateProductSkuDto {
   @IsBoolean()
   @IsOptional()
   useSharedVideo?: boolean;
+
+  @IsArray()
+  @IsOptional()
+  optionalAttributes?: string[]; // NEW: 附加属性选项 (字符串数组)
 
   @IsEnum(['ACTIVE', 'INACTIVE'])
   @IsOptional()
