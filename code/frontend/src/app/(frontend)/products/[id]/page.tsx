@@ -327,7 +327,7 @@ export default function ProductDetailPage() {
                         </div>
                         <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
                           <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>
-                          <span>{selectedSku.productName}</span>
+                          <span>{language === 'zh' ? selectedSku.productName : (selectedSku.productNameEn || selectedSku.productName)}</span>
                         </div>
                         {((language === 'zh' && selectedSku.specification) || (language === 'en' && selectedSku.specificationEn)) && (
                           <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
@@ -344,19 +344,18 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 缩略图列表 - 根据数量自适应宽度 */}
+            {/* 缩略图列表 - 固定尺寸，整体居中 */}
             {viewMode === 'gallery' && images.length >= 2 && (
               <div className="flex gap-2 justify-center">
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-1 aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                    className={`w-20 h-20 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
                       index === currentImageIndex
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
-                    style={{ maxWidth: `calc((100% - ${(images.length - 1) * 0.5}rem) / ${images.length})` }}
                   >
                     <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
                   </button>
