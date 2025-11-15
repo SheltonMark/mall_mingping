@@ -156,6 +156,11 @@ export default function ProductsPage() {
       groupName: productGroup.groupNameEn
         ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
         : productGroup.groupNameZh,
+      productName: defaultSKU.productName,
+      productNameEn: defaultSKU.productNameEn,
+      specification: defaultSKU.specification,
+      specificationEn: defaultSKU.specificationEn,
+      optionalAttributes: null,
       colorCombination,
       quantity: 1,
       price: Number(defaultSKU.price) || 0,
