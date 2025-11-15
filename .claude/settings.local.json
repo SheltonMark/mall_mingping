@@ -172,7 +172,8 @@
       "Bash(__NEW_LINE__ git add code/frontend/src/components/layout/Navbar.tsx code/frontend/src/components/layout/Footer.tsx code/frontend/public/images/logo.svg code/frontend/public/images/logo-light.svg)",
       "Bash(__NEW_LINE__ git commit -m \"$(cat <<''EOF''\nfeat: replace text logo with precisely cropped SVG logo\n\n- Navbar logo: h-8 to maintain original navbar height\n- Footer logo: h-16 md:h-18, removed unnecessary margins\n- Used precisely cropped logo files that eliminate whitespace\n- Footer logo now naturally aligns with column headers\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(__NEW_LINE__ git log --oneline -1)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

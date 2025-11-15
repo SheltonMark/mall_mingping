@@ -628,6 +628,11 @@ export default function EditSkuPage() {
       return;
     }
 
+    if (!sku.specification || !sku.specification.trim()) {
+      toast.error('请输入货品规格');
+      return;
+    }
+
     if (!sku.price || Number(sku.price) <= 0) {
       toast.error('请输入有效的价格');
       return;
@@ -857,210 +862,6 @@ export default function EditSkuPage() {
               )}
             </div>
 
-            {/* 组件管理 */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">组件管理</h2>
-                <button
-                  onClick={handleAddComponent}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium"
-                >
-                  <Plus size={16} />
-                  添加组件
-                </button>
-              </div>
-
-              {components.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  暂无组件数据，点击"添加组件"开始添加
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {components.map((comp, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-bold text-blue-600">{comp.code}</span>
-                            <span className="text-gray-700 font-medium">{comp.name}</span>
-                          </div>
-                          {comp.spec && (
-                            <div className="text-sm text-gray-600 mb-2">
-                              规格: {comp.spec}
-                            </div>
-                          )}
-                          {comp.parts && comp.parts.length > 0 && (
-                            <div className="text-sm text-gray-600">
-                              部件: {comp.parts.join('、')}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEditComponent(comp)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteComponent(comp.code)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* 配色管理 */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">配色管理</h2>
-              </div>
-
-              {componentColors.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  请先在组件管理中添加组件，然后为组件添加配色方案
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {componentColors.map((compColor, index) => {
-                    const component = components.find(c => c.code === compColor.componentCode);
-                    return (
-                      <div
-                        key={index}
-                        className="border-2 border-gray-200 rounded-xl p-5 hover:border-blue-300 transition-all"
-                      >
-                        {/* 组件标题 */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-bold text-blue-600 text-lg">[{compColor.componentCode}]</span>
-                              <span className="font-semibold text-gray-900">{component?.name || '未知组件'}</span>
-                            </div>
-                            {component?.spec && (
-                              <div className="text-sm text-gray-600">
-                                规格: {component.spec}
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => handleAddColorScheme(compColor.componentCode)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                            title="添加配色方案"
-                          >
-                            <Plus size={18} />
-                          </button>
-                        </div>
-
-                        {/* 配色方案列表 */}
-                        {compColor.colorSchemes && compColor.colorSchemes.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {compColor.colorSchemes.map((scheme) => (
-                              <div
-                                key={scheme.id}
-                                className="bg-gray-50 border border-gray-300 rounded-lg p-4 hover:border-green-400 hover:shadow-md transition-all group"
-                              >
-                                {/* 方案名称和操作图标 */}
-                                <div className="flex items-center justify-between mb-3">
-                                  <h4 className="font-semibold text-gray-900">{scheme.name}</h4>
-                                  <div className="flex gap-1">
-                                    <button
-                                      onClick={() => handleEditColorScheme(compColor.componentCode, scheme)}
-                                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
-                                      title="编辑方案"
-                                    >
-                                      <Edit2 size={14} />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteColorScheme(compColor.componentCode, scheme.id)}
-                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-all"
-                                      title="删除方案"
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  </div>
-                                </div>
-
-                                {/* 颜色方块显示 */}
-                                <div className="space-y-2">
-                                  {scheme.colors && scheme.colors.length > 0 ? (
-                                    scheme.colors.map((colorPart, colorIndex) => (
-                                      <div
-                                        key={colorIndex}
-                                        className="flex items-center gap-2 bg-white px-2 py-1.5 rounded border border-gray-200"
-                                      >
-                                        {/* 颜色方块 */}
-                                        {colorPart.hexColor && (
-                                          <div
-                                            className="w-6 h-6 rounded border-2 border-gray-400 flex-shrink-0"
-                                            style={{ backgroundColor: colorPart.hexColor }}
-                                            title={colorPart.hexColor}
-                                          />
-                                        )}
-                                        {/* 部件名和颜色名 */}
-                                        <div className="flex-1 min-w-0">
-                                          <div className="text-xs font-semibold text-gray-700 truncate">
-                                            {colorPart.part}
-                                          </div>
-                                          <div className="text-xs text-gray-500 truncate">
-                                            {colorPart.color || colorPart.hexColor}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <div className="text-xs text-gray-400 text-center py-2">暂无配色</div>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                            <div className="text-gray-400 mb-3">暂无配色方案</div>
-                            <button
-                              onClick={() => handleAddColorScheme(compColor.componentCode)}
-                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium"
-                            >
-                              <Plus size={16} />
-                              添加第一个方案
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* 为没有配色的组件显示添加按钮 */}
-              {components.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex flex-wrap gap-2">
-                    {components
-                      .filter(comp => !componentColors.some(cc => cc.componentCode === comp.code))
-                      .map(comp => (
-                        <button
-                          key={comp.code}
-                          onClick={() => handleAddColorScheme(comp.code)}
-                          className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 transition-all text-sm font-medium"
-                        >
-                          <Plus size={16} />
-                          为 [{comp.code}] {comp.name} 添加配色
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* 右侧：基本信息（可编辑） */}
@@ -1092,64 +893,19 @@ export default function EditSkuPage() {
                 />
               </div>
 
-              {/* 规格标题（可编辑） */}
+              {/* 货品规格 */}
               <div>
                 <label className="block text-sm font-bold text-gray-800 mb-2">
-                  规格标题
-                  <span className="ml-2 text-xs font-normal text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                    规格选择器显示
-                  </span>
+                  货品规格 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={sku.title || ''}
-                  onChange={(e) => setSku({ ...sku, title: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder={sku.productName}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  留空则使用"品名"显示，建议填写简短易懂的标题
-                </p>
-              </div>
-
-              {/* 规格副标题（可编辑） */}
-              <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">
-                  规格副标题
-                  <span className="ml-2 text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                    可选
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={sku.subtitle || ''}
-                  onChange={(e) => setSku({ ...sku, subtitle: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="例如：六件全能清洁套装"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  显示在规格标题下方，用于补充说明
-                </p>
-              </div>
-
-              {/* 产品参数（用于前端展示） */}
-              <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">
-                  产品参数
-                  <span className="ml-2 text-xs font-normal text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                    前端展示
-                  </span>
-                </label>
-                <textarea
                   value={sku.specification || ''}
                   onChange={(e) => setSku({ ...sku, specification: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                  placeholder="例如：φ22*1200mm（客户在前端看到的简洁规格说明）"
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="输入货品规格（例如：家用型/Household Type）"
+                  required
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  此参数将在产品详情页的"产品参数"视图中向客户展示
-                </p>
               </div>
 
               {/* 价格 */}
