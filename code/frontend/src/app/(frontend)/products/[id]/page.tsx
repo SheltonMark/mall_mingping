@@ -4,32 +4,11 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingCart, Check, Play, Image as ImageIcon, FileText } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '@/context/LanguageContext'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { productApi, type ProductGroup, type ProductSku } from '@/lib/publicApi'
-import { parseBilingualText } from '@/lib/i18nHelper'
-
-// 解析部件化颜色属性 (多方案版本)
-interface ColorPart {
-  part: string;       // 部件名称，如 "喷塑"
-  color: string;      // 颜色描述，如 "3C冷灰"
-  hexColor: string;   // 十六进制颜色（必填）
-}
-
-interface ColorScheme {
-  id: string;         // 方案唯一ID
-  name: string;       // 方案名称，如 "方案1"
-  colors: ColorPart[]; // 部件颜色数组
-}
-
-interface ComponentColor {
-  componentCode: string   // [A], [B], [C]
-  componentName: string   // 拖把杆, 刷头, 抹布
-  spec?: string           // 规格描述（可选）
-  colorSchemes: ColorScheme[] // 多个配色方案
-}
+import IOSPicker from '@/components/common/IOSPicker'
 
 type ViewMode = 'gallery' | 'video' | 'params'
 
@@ -43,23 +22,18 @@ export default function ProductDetailPage() {
 
   const [productGroup, setProductGroup] = useState<ProductGroup | null>(null)
   const [selectedSku, setSelectedSku] = useState<ProductSku | null>(null)
+  const [selectedAttribute, setSelectedAttribute] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [addedToCart, setAddedToCart] = useState(false)
-  const [showSpecHint, setShowSpecHint] = useState(false) // 显示规格提示
+  const [showSpecHint, setShowSpecHint] = useState(false)
 
   // 图片状态
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [images, setImages] = useState<string[]>([])
 
-  // Apple风格渐进式颜色选择状态 (多方案版本)
-  const [componentColors, setComponentColors] = useState<ComponentColor[]>([])
-  const [selectedSchemeIndexes, setSelectedSchemeIndexes] = useState<number[]>([]) // 每个组件选中的方案索引
-  const [selectedComponents, setSelectedComponents] = useState<boolean[]>([]) // 每个部件是否已选择
-  const [visibleComponentIndex, setVisibleComponentIndex] = useState(-1) // 当前可见的部件索引 (-1表示未开始)
-
-  // 视图模式: gallery(图集) / video(视频) / params(参数)
+  // 视图模式
   const [viewMode, setViewMode] = useState<ViewMode>('gallery')
 
   useEffect(() => {
@@ -70,12 +44,11 @@ export default function ProductDetailPage() {
         const data = await productApi.getGroup(productId)
         setProductGroup(data)
 
-        // 不自动选择规格，但加载第一个规格的图片、视频用于展示
+        // 加载第一个SKU的图片用于展示
         if (data.skus && data.skus.length > 0) {
           const firstSku = data.skus[0]
-
-          // 解析图片 (所有图片，不限制数量)
           let parsedImages: string[] = []
+
           if (firstSku.images) {
             if (Array.isArray(firstSku.images)) {
               parsedImages = firstSku.images.map(img =>
@@ -107,17 +80,20 @@ export default function ProductDetailPage() {
     fetchProduct()
   }, [productId])
 
-  const handleSkuSelect = (sku: ProductSku) => {
+  // 处理品名选择
+  const handleSkuSelect = (productName: string) => {
+    const sku = productGroup?.skus.find(s => s.productName === productName)
+    if (!sku) return
+
     setSelectedSku(sku)
     setCurrentImageIndex(0)
     setViewMode('gallery')
+    setSelectedAttribute('') // 重置附加属性选择
 
-    // 解析图片 (所有图片，不限制数量)
+    // 解析图片
     let parsedImages: string[] = []
     if (sku.images) {
-      // Prisma已经自动解析JSON，所以images可能是数组或字符串
       if (Array.isArray(sku.images)) {
-        // 添加服务器URL前缀
         parsedImages = sku.images.map(img =>
           img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`
         )
@@ -135,124 +111,13 @@ export default function ProductDetailPage() {
       }
     }
     setImages(parsedImages)
-
-    // 解析部件颜色 - 支持多方案数据结构
-    let components: ComponentColor[] = []
-
-    // 先获取组件信息（从productSpec）
-    const componentInfoMap = new Map<string, { name: string; spec: string }>()
-    if (sku.productSpec && Array.isArray(sku.productSpec)) {
-      sku.productSpec.forEach((comp: any) => {
-        // 合并中英文名称为"中文/English"格式
-        const bilingualName = comp.nameEn
-          ? `${comp.name}/${comp.nameEn}`
-          : comp.name;
-
-        componentInfoMap.set(comp.code, {
-          name: bilingualName || comp.code,
-          spec: comp.spec || ''
-        })
-      })
-    }
-
-    try {
-      if (sku.additionalAttributes && Array.isArray(sku.additionalAttributes)) {
-        components = sku.additionalAttributes.map((comp: any) => {
-          // 从productSpec获取组件名称和规格
-          const compInfo = componentInfoMap.get(comp.componentCode)
-
-          // 新格式：colorSchemes数组
-          if (comp.colorSchemes && Array.isArray(comp.colorSchemes)) {
-            return {
-              componentCode: comp.componentCode,
-              componentName: compInfo?.name || comp.componentCode,
-              spec: compInfo?.spec || undefined,
-              colorSchemes: comp.colorSchemes.filter((scheme: ColorScheme) =>
-                scheme.colors && scheme.colors.length > 0
-              )
-            }
-          }
-
-          // 旧格式：单个colors数组，转换为单方案
-          if (comp.colors && Array.isArray(comp.colors)) {
-            return {
-              componentCode: comp.componentCode,
-              componentName: compInfo?.name || comp.componentCode,
-              spec: compInfo?.spec || undefined,
-              colorSchemes: [{
-                id: `scheme-${Date.now()}-1`,
-                name: '方案1',
-                colors: comp.colors
-              }]
-            }
-          }
-
-          // 无颜色配置
-          return {
-            componentCode: comp.componentCode,
-            componentName: compInfo?.name || comp.componentCode,
-            spec: compInfo?.spec || undefined,
-            colorSchemes: []
-          }
-        }).filter(comp => comp.colorSchemes && comp.colorSchemes.length > 0)
-      }
-    } catch (error) {
-      console.error('❌ 解析颜色数据失败:', error)
-      components = []
-    }
-    setComponentColors(components)
-    setSelectedComponents([])
-    setSelectedSchemeIndexes(components.map(() => 0)) // 默认选中每个组件的第一个方案
-
-    // Apple风格渐进式显示：如果有部件颜色，延迟300ms后显示第一个部件
-    if (components.length > 0) {
-      setTimeout(() => {
-        setVisibleComponentIndex(0)
-      }, 300)
-    } else {
-      setVisibleComponentIndex(-1)
-    }
-  }
-
-  // 处理方案选择（点击某个方案）
-  const handleSchemeSelect = (componentIndex: number, schemeIndex: number) => {
-    // 更新选中的方案索引
-    const newSchemeIndexes = [...selectedSchemeIndexes]
-    newSchemeIndexes[componentIndex] = schemeIndex
-    setSelectedSchemeIndexes(newSchemeIndexes)
-
-    // 标记该组件已选择
-    const newSelected = [...selectedComponents]
-    newSelected[componentIndex] = true
-    setSelectedComponents(newSelected)
-
-    // 如果还有下一个部件，延迟300ms后显示
-    if (componentIndex < componentColors.length - 1) {
-      setTimeout(() => {
-        setVisibleComponentIndex(componentIndex + 1)
-      }, 300)
-    }
   }
 
   const handleAddToCart = () => {
     if (!selectedSku || !productGroup) {
-      toast.error(t('detail.select_sku_first'))
+      toast.error(language === 'zh' ? '请先选择品名' : 'Please select a product name first')
       return
     }
-
-    // 构建颜色组合描述（使用选中的方案）
-    const colorCombination: Record<string, any> = {}
-    componentColors.forEach((component, index) => {
-      const selectedSchemeIndex = selectedSchemeIndexes[index] || 0
-      const selectedScheme = component.colorSchemes[selectedSchemeIndex]
-      if (selectedScheme) {
-        colorCombination[component.componentCode] = {
-          componentName: component.componentName, // 保存组件名称（双语格式）
-          schemeName: parseBilingualText(selectedScheme.name, language),
-          colors: selectedScheme.colors
-        }
-      }
-    })
 
     addItem({
       skuId: selectedSku.id,
@@ -260,7 +125,7 @@ export default function ProductDetailPage() {
       groupName: productGroup.groupNameEn
         ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
         : productGroup.groupNameZh,
-      colorCombination,
+      colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
       quantity: quantity,
       price: Number(selectedSku.price),
       mainImage: images[0] || (productGroup as any).mainImage || '/images/placeholder.jpg',
@@ -268,46 +133,28 @@ export default function ProductDetailPage() {
 
     setAddedToCart(true)
     setTimeout(() => setAddedToCart(false), 2000)
-    toast.success(t('detail.added_to_cart'))
+    toast.success(language === 'zh' ? '已加入购物车' : 'Added to cart')
   }
 
   const handleBuyNow = () => {
     if (!selectedSku || !productGroup) {
-      toast.error(t('detail.select_sku_first'))
+      toast.error(language === 'zh' ? '请先选择品名' : 'Please select a product name first')
       return
     }
 
-    // 构建颜色组合描述（使用选中的方案）- 与添加购物车相同的逻辑
-    const colorCombination: Record<string, any> = {}
-    componentColors.forEach((component, index) => {
-      const selectedSchemeIndex = selectedSchemeIndexes[index] || 0
-      const selectedScheme = component.colorSchemes[selectedSchemeIndex]
-      if (selectedScheme) {
-        colorCombination[component.componentCode] = {
-          componentName: component.componentName, // 保存组件名称（双语格式）
-          schemeName: parseBilingualText(selectedScheme.name, language),
-          colors: selectedScheme.colors
-        }
-      }
-    })
-
-    // 准备订单数据 - 使用与购物车相同的 CartItem 结构
     const orderData = {
       items: [{
         skuId: selectedSku.id,
         sku: selectedSku.productCode,
         groupName: `${productGroup.groupNameZh}/${productGroup.groupNameEn}`,
-        colorCombination: colorCombination,
+        colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
         quantity: quantity,
         price: selectedSku.price,
         mainImage: images[0] || '/images/placeholder.jpg'
       }]
     }
 
-    // 使用 localStorage 临时存储订单数据（比 sessionStorage 更可靠）
     sessionStorage.setItem('pendingOrder', JSON.stringify(orderData))
-
-    // 使用 router.push 代替 window.location.href 避免状态丢失
     router.push('/order-form?type=buy-now')
   }
 
@@ -316,7 +163,7 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">加载中...</p>
+          <p className="text-gray-600">{language === 'zh' ? '加载中...' : 'Loading...'}</p>
         </div>
       </div>
     )
@@ -326,9 +173,9 @@ export default function ProductDetailPage() {
     return (
       <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500">{error || '产品未找到'}</p>
+          <p className="text-gray-500">{error || (language === 'zh' ? '产品未找到' : 'Product not found')}</p>
           <Link href="/products" className="mt-4 inline-block text-primary hover:underline">
-            返回产品列表
+            {language === 'zh' ? '返回产品列表' : 'Back to Products'}
           </Link>
         </div>
       </div>
@@ -336,18 +183,22 @@ export default function ProductDetailPage() {
   }
 
   const currentImage = images[currentImageIndex] || (productGroup as any).mainImage || '/images/placeholder.jpg'
+  const skuOptions = productGroup.skus.map(sku => sku.productName)
+  const optionalAttributes = selectedSku?.optionalAttributes && Array.isArray(selectedSku.optionalAttributes)
+    ? selectedSku.optionalAttributes
+    : []
 
   return (
     <div className="min-h-screen bg-white pt-32">
-      {/* 面包屑导航 - 移到内容区域 */}
+      {/* 面包屑导航 */}
       <div className="max-w-[1440px] mx-auto px-6 mb-8">
         <nav className="flex items-center gap-2 text-sm text-gray-600">
           <Link href="/" className="hover:text-primary transition-colors">
-            {t('nav.home')}
+            {language === 'zh' ? '首页' : 'Home'}
           </Link>
           <span>/</span>
           <Link href="/products" className="hover:text-primary transition-colors">
-            {t('nav.products')}
+            {language === 'zh' ? '产品' : 'Products'}
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">
@@ -358,7 +209,7 @@ export default function ProductDetailPage() {
 
       <div className="max-w-[1440px] mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* 左侧: 图片/视频/参数展示区 - 粘性布局 */}
+          {/* 左侧: 图片/视频/参数展示区 */}
           <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
             {/* 主显示区域 */}
             <div className="relative aspect-square bg-gray-100 overflow-hidden border border-gray-200">
@@ -373,7 +224,6 @@ export default function ProductDetailPage() {
               {viewMode === 'video' && (
                 <div className="w-full h-full flex items-center justify-center bg-black">
                   {(() => {
-                    // 优先使用SKU的视频，如果没选择规格则使用第一个规格的视频，fallback到共享视频
                     let videoUrl = null;
                     const skuToUse = selectedSku || (productGroup?.skus && productGroup.skus[0])
 
@@ -390,7 +240,6 @@ export default function ProductDetailPage() {
                     }
 
                     if (videoUrl) {
-                      // 判断是YouTube还是本地视频
                       if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
                         return (
                           <iframe
@@ -404,14 +253,9 @@ export default function ProductDetailPage() {
                           ></iframe>
                         );
                       } else {
-                        // 本地视频
                         return (
-                          <video
-                            className="w-full h-full object-contain"
-                            controls
-                            src={videoUrl}
-                          >
-                            您的浏览器不支持视频播放
+                          <video className="w-full h-full object-contain" controls src={videoUrl}>
+                            {language === 'zh' ? '您的浏览器不支持视频播放' : 'Your browser does not support video playback'}
                           </video>
                         );
                       }
@@ -419,7 +263,7 @@ export default function ProductDetailPage() {
                       return (
                         <div className="text-white text-center">
                           <Play size={48} className="mx-auto mb-4 opacity-50" />
-                          <p>暂无视频</p>
+                          <p>{language === 'zh' ? '暂无视频' : 'No video available'}</p>
                         </div>
                       );
                     }
@@ -429,46 +273,42 @@ export default function ProductDetailPage() {
 
               {viewMode === 'params' && (
                 <div className="w-full h-full bg-white p-8 overflow-y-auto">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6">{t('detail.parameters')}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                    {language === 'zh' ? '产品参数' : 'Product Parameters'}
+                  </h3>
                   <div className="space-y-4 text-gray-700">
                     <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                      <span className="font-semibold">{t('detail.product_series')}:</span>
+                      <span className="font-semibold">{language === 'zh' ? '产品系列' : 'Series'}:</span>
                       <span>{productGroup.prefix}</span>
                     </div>
                     <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                      <span className="font-semibold">{t('detail.category')}:</span>
+                      <span className="font-semibold">{language === 'zh' ? '分类' : 'Category'}:</span>
                       <span>{productGroup.category?.nameZh} / {productGroup.category?.nameEn}</span>
                     </div>
-                    {(() => {
-                      // 显示选中的规格，如果没选则显示第一个规格
-                      const skuToShow = selectedSku || (productGroup?.skus && productGroup.skus[0])
-                      if (!skuToShow) return null
-
-                      return (
-                        <>
+                    {selectedSku && (
+                      <>
+                        <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
+                          <span className="font-semibold">{language === 'zh' ? '品号' : 'Product Code'}:</span>
+                          <span className="font-mono">{selectedSku.productCode}</span>
+                        </div>
+                        <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
+                          <span className="font-semibold">{language === 'zh' ? '品名' : 'Product Name'}:</span>
+                          <span>{selectedSku.productName}</span>
+                        </div>
+                        {selectedSku.specification && (
                           <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                            <span className="font-semibold">{t('detail.sku_code')}:</span>
-                            <span className="font-mono">{skuToShow.productCode}</span>
+                            <span className="font-semibold">{language === 'zh' ? '货品规格' : 'Specifications'}:</span>
+                            <div className="whitespace-pre-line">{selectedSku.specification}</div>
                           </div>
-                          <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                            <span className="font-semibold">{t('detail.product_name')}:</span>
-                            <span>{skuToShow.productName}</span>
-                          </div>
-                          {skuToShow.specification && (
-                            <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
-                              <span className="font-semibold">{t('detail.specifications')}:</span>
-                              <div className="whitespace-pre-line">{skuToShow.specification}</div>
-                            </div>
-                          )}
-                        </>
-                      )
-                    })()}
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* 缩略图列表 - 2张及以上显示缩略图，且根据数量居中 */}
+            {/* 缩略图列表 */}
             {viewMode === 'gallery' && images.length >= 2 && (
               <div className={`grid gap-3 justify-center ${
                 images.length === 2 ? 'grid-cols-2' :
@@ -492,7 +332,7 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* 视频/图集/参数 切换按钮 */}
+            {/* 视图切换按钮 */}
             <div className="flex gap-4 justify-center pt-2">
               <button
                 onClick={() => setViewMode('gallery')}
@@ -503,7 +343,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <ImageIcon size={20} />
-                {t('detail.gallery')}
+                {language === 'zh' ? '图集' : 'Gallery'}
               </button>
               <button
                 onClick={() => setViewMode('video')}
@@ -514,7 +354,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <Play size={20} />
-                {t('detail.video')}
+                {language === 'zh' ? '视频' : 'Video'}
               </button>
               <button
                 onClick={() => setViewMode('params')}
@@ -525,7 +365,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <FileText size={20} />
-                {t('detail.parameters')}
+                {language === 'zh' ? '参数' : 'Parameters'}
               </button>
             </div>
           </div>
@@ -535,19 +375,19 @@ export default function ProductDetailPage() {
             {/* 标题 */}
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                {productGroup.groupNameZh}
+                {language === 'zh' ? productGroup.groupNameZh : (productGroup.groupNameEn || productGroup.groupNameZh)}
               </h1>
-              {productGroup.groupNameEn && (
+              {productGroup.groupNameEn && language === 'zh' && (
                 <p className="text-xl text-gray-600">{productGroup.groupNameEn}</p>
               )}
               {productGroup.descriptionZh && (
                 <p className="text-lg text-gray-600 mt-4">
-                  {productGroup.descriptionZh}
+                  {language === 'zh' ? productGroup.descriptionZh : productGroup.descriptionEn}
                 </p>
               )}
             </div>
 
-            {/* 品名标签和品号 - 同一行，品号右对齐 */}
+            {/* SKU组前缀标签 + 品号 */}
             <div className="flex items-center justify-between gap-4">
               {productGroup.prefix && (
                 <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
@@ -556,7 +396,9 @@ export default function ProductDetailPage() {
               )}
               {selectedSku && (
                 <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-sm text-gray-500">{t('detail.sku_code')}:</span>
+                  <span className="text-sm text-gray-500">
+                    {language === 'zh' ? '品号' : 'Product Code'}:
+                  </span>
                   <span className="px-3 py-1.5 bg-gray-100 text-gray-900 rounded-lg text-sm font-mono font-semibold border border-gray-300">
                     {selectedSku.productCode}
                   </span>
@@ -564,130 +406,53 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 规格选择器 */}
-            <div className="space-y-4 bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900">{t('detail.select_sku')} *</h3>
-              <div className="grid grid-cols-1 gap-3">
-                {productGroup.skus.map((sku) => (
-                  <button
-                    key={sku.id}
-                    onClick={() => handleSkuSelect(sku)}
-                    className={`p-4 rounded-md border-2 transition-all text-left ${
-                      selectedSku?.id === sku.id
-                        ? 'border-primary bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        {/* 主标题 (优先使用title，fallback到productName) */}
-                        <div className="font-semibold text-gray-900">
-                          {sku.title || sku.productName}
-                        </div>
-                        {/* 副标题 (可选) */}
-                        {sku.subtitle && (
-                          <div className="text-sm text-gray-600 mt-1">{sku.subtitle}</div>
-                        )}
-                      </div>
-                      {/* 价格已隐藏 */}
-                    </div>
-                  </button>
-                ))}
-              </div>
+            {/* 品名选择器 (iOS风格) */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-900">
+                {language === 'zh' ? '选择品名' : 'Select Product Name'} *
+              </h3>
+              <IOSPicker
+                options={skuOptions}
+                value={selectedSku?.productName}
+                onChange={handleSkuSelect}
+                placeholder={language === 'zh' ? '请选择品名' : 'Please select'}
+              />
             </div>
 
-            {/* 颜色选择器 - Apple风格渐进式 (新数据结构，但保留渐进式交互) */}
-            {selectedSku && componentColors.length > 0 && (
-              <div className="space-y-6 bg-gray-50 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-gray-900">{t('detail.select_color')}</h3>
+            {/* 货品规格 - 选择品名后显示 */}
+            {selectedSku && selectedSku.specification && (
+              <div className="space-y-4 bg-gray-50 rounded-xl p-6">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {language === 'zh' ? '货品规格' : 'Product Specification'}
+                </h3>
+                <div className="text-gray-700 whitespace-pre-line leading-relaxed">
+                  {selectedSku.specification}
+                </div>
+              </div>
+            )}
 
-                {/* 依次显示每个组件的颜色选择器 */}
-                <AnimatePresence>
-                  {componentColors.map((component, componentIndex) => {
-                    // 只显示到当前可见索引为止的部件
-                    if (componentIndex > visibleComponentIndex) return null
-
-                    const isSelected = selectedComponents[componentIndex]
-
-                    return (
-                      <motion.div
-                        key={component.componentCode}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-3"
-                      >
-                        {/* 组件标题行：组件代码 + 组件名称 + 规格描述（可选）*/}
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="px-2 py-1 bg-primary/10 text-primary font-bold text-sm rounded">
-                            [{component.componentCode}]
-                          </span>
-                          <span className="font-semibold text-gray-900">
-                            {parseBilingualText(component.componentName, language)}
-                          </span>
-                          {component.spec && (
-                            <span className="text-sm text-gray-600">
-                              {parseBilingualText(component.spec, language)}
-                            </span>
-                          )}
-                          {isSelected && (
-                            <Check size={18} className="text-green-600 ml-auto" />
-                          )}
-                        </div>
-
-                        {/* 显示部件名称 */}
-                        <div className="text-sm text-gray-600 mb-2">
-                          {component.colorSchemes[0]?.colors.map(c => parseBilingualText(c.part, language)).join(' + ')}
-                        </div>
-
-                        {/* 横向显示所有配色方案 */}
-                        <div className="flex gap-2 flex-wrap">
-                          {component.colorSchemes.map((scheme, schemeIndex) => {
-                            const selectedSchemeIndex = selectedSchemeIndexes[componentIndex] || 0
-                            const isSchemeSelected = schemeIndex === selectedSchemeIndex
-
-                            return (
-                              <button
-                                key={scheme.id}
-                                onClick={() => handleSchemeSelect(componentIndex, schemeIndex)}
-                                className="group relative p-1"
-                              >
-                                {/* 颜色圆圈 */}
-                                <div className="flex gap-1">
-                                  {scheme.colors.map((colorPart, partIndex) => {
-                                    const hexColor = colorPart.hexColor || '#CCCCCC'
-                                    return (
-                                      <div
-                                        key={partIndex}
-                                        className={`w-6 h-6 rounded-full transition-all ${
-                                          isSchemeSelected
-                                            ? 'ring-2 ring-primary ring-offset-2'
-                                            : 'ring-1 ring-gray-200 hover:ring-gray-300'
-                                        }`}
-                                        style={{
-                                          backgroundColor: hexColor
-                                        }}
-                                        title={`${parseBilingualText(colorPart.part, language)}: ${colorPart.color || colorPart.hexColor}`}
-                                      ></div>
-                                    )
-                                  })}
-                                </div>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
+            {/* 附加属性选择器 (可选，iOS风格) */}
+            {selectedSku && optionalAttributes.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {language === 'zh' ? '附加属性' : 'Optional Attributes'}{' '}
+                  <span className="text-sm text-gray-500 font-normal">{language === 'zh' ? '(可选)' : '(Optional)'}</span>
+                </h3>
+                <IOSPicker
+                  options={optionalAttributes}
+                  value={selectedAttribute}
+                  onChange={setSelectedAttribute}
+                  placeholder={language === 'zh' ? '请选择' : 'Please select'}
+                />
               </div>
             )}
 
             {/* 数量选择器 */}
             <div className="space-y-4 pt-6 border-t border-gray-200">
               <div className="flex items-center gap-4">
-                <span className="text-gray-700 font-medium w-20">{t('detail.quantity')}:</span>
+                <span className="text-gray-700 font-medium w-20">
+                  {language === 'zh' ? '数量' : 'Quantity'}:
+                </span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -730,18 +495,18 @@ export default function ProductDetailPage() {
                   {addedToCart ? (
                     <>
                       <Check size={24} />
-                      {t('detail.added_to_cart')}
+                      {language === 'zh' ? '已加入购物车' : 'Added to Cart'}
                     </>
                   ) : (
                     <>
                       <ShoppingCart size={24} />
-                      {t('detail.add_to_cart')}
+                      {language === 'zh' ? '加入购物车' : 'Add to Cart'}
                     </>
                   )}
                 </button>
                 {showSpecHint && (
                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg">
-                    {t('detail.select_sku_first')}
+                    {language === 'zh' ? '请先选择品名' : 'Please select product name first'}
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-neutral-900"></div>
                   </div>
                 )}
@@ -760,7 +525,7 @@ export default function ProductDetailPage() {
                   disabled={!selectedSku}
                   className={`w-full h-14 font-bold text-primary text-lg transition-all flex items-center justify-center gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
                 >
-                  {t('detail.buy_now')}
+                  {language === 'zh' ? '立即购买' : 'Buy Now'}
                 </button>
               </div>
             </div>

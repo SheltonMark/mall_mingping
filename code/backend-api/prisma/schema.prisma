@@ -305,15 +305,30 @@ model ProductSku {
   ]
   */
 
-  additionalAttributes  Json?    @map("additional_attributes") // 解析后的颜色属性 (JSON数组)
+  additionalAttributes  Json?    @map("additional_attributes") // 解析后的颜色属性 (JSON数组) - 已废弃，保留兼容
   /*
-  additionalAttributes 格式:
+  additionalAttributes 格式 (已废弃):
   [
     {
       "componentCode": "A",
       "colors": [
         { "part": "喷塑", "color": "3C冷灰" },
         { "part": "塑件", "color": "10C冷灰" }
+      ]
+    }
+  ]
+  */
+
+  optionalAttributes    Json?    @map("optional_attributes") // 可选属性配置 (JSON数组)
+  /*
+  optionalAttributes 格式:
+  [
+    {
+      "nameZh": "材质",
+      "nameEn": "Material",
+      "options": [
+        { "labelZh": "棉质", "labelEn": "Cotton", "value": "cotton" },
+        { "labelZh": "化纤", "labelEn": "Polyester", "value": "polyester" }
       ]
     }
   ]
