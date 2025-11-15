@@ -309,7 +309,6 @@ export default function ProfilePage() {
                       </h5>
                       <div className="space-y-4">
                         {order.items.map((item: any, idx: number) => (
-                        {order.items.map((item: any, idx: number) => (
                           <div key={idx} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
                             <img
                               src={item.mainImage}
