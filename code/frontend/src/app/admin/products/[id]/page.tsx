@@ -850,11 +850,11 @@ export default function EditSkuPage() {
 
           {/* 右侧：基本信息（可编辑） */}
           <div className="h-full">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col justify-between overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <h2 className="text-lg font-bold text-gray-900">基本信息</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <h2 className="text-lg font-bold text-gray-900 mb-6">基本信息</h2>
 
               {/* 品号 (可编辑) */}
-              <div>
+              <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">
                   品号 <span className="text-red-500">*</span>
                 </label>
@@ -868,7 +868,7 @@ export default function EditSkuPage() {
               </div>
 
               {/* 品名 (可编辑) */}
-              <div>
+              <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">
                   品名 <span className="text-red-500">*</span>
                 </label>
@@ -882,7 +882,7 @@ export default function EditSkuPage() {
               </div>
 
               {/* 品名英文 */}
-              <div>
+              <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">
                   品名英文 <span className="text-red-500">*</span>
                 </label>
@@ -897,7 +897,7 @@ export default function EditSkuPage() {
               </div>
 
               {/* 货品规格 */}
-              <div>
+              <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">
                   货品规格 <span className="text-red-500">*</span>
                 </label>
@@ -912,7 +912,7 @@ export default function EditSkuPage() {
               </div>
 
               {/* 货品规格英文 */}
-              <div>
+              <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">
                   货品规格英文 <span className="text-red-500">*</span>
                 </label>
@@ -928,7 +928,7 @@ export default function EditSkuPage() {
 
 
               {/* 状态 */}
-              <div>
+              <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">状态</label>
                 <div className="flex gap-3">
                   <button
