@@ -89,7 +89,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     { icon: '📦', label: '订单管理', path: '/admin/orders' },
     { icon: '🏷️', label: '产品管理', path: '/admin/products' },
     { icon: '🏪', label: '分类管理', path: '/admin/categories' },
-    { icon: '🧩', label: '组件配置', path: '/admin/components' },
     { icon: '🤝', label: '合作申请', path: '/admin/partnerships' },
     { icon: '⚙️', label: '系统配置', path: '/admin/settings' },
   ];
