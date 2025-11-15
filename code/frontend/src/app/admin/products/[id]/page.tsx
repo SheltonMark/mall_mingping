@@ -855,7 +855,9 @@ export default function EditSkuPage() {
 
               {/* 品号 (可编辑) */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">品号 *</label>
+                <label className="block text-sm font-bold text-gray-800 mb-2">
+                  品号 <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={sku.productCode}
@@ -867,7 +869,9 @@ export default function EditSkuPage() {
 
               {/* 品名 (可编辑) */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2">品名 *</label>
+                <label className="block text-sm font-bold text-gray-800 mb-2">
+                  品名 <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={sku.productName}
