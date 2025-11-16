@@ -62,6 +62,7 @@ export default function AboutPage() {
   const [scrollVisibility, setScrollVisibility] = useState<Record<string, boolean>>({})
   const [aboutConfig, setAboutConfig] = useState<AboutConfig>({})
   const [submitting, setSubmitting] = useState(false)
+  const language = 'zh' // Default language
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -160,7 +161,7 @@ export default function AboutPage() {
     e.preventDefault()
 
     if (!formData.name || !formData.email || !formData.message) {
-      toast.warning("请填写必填项" || '请填写必填项')
+      toast.warning('请填写必填项')
       return
     }
 
@@ -174,7 +175,7 @@ export default function AboutPage() {
         message: formData.message
       })
 
-      toast.success("提交成功！我们会尽快与您联系" || '提交成功！我们会尽快与您联系')
+      toast.success('提交成功！我们会尽快与您联系')
       setShowModal(false)
       setFormData({ name: '', company: '', email: '', phone: '', message: '' })
     } catch (error: any) {
