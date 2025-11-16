@@ -568,7 +568,6 @@ model CartItem {
 
   customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
-  @@unique([customerId, skuId, colorScheme])
   @@index([customerId])
   @@map("cart_items")
 }
