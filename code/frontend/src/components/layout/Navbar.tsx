@@ -128,7 +128,7 @@ export default function Navbar() {
 
               {/* Dropdown Menu */}
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-large border border-neutral-200 dark:border-gray-700 py-2 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-large border border-neutral-200 dark:border-gray-700 py-2 z-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                   {isAuthenticated ? (
                     <>
                       <div className="px-4 py-3 border-b border-neutral-200 dark:border-gray-700">

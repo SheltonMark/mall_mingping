@@ -253,7 +253,7 @@ export default function ProductDetailPage() {
   )
 
   return (
-    <div className="min-h-screen bg-white pt-32">
+    <div className="min-h-screen bg-white pt-32" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
       {/* 面包屑导航 */}
       <div className="max-w-[1440px] mx-auto px-6 mb-8">
         <nav className="flex items-center gap-2 text-sm text-gray-600">
