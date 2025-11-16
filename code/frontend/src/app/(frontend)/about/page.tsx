@@ -189,7 +189,7 @@ export default function AboutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
       {/* Hero Section - 浅色版本 (原首页风格) */}
       <section
         className="relative min-h-screen flex items-center overflow-hidden"
