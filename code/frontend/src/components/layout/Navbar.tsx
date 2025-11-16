@@ -98,10 +98,14 @@ export default function Navbar() {
             </Link>
             <Link
               href="/about"
-              className="relative text-xs md:text-sm font-normal text-neutral-600 hover:text-neutral-900 transition-colors duration-250"
+              className={`relative text-xs md:text-sm font-normal transition-colors duration-250 ${
+                isActive('/about') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
+              }`}
             >
-              {t('nav.about')}
-              <span className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full opacity-0 hover:opacity-100 transition-opacity duration-250"></span>
+              {language === 'zh' ? '联系我们' : 'Contact'}
+              <span className={`absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full transition-opacity duration-250 ${
+                isActive('/about') ? 'opacity-100' : 'opacity-0'
+              }`}></span>
             </Link>
           </nav>
 
