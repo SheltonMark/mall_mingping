@@ -8,6 +8,7 @@ import {
   IsNumber,
   ValidateNested,
   IsObject,
+  IsNotEmpty,
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -179,6 +180,27 @@ export class CreateOrderDto {
   @Type(() => CustomParamDto)
   @IsOptional()
   customParams?: CustomParamDto[];
+
+  // 客户信息（新增）
+  @IsString()
+  @IsNotEmpty()
+  customerCompany: string;  // 公司名称
+
+  @IsString()
+  @IsNotEmpty()
+  customerContact: string;  // 联系人
+
+  @IsString()
+  @IsNotEmpty()
+  customerPhone: string;    // 联系电话
+
+  @IsOptional()
+  @IsString()
+  customerEmail?: string;   // 联系邮箱（可选）
+
+  @IsOptional()
+  @IsString()
+  remarks?: string;         // 订单备注
 }
 
 export class UpdateOrderDto {

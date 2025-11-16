@@ -30,6 +30,11 @@ export class OrderService {
       salespersonId,
       orderNumber,
       companyName,
+      customerCompany,
+      customerContact,
+      customerPhone,
+      customerEmail,
+      remarks,
       ...orderData
     } = createOrderDto;
 
@@ -113,14 +118,21 @@ export class OrderService {
         items: {
           create: orderItems,
         },
-        customParams: customParams
-          ? {
-              create: customParams.map((param) => ({
-                paramKey: param.paramKey,
-                paramValue: param.paramValue,
-              })),
-            }
-          : undefined,
+        customParams: {
+          create: [
+            // 客户信息
+            { paramKey: 'customerCompany', paramValue: customerCompany },
+            { paramKey: 'customerContact', paramValue: customerContact },
+            { paramKey: 'customerPhone', paramValue: customerPhone },
+            ...(customerEmail ? [{ paramKey: 'customerEmail', paramValue: customerEmail }] : []),
+            ...(remarks ? [{ paramKey: 'remarks', paramValue: remarks }] : []),
+            // 其他自定义参数
+            ...(customParams?.map((param) => ({
+              paramKey: param.paramKey,
+              paramValue: param.paramValue,
+            })) || []),
+          ],
+        },
       },
       include: {
         customer: true,
