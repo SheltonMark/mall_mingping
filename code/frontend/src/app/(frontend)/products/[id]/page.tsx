@@ -377,15 +377,18 @@ export default function ProductDetailPage() {
             {/* 缩略图列表 - 600px容器,小图居中显示 */}
             {/* 小图111px内容区,选中border-4(总115px),未选中border-2(总113px),间隙6px */}
             {/* 5张小图总宽约591px,<5张时自动居中左右留白 */}
-            {viewMode === 'gallery' && images.length >= 2 && (
+            {images.length >= 2 && (
               <div className="w-[600px] flex justify-center">
                 <div className="flex gap-1.5">
                   {images.map((img, index) => (
                     <button
                       key={index}
-                      onClick={() => setCurrentImageIndex(index)}
+                      onClick={() => {
+                        setCurrentImageIndex(index)
+                        setViewMode('gallery')
+                      }}
                       className={`w-[111px] h-[111px] rounded-md overflow-hidden transition-all flex-shrink-0 ${
-                        index === currentImageIndex
+                        index === currentImageIndex && viewMode === 'gallery'
                           ? 'border-primary border-4'
                           : 'border-2 border-gray-200 hover:border-gray-300'
                       }`}
@@ -438,7 +441,7 @@ export default function ProductDetailPage() {
           {/* 右侧: 产品信息 */}
           <div className="relative pb-40 lg:pb-0">
             {/* 滚动内容区域 */}
-            <div className="space-y-6 lg:pb-48">
+            <div className="space-y-6 lg:pb-8">
             {/* 标题 - 仅显示当前语言 */}
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">

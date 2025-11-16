@@ -105,8 +105,8 @@ export default function HomePage() {
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section - 参考O-Cedar样式 */}
-      <div className="pt-32 pb-8 bg-white">
-        <div className="mx-auto px-16 md:px-24 lg:px-32">
+      <div className="pt-36 pb-0 bg-white">
+        <div className="mx-auto px-20 md:px-32 lg:px-40">
           <section className="relative h-[550px] md:h-[650px] lg:h-[700px] overflow-hidden">
             {/* Hero Image - 铺满整个区域 */}
             <img
@@ -165,7 +165,7 @@ export default function HomePage() {
       </div>
 
       {/* Excellence in Every Detail - Features Section */}
-      <section className="py-32 bg-white">
+      <section className="py-24 bg-white">
         <div className="max-w-[1440px] mx-auto px-6">
           <div className="text-center mb-20">
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
