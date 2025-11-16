@@ -473,18 +473,50 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* 品名选择器 (iOS风格) */}
+            {/* 品名选择器 (网格卡片) */}
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-gray-900">
                 {language === 'zh' ? '选择品名' : 'Select Product Name'} *
               </h3>
-              <IOSPicker
-                options={skuOptions}
-                value={selectedSku ? (language === 'zh' ? selectedSku.productName : (selectedSku.productNameEn || selectedSku.productName)) : undefined}
-                onChange={handleSkuSelect}
-                placeholder={language === 'zh' ? '请选择品名' : 'Please select'}
-                language={language}
-              />
+
+              {/* 品名网格 */}
+              <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
+                {productGroup.skus.map((sku) => {
+                  const skuDisplayName = language === 'zh' ? sku.productName : (sku.productNameEn || sku.productName)
+                  const isSelected = selectedSku?.id === sku.id
+
+                  return (
+                    <button
+                      key={sku.id}
+                      onClick={() => handleSkuSelect(skuDisplayName)}
+                      className={`
+                        p-4 rounded-lg border-2 text-center transition-all
+                        ${isSelected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }
+                      `}
+                    >
+                      <div className="text-sm font-medium text-gray-900 mb-1">
+                        {skuDisplayName}
+                      </div>
+                      <div className="text-xs text-gray-500 font-mono">
+                        {sku.productCode}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* 当前选择显示框 */}
+              <div className="border-2 border-primary rounded-lg p-3 bg-primary/5">
+                <div className="text-sm text-gray-600">
+                  {selectedSku
+                    ? `${language === 'zh' ? '已选择' : 'Selected'}: ${language === 'zh' ? selectedSku.productName : (selectedSku.productNameEn || selectedSku.productName)}`
+                    : (language === 'zh' ? '未选择' : 'Not selected')
+                  }
+                </div>
+              </div>
             </div>
 
             {/* 货品规格 - 选择品名后显示 */}
