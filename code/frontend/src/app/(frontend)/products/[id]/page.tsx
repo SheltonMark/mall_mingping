@@ -497,25 +497,12 @@ export default function ProductDetailPage() {
                         }
                       `}
                     >
-                      <div className="text-sm font-medium text-gray-900 mb-1">
+                      <div className="text-sm font-medium text-gray-900">
                         {skuDisplayName}
-                      </div>
-                      <div className="text-xs text-gray-500 font-mono">
-                        {sku.productCode}
                       </div>
                     </button>
                   )
                 })}
-              </div>
-
-              {/* 当前选择显示框 */}
-              <div className="border-2 border-primary rounded-lg p-3 bg-primary/5">
-                <div className="text-sm text-gray-600">
-                  {selectedSku
-                    ? `${language === 'zh' ? '已选择' : 'Selected'}: ${language === 'zh' ? selectedSku.productName : (selectedSku.productNameEn || selectedSku.productName)}`
-                    : (language === 'zh' ? '未选择' : 'Not selected')
-                  }
-                </div>
               </div>
             </div>
 
