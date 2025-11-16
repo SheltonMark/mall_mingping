@@ -88,7 +88,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-20">
+    <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-20" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
       <div className="max-w-[1440px] mx-auto px-6">
         {/* Page Header - 奢华标题 */}
         <div className="mb-12">
