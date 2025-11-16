@@ -398,7 +398,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* 视图切换按钮 */}
-            <div className="flex gap-4 justify-center pt-2">
+            <div className="w-[600px] flex gap-4 justify-center pt-2">
               <button
                 onClick={() => setViewMode('gallery')}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
