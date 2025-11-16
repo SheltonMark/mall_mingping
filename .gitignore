@@ -78,6 +78,7 @@ code/backend-api/*.xlsx
 code/frontend/node_modules/
 code/frontend/.next/
 code/frontend/pnpm-lock.yaml
+code/frontend/tsconfig.tsbuildinfo
 
 # Test and debug files
 *.test.js
