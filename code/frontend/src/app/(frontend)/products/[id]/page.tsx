@@ -436,7 +436,9 @@ export default function ProductDetailPage() {
           </div>
 
           {/* 右侧: 产品信息 */}
-          <div className="space-y-6">
+          <div className="relative pb-48 lg:pb-0">
+            {/* 滚动内容区域 */}
+            <div className="space-y-6 lg:pb-56">
             {/* 标题 - 仅显示当前语言 */}
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -510,9 +512,13 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* 数量选择器 */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <div className="flex items-center gap-4">
+            </div>
+            {/* 结束滚动内容区域 */}
+
+            {/* 固定按钮区域 - 移动端固定在底部，桌面端sticky */}
+            <div className="fixed lg:sticky bottom-0 left-0 right-0 lg:bottom-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-4 lg:p-6 z-40">
+              {/* 数量选择器 */}
+              <div className="flex items-center gap-4 mb-4">
                 <span className="text-gray-700 font-medium w-20">
                   {language === 'zh' ? '数量' : 'Quantity'}:
                 </span>
@@ -538,45 +544,46 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* 加入购物车按钮 */}
-              <div className="relative">
-                <button
-                  onClick={handleAddToCart}
-                  onMouseEnter={() => {
-                    if (!selectedSku && !addedToCart) {
-                      setShowSpecHint(true)
-                      setTimeout(() => setShowSpecHint(false), 2000)
-                    }
-                  }}
-                  disabled={!selectedSku || addedToCart}
-                  className={`w-full h-14 font-bold text-white text-lg transition-all flex items-center justify-center gap-3 ${
-                    addedToCart
-                      ? 'bg-green-500'
-                      : 'bg-primary hover:bg-primary-dark'
-                  } disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
-                >
-                  {addedToCart ? (
-                    <>
-                      <Check size={24} />
-                      {language === 'zh' ? '已加入购物车' : 'Added to Cart'}
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart size={24} />
-                      {language === 'zh' ? '加入购物车' : 'Add to Cart'}
-                    </>
+              {/* 按钮组 */}
+              <div className="space-y-3">
+                {/* 加入购物车按钮 */}
+                <div className="relative">
+                  <button
+                    onClick={handleAddToCart}
+                    onMouseEnter={() => {
+                      if (!selectedSku && !addedToCart) {
+                        setShowSpecHint(true)
+                        setTimeout(() => setShowSpecHint(false), 2000)
+                      }
+                    }}
+                    disabled={!selectedSku || addedToCart}
+                    className={`w-full h-14 font-bold text-white text-lg transition-all flex items-center justify-center gap-3 ${
+                      addedToCart
+                        ? 'bg-green-500'
+                        : 'bg-primary hover:bg-primary-dark'
+                    } disabled:opacity-50 ${!selectedSku ? 'cursor-default' : ''}`}
+                  >
+                    {addedToCart ? (
+                      <>
+                        <Check size={24} />
+                        {language === 'zh' ? '已加入购物车' : 'Added to Cart'}
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart size={24} />
+                        {language === 'zh' ? '加入购物车' : 'Add to Cart'}
+                      </>
+                    )}
+                  </button>
+                  {showSpecHint && (
+                    <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg">
+                      {language === 'zh' ? '请先选择品名' : 'Please select product name first'}
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-neutral-900"></div>
+                    </div>
                   )}
-                </button>
-                {showSpecHint && (
-                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg">
-                    {language === 'zh' ? '请先选择品名' : 'Please select product name first'}
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-neutral-900"></div>
-                  </div>
-                )}
-              </div>
+                </div>
 
-              {/* 立即购买按钮 */}
-              <div className="relative">
+                {/* 立即购买按钮 */}
                 <button
                   onClick={handleBuyNow}
                   onMouseEnter={() => {
