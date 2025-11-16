@@ -107,11 +107,11 @@ export default function HomePage() {
       {/* Hero Section - 带留白的版本 */}
       <div className="pt-32 pb-16 bg-white">
         <div className="max-w-[1440px] mx-auto px-6">
-          <section className="relative h-[65vh] md:h-[75vh] overflow-hidden">
-            {/* Hero Image */}
+          <section className="relative h-[60vh] md:h-[70vh] overflow-hidden rounded-2xl">
+            {/* Hero Image - 使用object-contain保持原始比例 */}
             <img
               src={heroImage}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-gray-50"
               alt="Hero"
             />
 

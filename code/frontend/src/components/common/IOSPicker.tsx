@@ -38,31 +38,41 @@ export default function IOSPicker({
   const lastY = useRef(0)
   const velocity = useRef(0)
 
-  // 触觉反馈（仅移动端）
+  // 触觉反馈（iOS风格 - 轻微震动）
   const triggerHaptic = () => {
     if ('vibrate' in navigator) {
-      navigator.vibrate(10) // 10ms震动
+      navigator.vibrate(10) // 10ms轻微震动
+    }
+    // 如果支持 Haptic API (iOS Safari)
+    if ((window as any).navigator?.vibrate) {
+      (window as any).navigator.vibrate(10)
     }
   }
 
-  // 音效反馈（可选）
+  // iOS闹钟风格音效 - 柔和的咔嗒声
   const playClickSound = () => {
-    // 创建一个短促的音效
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const oscillator = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const oscillator = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
 
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContext.destination)
+      oscillator.connect(gainNode)
+      gainNode.connect(audioContext.destination)
 
-    oscillator.frequency.value = 800
-    oscillator.type = 'sine'
+      // 使用更高频率的正弦波，模拟iOS闹钟的咔嗒声
+      oscillator.frequency.value = 1200
+      oscillator.type = 'sine'
 
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05)
+      // 快速衰减，创建短促的咔嗒效果
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.03)
 
-    oscillator.start(audioContext.currentTime)
-    oscillator.stop(audioContext.currentTime + 0.05)
+      oscillator.start(audioContext.currentTime)
+      oscillator.stop(audioContext.currentTime + 0.03)
+    } catch (error) {
+      // 静默处理音频API错误
+      console.debug('Audio playback not available')
+    }
   }
 
   // 滚动到指定索引

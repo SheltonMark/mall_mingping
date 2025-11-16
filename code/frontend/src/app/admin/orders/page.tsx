@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { orderFormApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
-import { Package, Mail, Phone, MapPin, Calendar, User } from 'lucide-react';
+import { Package, Mail, Phone, MapPin, Calendar, User, Download } from 'lucide-react';
 import PageHeader from '@/components/admin/PageHeader';
 
 interface OrderForm {
@@ -68,13 +68,87 @@ export default function OrdersPage() {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const exportToExcel = () => {
+    // 创建CSV内容
+    const headers = [
+      '订单号',
+      '客户姓名',
+      '客户邮箱',
+      '联系电话',
+      '收货地址',
+      '提交时间',
+      '备注',
+      '品号',
+      '品名',
+      '品名(英文)',
+      '货品规格',
+      '附加属性',
+      '数量'
+    ];
+
+    const rows = filteredOrderForms.flatMap(form =>
+      form.items.map((item: any, index: number) => {
+        const isFirstItem = index === 0;
+        return [
+          isFirstItem ? form.formNumber : '',
+          isFirstItem ? form.contactName : '',
+          isFirstItem ? form.email : '',
+          isFirstItem ? form.phone : '',
+          isFirstItem ? form.address : '',
+          isFirstItem ? new Date(form.submittedAt).toLocaleString('zh-CN') : '',
+          isFirstItem ? (form.notes || '') : '',
+          item.product_code || item.sku || '',
+          item.productName || item.product_name || item.groupName || '',
+          item.productNameEn || '',
+          item.specification ? item.specification.replace(/\n/g, ' ') : '',
+          typeof item.optionalAttributes === 'object'
+            ? (item.optionalAttributes?.nameZh || item.optionalAttributes?.nameEn || '')
+            : (item.optionalAttributes || ''),
+          item.quantity || 0
+        ];
+      })
+    );
+
+    // 组合CSV内容
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    // 添加BOM以支持中文
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    // 创建下载链接
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `订单导出_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success('订单已导出');
+  };
+
   return (
     <div className="space-y-6">
-      {/* 页面标题 */}
-      <PageHeader
-        title="订单管理"
-        subtitle="查看和管理客户订单"
-      />
+      {/* 页面标题和导出按钮 */}
+      <div className="flex items-center justify-between">
+        <PageHeader
+          title="订单管理"
+          subtitle="查看和管理客户订单"
+        />
+        <button
+          onClick={exportToExcel}
+          disabled={filteredOrderForms.length === 0}
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Download size={20} />
+          导出Excel
+        </button>
+      </div>
 
       {/* 搜索栏 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -88,7 +162,7 @@ export default function OrdersPage() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="text-sm text-gray-600 mb-1">总订单</div>
           <div className="text-2xl font-bold text-gray-900">{orderForms.length}</div>
@@ -101,12 +175,6 @@ export default function OrdersPage() {
               weekAgo.setDate(weekAgo.getDate() - 7);
               return new Date(f.submittedAt) > weekAgo;
             }).length}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="text-sm text-gray-600 mb-1">总金额</div>
-          <div className="text-2xl font-bold text-green-600">
-            ¥{orderForms.reduce((sum, f) => sum + Number(f.totalAmount || 0), 0).toLocaleString()}
           </div>
         </div>
       </div>
@@ -138,9 +206,6 @@ export default function OrdersPage() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     提交时间
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    金额
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     操作
@@ -189,9 +254,6 @@ export default function OrdersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        ¥{Number(form.totalAmount).toLocaleString()}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button
                           onClick={() => toggleExpand(form.id)}
@@ -203,7 +265,7 @@ export default function OrdersPage() {
                     </tr>
                     {expandedId === form.id && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-4 bg-gray-50">
+                        <td colSpan={5} className="px-6 py-4 bg-gray-50">
                           <div className="space-y-4">
                             {/* 地址 */}
                             <div>
@@ -244,109 +306,57 @@ export default function OrdersPage() {
                                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
                                         数量
                                       </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
-                                        单价
-                                      </th>
-                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
-                                        小计
-                                      </th>
                                     </tr>
                                   </thead>
                                   <tbody className="bg-white divide-y divide-gray-200">
                                     {form.items.map((item: any, index: number) => (
                                       <tr key={index}>
-                                        <td className="px-4 py-2 text-sm text-gray-900">
+                                        <td className="px-4 py-2 text-sm text-gray-900 font-mono">
                                           {item.product_code || item.sku || '-'}
                                         </td>
                                         <td className="px-4 py-2 text-sm text-gray-900">
-                                          {item.product_name || item.groupName || '-'}
+                                          <div>
+                                            <div className="font-medium">
+                                              {item.productName || item.product_name || item.groupName || '-'}
+                                            </div>
+                                            {item.productNameEn && item.productNameEn !== item.productName && (
+                                              <div className="text-xs text-gray-500 mt-0.5">
+                                                {item.productNameEn}
+                                              </div>
+                                            )}
+                                          </div>
                                         </td>
                                         <td className="px-4 py-2 text-sm text-gray-600">
-                                          {(() => {
-                                            // 优先使用 configuration，其次 colorCombination
-                                            const config = item.configuration || item.colorCombination;
-                                            if (!config || Object.keys(config).length === 0) return '-';
-
-                                            // 提取中文部分的辅助函数
-                                            const extractChinese = (text: string) => {
-                                              if (!text) return '';
-                                              // 如果是双语格式 "中文/English"，提取中文
-                                              if (text.includes('/')) {
-                                                return text.split('/')[0].trim();
-                                              }
-                                              return text;
-                                            };
-
-                                            // 渲染配置（组件、部件、颜色圆圈和颜色名称）
-                                            return (
-                                              <div className="space-y-2">
-                                                {Object.entries(config).map(([componentCode, value]: [string, any]) => {
-                                                  if (typeof value === 'object' && value !== null) {
-                                                    const componentName = extractChinese(value.componentName || componentCode);
-                                                    const colors = Array.isArray(value.colors) ? value.colors : [];
-
-                                                    return (
-                                                      <div key={componentCode} className="space-y-1">
-                                                        {/* 组件名称（仅中文） */}
-                                                        <div className="flex items-center gap-2 text-xs">
-                                                          <span className="font-medium text-gray-700">[{componentCode}]</span>
-                                                          <span className="text-gray-900 font-medium">{componentName}</span>
-                                                        </div>
-
-                                                        {/* 颜色列表（圆圈 + 部件名: 颜色名） */}
-                                                        {colors.length > 0 && (
-                                                          <div className="flex flex-wrap gap-2 ml-4">
-                                                            {colors.map((colorPart: any, idx: number) => {
-                                                              // 支持多种格式
-                                                              const hexColor = colorPart.hexColor || colorPart.hex || (typeof colorPart === 'string' ? colorPart : '');
-                                                              const partName = extractChinese(colorPart.part || '');
-                                                              const colorName = extractChinese(colorPart.color || colorPart.name || '');
-
-                                                              return (
-                                                                <div key={idx} className="flex items-center gap-1.5">
-                                                                  <div
-                                                                    className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
-                                                                    style={{ backgroundColor: hexColor }}
-                                                                    title={hexColor}
-                                                                  />
-                                                                  {partName && colorName && (
-                                                                    <span className="text-xs text-gray-600">
-                                                                      {partName}: {colorName}
-                                                                    </span>
-                                                                  )}
-                                                                  {!partName && colorName && (
-                                                                    <span className="text-xs text-gray-600">{colorName}</span>
-                                                                  )}
-                                                                </div>
-                                                              );
-                                                            })}
-                                                          </div>
-                                                        )}
-                                                      </div>
-                                                    );
-                                                  }
-                                                  return (
-                                                    <div key={componentCode} className="text-xs">
-                                                      {componentCode}: {String(value)}
-                                                    </div>
-                                                  );
-                                                })}
+                                          <div className="space-y-2">
+                                            {/* 显示货品规格 */}
+                                            {item.specification && (
+                                              <div>
+                                                <span className="text-xs font-medium text-gray-700">货品规格：</span>
+                                                <div className="text-xs text-gray-900 whitespace-pre-line mt-1">
+                                                  {item.specification}
+                                                </div>
                                               </div>
-                                            );
-                                          })()}
+                                            )}
+
+                                            {/* 显示附加属性 */}
+                                            {item.optionalAttributes && (
+                                              <div>
+                                                <span className="text-xs font-medium text-gray-700">附加属性：</span>
+                                                <div className="text-xs text-gray-900 mt-1">
+                                                  {typeof item.optionalAttributes === 'object'
+                                                    ? item.optionalAttributes.nameZh || item.optionalAttributes.nameEn || '-'
+                                                    : item.optionalAttributes
+                                                  }
+                                                </div>
+                                              </div>
+                                            )}
+
+                                            {/* 如果都没有，显示"-" */}
+                                            {!item.specification && !item.optionalAttributes && '-'}
+                                          </div>
                                         </td>
                                         <td className="px-4 py-2 text-sm text-gray-900">
                                           {item.quantity}
-                                        </td>
-                                        <td className="px-4 py-2 text-sm text-gray-900">
-                                          ¥{Number(item.unit_price || item.price || 0).toFixed(2)}
-                                        </td>
-                                        <td className="px-4 py-2 text-sm font-medium text-gray-900">
-                                          ¥
-                                          {(
-                                            Number(item.unit_price || item.price || 0) *
-                                            item.quantity
-                                          ).toFixed(2)}
                                         </td>
                                       </tr>
                                     ))}
