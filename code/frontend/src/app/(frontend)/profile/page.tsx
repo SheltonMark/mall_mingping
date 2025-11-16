@@ -371,23 +371,23 @@ export default function ProfilePage() {
                   )}
 
                   {/* Contact Details */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-3 text-sm">
                     <div>
-                      <span className="text-gray-500 font-light">{t('profile.contact')}:</span>{' '}
-                      <span className="text-black font-light">{order.contactName}</span>
+                      <span className="text-gray-500">{t('profile.contact')}:</span>{' '}
+                      <span className="text-black">{order.contactName}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 font-light">{t('profile.phone')}:</span>{' '}
-                      <span className="text-black font-light">{order.phone}</span>
+                      <span className="text-gray-500">{t('profile.phone')}:</span>{' '}
+                      <span className="text-black">{order.phone}</span>
                     </div>
-                    <div className="md:col-span-2">
-                      <span className="text-gray-500 font-light">{t('profile.address')}:</span>{' '}
-                      <span className="text-black font-light">{order.address}</span>
+                    <div>
+                      <span className="text-gray-500">{t('profile.address')}:</span>{' '}
+                      <span className="text-black">{order.address}</span>
                     </div>
                     {order.notes && (
-                      <div className="md:col-span-2">
-                        <span className="text-gray-500 font-light">{t('profile.notes')}:</span>{' '}
-                        <span className="text-black font-light">{order.notes}</span>
+                      <div>
+                        <span className="text-gray-500">{t('profile.notes')}:</span>{' '}
+                        <span className="text-black">{order.notes}</span>
                       </div>
                     )}
                   </div>

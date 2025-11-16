@@ -436,9 +436,9 @@ export default function ProductDetailPage() {
           </div>
 
           {/* 右侧: 产品信息 */}
-          <div className="relative pb-48 lg:pb-0">
+          <div className="relative pb-40 lg:pb-0">
             {/* 滚动内容区域 */}
-            <div className="space-y-6 lg:pb-56">
+            <div className="space-y-6 lg:pb-48">
             {/* 标题 - 仅显示当前语言 */}
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
