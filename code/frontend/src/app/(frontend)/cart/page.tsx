@@ -80,7 +80,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
       {/* Hero Section */}
       <div className="bg-white border-b border-gray-100 pt-36 pb-8">
         <div className="max-w-[1440px] mx-auto px-6">
