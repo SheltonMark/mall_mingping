@@ -73,10 +73,10 @@ export default function Navbar() {
           </Link>
 
           {/* Center Navigation with dot indicators */}
-          <nav className="flex items-center gap-4 md:gap-12">
+          <nav className="flex items-center gap-4 md:gap-12" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}>
             <Link
               href="/"
-              className={`relative text-xs md:text-sm font-medium tracking-[0.05em] uppercase transition-colors duration-250 ${
+              className={`relative text-xs md:text-sm font-normal transition-colors duration-250 ${
                 isActive('/') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -87,7 +87,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/products"
-              className={`relative text-xs md:text-sm font-medium tracking-[0.05em] uppercase transition-colors duration-250 ${
+              className={`relative text-xs md:text-sm font-normal transition-colors duration-250 ${
                 isActive('/products') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -98,7 +98,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/about"
-              className="relative text-xs md:text-sm font-medium tracking-[0.05em] uppercase text-neutral-600 hover:text-neutral-900 transition-colors duration-250"
+              className="relative text-xs md:text-sm font-normal text-neutral-600 hover:text-neutral-900 transition-colors duration-250"
             >
               {t('nav.about')}
               <span className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full opacity-0 hover:opacity-100 transition-opacity duration-250"></span>
