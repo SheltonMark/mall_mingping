@@ -68,7 +68,7 @@ export default function OrdersPage() {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = (form: OrderForm) => {
     // 创建CSV内容
     const headers = [
       '订单号',
@@ -86,28 +86,26 @@ export default function OrdersPage() {
       '数量'
     ];
 
-    const rows = filteredOrderForms.flatMap(form =>
-      form.items.map((item: any, index: number) => {
-        const isFirstItem = index === 0;
-        return [
-          isFirstItem ? form.formNumber : '',
-          isFirstItem ? form.contactName : '',
-          isFirstItem ? form.email : '',
-          isFirstItem ? form.phone : '',
-          isFirstItem ? form.address : '',
-          isFirstItem ? new Date(form.submittedAt).toLocaleString('zh-CN') : '',
-          isFirstItem ? (form.notes || '') : '',
-          item.product_code || item.sku || '',
-          item.productName || item.product_name || item.groupName || '',
-          item.productNameEn || '',
-          item.specification ? item.specification.replace(/\n/g, ' ') : '',
-          typeof item.optionalAttributes === 'object'
-            ? (item.optionalAttributes?.nameZh || item.optionalAttributes?.nameEn || '')
-            : (item.optionalAttributes || ''),
-          item.quantity || 0
-        ];
-      })
-    );
+    const rows = form.items.map((item: any, index: number) => {
+      const isFirstItem = index === 0;
+      return [
+        isFirstItem ? form.formNumber : '',
+        isFirstItem ? form.contactName : '',
+        isFirstItem ? form.email : '',
+        isFirstItem ? form.phone : '',
+        isFirstItem ? form.address : '',
+        isFirstItem ? new Date(form.submittedAt).toLocaleString('zh-CN') : '',
+        isFirstItem ? (form.notes || '') : '',
+        item.product_code || item.sku || '',
+        item.productName || item.product_name || item.groupName || '',
+        item.productNameEn || '',
+        item.specification ? item.specification.replace(/\n/g, ' ') : '',
+        typeof item.optionalAttributes === 'object'
+          ? (item.optionalAttributes?.nameZh || item.optionalAttributes?.nameEn || '')
+          : (item.optionalAttributes || ''),
+        item.quantity || 0
+      ];
+    });
 
     // 组合CSV内容
     const csvContent = [
@@ -123,7 +121,7 @@ export default function OrdersPage() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `订单导出_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `订单_${form.formNumber}_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -134,21 +132,11 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      {/* 页面标题和导出按钮 */}
-      <div className="flex items-center justify-between">
-        <PageHeader
-          title="订单管理"
-          subtitle="查看和管理客户订单"
-        />
-        <button
-          onClick={exportToExcel}
-          disabled={filteredOrderForms.length === 0}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Download size={20} />
-          导出Excel
-        </button>
-      </div>
+      {/* 页面标题 */}
+      <PageHeader
+        title="订单管理"
+        subtitle="查看和管理客户订单"
+      />
 
       {/* 搜索栏 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -254,13 +242,22 @@ export default function OrdersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => toggleExpand(form.id)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          {expandedId === form.id ? '收起' : '查看详情'}
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => toggleExpand(form.id)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            {expandedId === form.id ? '收起' : '查看详情'}
+                          </button>
+                          <button
+                            onClick={() => exportToExcel(form)}
+                            className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
+                          >
+                            <Download size={14} />
+                            导出订单
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {expandedId === form.id && (
@@ -331,7 +328,7 @@ export default function OrdersPage() {
                                             {/* 显示货品规格 */}
                                             {item.specification && (
                                               <div>
-                                                <span className="text-xs font-medium text-gray-700">货品规格：</span>
+                                                <span className="text-xs font-semibold text-gray-800">货品规格：</span>
                                                 <div className="text-xs text-gray-900 whitespace-pre-line mt-1">
                                                   {item.specification}
                                                 </div>
@@ -341,7 +338,7 @@ export default function OrdersPage() {
                                             {/* 显示附加属性 */}
                                             {item.optionalAttributes && (
                                               <div>
-                                                <span className="text-xs font-medium text-gray-700">附加属性：</span>
+                                                <span className="text-xs font-semibold text-gray-800">附加属性：</span>
                                                 <div className="text-xs text-gray-900 mt-1">
                                                   {typeof item.optionalAttributes === 'object'
                                                     ? item.optionalAttributes.nameZh || item.optionalAttributes.nameEn || '-'
