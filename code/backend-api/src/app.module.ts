@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { CustomerAuthModule } from './modules/customer-auth/customer-auth.module';
+import { SalespersonAuthModule } from './modules/salesperson-auth/salesperson-auth.module';
 import { OrderFormModule } from './modules/order-form/order-form.module';
 import { SalespersonModule } from './modules/salesperson/salesperson.module';
 import { CustomerModule } from './modules/customer/customer.module';
@@ -24,6 +25,7 @@ import { CartModule } from './modules/cart/cart.module';
     }),
     AuthModule,
     CustomerAuthModule, // External site: Customer authentication
+    SalespersonAuthModule, // Internal site: Salesperson authentication
     OrderFormModule, // External site: Order form (inquiry) submission
     SalespersonModule,
     CustomerModule,

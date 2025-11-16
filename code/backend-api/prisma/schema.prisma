@@ -37,6 +37,7 @@ model Salesperson {
   phone        String?
   hireDate     DateTime @map("hire_date")
   avatar       String?
+  password     String?  @map("password_hash") // Bcrypt hashed password for login
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
