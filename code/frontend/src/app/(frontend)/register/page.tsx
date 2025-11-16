@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { useLanguage } from '@/context/LanguageContext'
 import Link from 'next/link'
+
+// Temporary stub for remaining translation calls
+const t = (key: string) => key
 
 export default function RegisterPage() {
   const { register } = useAuth()
-  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
@@ -63,8 +64,8 @@ export default function RegisterPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">{t('auth.register_title')}</h2>
-            <p className="mt-2 text-sm text-gray-600">{t('auth.register_subtitle')}</p>
+            <h2 className="text-3xl font-bold text-gray-900">"创建您的账户"</h2>
+            <p className="mt-2 text-sm text-gray-600">"加入LEMOPX开始购物"</p>
           </div>
 
           {/* Error Message */}
@@ -79,7 +80,7 @@ export default function RegisterPage() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.email')} *
+                "邮箱地址" *
               </label>
               <input
                 type="email"
@@ -88,14 +89,14 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder={t('auth.email_placeholder')}
+                placeholder="请输入邮箱"
               />
             </div>
 
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.password')} *
+                "密码" *
               </label>
               <input
                 type="password"
@@ -105,7 +106,7 @@ export default function RegisterPage() {
                 required
                 minLength={6}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder={t('auth.password_placeholder')}
+                placeholder="请输入密码"
               />
               <p className="mt-1 text-xs text-gray-500">{t('auth.password_min_length')}</p>
             </div>
@@ -113,7 +114,7 @@ export default function RegisterPage() {
             {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.confirm_password')} *
+                "确认密码" *
               </label>
               <input
                 type="password"
@@ -122,7 +123,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder={t('auth.confirm_password_placeholder')}
+                placeholder="请确认密码"
               />
             </div>
 

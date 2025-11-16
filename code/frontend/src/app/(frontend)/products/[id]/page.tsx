@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingCart, Check, Play, Image as ImageIcon, FileText } from 'lucide-react'
-import { useLanguage } from '@/context/LanguageContext'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { productApi, type ProductGroup, type ProductSku } from '@/lib/publicApi'
@@ -16,7 +15,6 @@ export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
-  const { t, language } = useLanguage()
   const { addItem } = useCart()
   const toast = useToast()
 

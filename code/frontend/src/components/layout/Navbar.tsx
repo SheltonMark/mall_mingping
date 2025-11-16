@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, User, ShoppingCart, ChevronDown, LogOut, Globe } from 'lucide-react'
-import { useLanguage } from '@/context/LanguageContext'
+import { Search, User, ShoppingCart, ChevronDown, LogOut } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
@@ -13,7 +12,6 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const toast = useToast()
-  const { language, setLanguage, t } = useLanguage()
   const { customer, isAuthenticated, logout } = useAuth()
   const { totalItems, logoutCart, syncCartOnLogin } = useCart()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
@@ -43,7 +41,7 @@ export default function Navbar() {
     logout()
     logoutCart()
     setIsUserMenuOpen(false)
-    toast.success(t('auth.logout_success'))
+    toast.success("退出登录成功")
   }
 
   return (
@@ -80,7 +78,7 @@ export default function Navbar() {
                 isActive('/') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              {t('nav.home')}
+              "首页"
               <span className={`absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full transition-opacity duration-250 ${
                 isActive('/') ? 'opacity-100' : 'opacity-0'
               }`}></span>
@@ -91,7 +89,7 @@ export default function Navbar() {
                 isActive('/products') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              {t('nav.products')}
+              "产品"
               <span className={`absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full transition-opacity duration-250 ${
                 isActive('/products') ? 'opacity-100' : 'opacity-0'
               }`}></span>
@@ -100,23 +98,13 @@ export default function Navbar() {
               href="/about"
               className="relative text-xs md:text-sm font-medium tracking-[0.05em] uppercase text-neutral-600 hover:text-neutral-900 transition-colors duration-250"
             >
-              {t('nav.about')}
+              "关于/联系"
               <span className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full opacity-0 hover:opacity-100 transition-opacity duration-250"></span>
             </Link>
           </nav>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 md:gap-6">
-            {/* Language Switcher Button */}
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
-              className="flex items-center gap-2 px-4 py-2 bg-transparent border border-neutral-300 rounded-full text-xs font-semibold tracking-[0.05em] text-neutral-600 hover:border-primary hover:text-primary hover:bg-gold-50 transition-all duration-250"
-            >
-              <Globe size={14} />
-              <span>{language === 'en' ? '中文' : 'EN'}</span>
-            </button>
-
-            {/* User Button with Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -145,14 +133,14 @@ export default function Navbar() {
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <User className="w-4 h-4" />
-                        <span>{t('nav.my_account')}</span>
+                        <span>"个人中心"</span>
                       </Link>
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full text-left"
                       >
                         <LogOut className="w-4 h-4" />
-                        <span>{t('nav.logout')}</span>
+                        <span>"退出登录"</span>
                       </button>
                     </>
                   ) : (
@@ -162,7 +150,7 @@ export default function Navbar() {
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       <User className="w-4 h-4" />
-                      <span>{t('nav.login')}</span>
+                      <span>"登录"</span>
                     </Link>
                   )}
                 </div>
@@ -186,7 +174,7 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={() => {
-                  toast.warning(t('cart.please_login'))
+                  toast.warning("请先登录")
                   // Save current page for redirect after login
                   sessionStorage.setItem('redirect_after_login', pathname)
                   setTimeout(() => router.push('/login'), 1500)

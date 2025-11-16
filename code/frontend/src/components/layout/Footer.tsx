@@ -1,12 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useLanguage } from '@/context/LanguageContext'
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function Footer() {
-  const { t } = useLanguage()
   const [socialMedia, setSocialMedia] = useState<any>({})
 
   // 加载社交媒体配置
@@ -44,34 +42,34 @@ export default function Footer() {
               />
             </Link>
             <p className="text-neutral-500 leading-relaxed">
-              {t('footer.tagline') || 'Crafting excellent cleaning solutions with artisan spirit, creating elegant living experiences for global clients.'}
+              {"以创新、环保的产品革新清洁方式,让您的生活更轻松,家居更洁净。"}
             </p>
           </div>
 
           {/* Products Column */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
-              {t('footer.products') || 'Products'}
+              {"产品"}
             </h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.all_products') || 'Cleaning Tools'}
+                  {"所有产品"}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.new_arrivals') || 'Kitchen Items'}
+                  {"新品上市"}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.best_sellers') || 'Storage Solutions'}
+                  {"热销产品"}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.professional_series')}
+                  {"专业系列"}
                 </Link>
               </li>
             </ul>
@@ -80,27 +78,27 @@ export default function Footer() {
           {/* Company Column */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
-              {t('footer.company') || 'Company'}
+              {"公司"}
             </h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.about') || 'About Us'}
+                  {"关于"}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.our_story')}
+                  {"我们的故事"}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.sustainability')}
+                  {"可持续发展"}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.careers') || 'Careers'}
+                  {"招聘"}
                 </Link>
               </li>
             </ul>
@@ -109,27 +107,27 @@ export default function Footer() {
           {/* Support Column */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
-              {t('footer.support') || 'Support'}
+              {"支持"}
             </h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.contact_us') || 'Contact Us'}
+                  {"联系我们"}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.help_center')}
+                  {"帮助中心"}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.privacy_policy')}
+                  {"隐私政策"}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {t('footer.terms_of_service')}
+                  {"服务条款"}
                 </Link>
               </li>
             </ul>

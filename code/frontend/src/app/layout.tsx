@@ -1,5 +1,4 @@
 import './globals.css'
-import { LanguageProvider } from '@/context/LanguageContext'
 import { ToastProvider } from '@/components/common/ToastContainer'
 
 export const metadata = {
@@ -15,11 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="light">
       <body className="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
-        <LanguageProvider>
           <ToastProvider>
             {children}
           </ToastProvider>
-        </LanguageProvider>
       </body>
     </html>
   )

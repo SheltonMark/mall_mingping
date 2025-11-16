@@ -2,14 +2,12 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { useLanguage } from '@/context/LanguageContext'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 // 将使用 useSearchParams 的部分抽取到单独组件
 function LoginForm() {
   const { login } = useAuth()
-  const { t } = useLanguage()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -59,8 +57,8 @@ function LoginForm() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">{t('auth.login_title')}</h2>
-            <p className="mt-2 text-sm text-gray-600">{t('auth.login_subtitle')}</p>
+            <h2 className="text-3xl font-bold text-gray-900">"欢迎回来"</h2>
+            <p className="mt-2 text-sm text-gray-600">"登录您的账户"</p>
           </div>
 
           {/* Error Message */}
@@ -75,7 +73,7 @@ function LoginForm() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.email')}
+                "邮箱地址"
               </label>
               <input
                 type="email"
@@ -84,14 +82,14 @@ function LoginForm() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder={t('auth.email_placeholder')}
+                placeholder="请输入邮箱"
               />
             </div>
 
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('auth.password')}
+                "密码"
               </label>
               <input
                 type="password"
@@ -100,7 +98,7 @@ function LoginForm() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder={t('auth.password_placeholder')}
+                placeholder="请输入密码"
               />
             </div>
 
@@ -130,6 +128,9 @@ function LoginForm() {
 }
 
 // 用 Suspense 包裹导出
+// Temporary stub for remaining translation calls
+const t = (key: string) => key
+
 export default function LoginPage() {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>

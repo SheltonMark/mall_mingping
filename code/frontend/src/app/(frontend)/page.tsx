@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { useLanguage } from '@/context/LanguageContext'
 import { useState, useEffect } from 'react'
 
 interface FeaturedProduct {
@@ -15,7 +14,6 @@ interface FeaturedProduct {
 }
 
 export default function HomePage() {
-  const { t, language } = useLanguage()
 
   // 默认产品数据
   const defaultProducts: FeaturedProduct[] = [
@@ -124,7 +122,7 @@ export default function HomePage() {
                 <div className="max-w-2xl">
                   {/* Main Title */}
                   <h1 className="text-white mb-4">
-                    {t('home.hero.title').includes('Future') ? (
+                    {false ? (
                       <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
                         Excellence in Every Clean
                       </span>
@@ -137,14 +135,14 @@ export default function HomePage() {
 
                   {/* Subtitle */}
                   <p className="text-white/90 text-base md:text-lg font-normal mb-2 leading-relaxed">
-                    {t('home.hero.title').includes('Future')
+                    {false
                       ? 'Premium cleaning solutions for modern living'
                       : '为现代生活而生的高端清洁方案'}
                   </p>
 
                   {/* Terms text */}
                   <p className="text-white/70 text-sm mb-8">
-                    {t('home.hero.title').includes('Future')
+                    {false
                       ? 'Discover our premium collection'
                       : '探索我们的高端系列'}
                   </p>
@@ -154,7 +152,7 @@ export default function HomePage() {
                     href="/products"
                     className="group relative inline-block px-8 py-3.5 bg-primary text-neutral-900 font-semibold text-sm rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
                   >
-                    <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'View products' : '查看产品'}</span>
+                    <span className="relative z-10">{false ? 'View products' : '查看产品'}</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                   </Link>
                 </div>
@@ -168,15 +166,15 @@ export default function HomePage() {
       <section className="py-24 bg-white">
         <div className="max-w-[1440px] mx-auto px-6">
           <div className="text-center mb-20">
-            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
+            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{"为什么选择我们"}</p>
             <h2
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
               style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
             >
-              {t('home.why_choose.title')}
+              {"每个细节都追求卓越"}
             </h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-              {t('home.why_choose.subtitle')}
+              {"我们以工匠精神打造每一件产品，从材料选择到工艺细节，追求完美的同时兼顾实用性和美学价值"}
             </p>
           </div>
 
@@ -187,9 +185,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 01
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature1.title')}</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{"优质材料"}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature1.desc')}
+                {"精选全球优质环保材料，确保每件产品达到奢侈品级别的品质和耐用性"}
               </p>
             </div>
 
@@ -198,9 +196,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 02
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature2.title')}</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{"创新设计"}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature2.desc')}
+                {"融合人体工程学与现代美学，让清洁工具不仅实用，更是您空间中的艺术品"}
               </p>
             </div>
 
@@ -209,9 +207,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 03
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature3.title')}</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{"可持续未来"}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature3.desc')}
+                {"致力于使用可持续材料和生产方式，为地球的未来贡献我们的一份力量"}
               </p>
             </div>
 
@@ -220,9 +218,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 04
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature4.title')}</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{"精湛工艺"}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature4.desc')}
+                {"每件产品都经过严格的质量控制，传承工匠精神，追求极致完美"}
               </p>
             </div>
 
@@ -231,9 +229,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 05
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature5.title')}</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{"客户至上"}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature5.desc')}
+                {"提供全面的售前咨询和售后服务，确保您在整个体验过程中都感到满意"}
               </p>
             </div>
 
@@ -242,9 +240,9 @@ export default function HomePage() {
               <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
                 06
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature6.title')}</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{"全球覆盖"}</h3>
               <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature6.desc')}
+                {"产品出口至50多个国家，服务全球客户，打造国际化品牌"}
               </p>
             </div>
           </div>
@@ -261,10 +259,10 @@ export default function HomePage() {
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
               style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
             >
-              {t('home.signature.title')}
+              {"我们的标志性系列"}
             </h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-              {t('home.signature.subtitle')}
+              {"精心设计。找到适合您生活的 LEMOPX 产品。"}
             </p>
           </div>
 
@@ -288,7 +286,7 @@ export default function HomePage() {
                   <div className="opacity-0 translate-y-5 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0">
                     <span className="relative inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-neutral-900 text-sm font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden hover:bg-gold-400 hover:-translate-y-0.5 transition-all duration-300">
                       <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
-                      <span className="relative z-10">{t('home.signature.learn_more')}</span>
+                      <span className="relative z-10">{"了解更多"}</span>
                       <ArrowRight className="relative z-10" size={16} />
                     </span>
                   </div>
@@ -305,7 +303,7 @@ export default function HomePage() {
               style={{ boxShadow: 'var(--shadow-large)' }}
             >
               <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
-              <span className="relative z-10">{t('home.signature.view_all')}</span>
+              <span className="relative z-10">{"查看全部产品"}</span>
               <ArrowRight className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5" size={20} />
             </Link>
           </div>

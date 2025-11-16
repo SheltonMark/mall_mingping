@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { ShoppingCart, ChevronDown } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
-import { useLanguage } from '@/context/LanguageContext'
 import { useAuth } from '@/context/AuthContext'
 import { productApi, type ProductGroup, type Category } from '@/lib/publicApi'
 import { useToast } from '@/components/common/ToastContainer'
@@ -14,8 +13,10 @@ import { useRouter } from 'next/navigation'
 // 分页配置常量 - 修改此值即可调整每页显示数量
 const PRODUCTS_PER_PAGE = 9
 
+// Temporary stub for remaining translation calls
+const t = (key: string) => key
+
 export default function ProductsPage() {
-  const { t, language } = useLanguage()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const toast = useToast()
@@ -175,7 +176,7 @@ export default function ProductsPage() {
     // Show feedback
     setAddedItem(productGroup.id)
     setTimeout(() => setAddedItem(null), 2000)
-    toast.success(t('products.added_message'))
+    toast.success("已加入购物车！")
   }
 
   // Filter product groups by selected category
@@ -239,7 +240,7 @@ export default function ProductsPage() {
       <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('products.loading')}</p>
+          <p className="text-gray-600">"加载产品中..."</p>
         </div>
       </div>
     )
@@ -270,30 +271,30 @@ export default function ProductsPage() {
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8">
           <Link href="/" className="hover:text-primary transition-colors">
-            {t('nav.home')}
+            "首页"
           </Link>
           <span>/</span>
           <Link href="/products" className="hover:text-primary transition-colors">
-            {t('nav.products')}
+            "产品"
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">{t('products.breadcrumb')}</span>
+          <span className="text-gray-900 font-medium">"所有产品"</span>
         </nav>
 
         <div className="flex flex-col md:flex-row gap-12">
           {/* Filtering Sidebar - 排序框移到顶部 */}
           <aside className="w-full md:w-56 lg:w-64 shrink-0">
             <div className="sticky top-32">
-              <h3 className="text-lg font-bold mb-8 text-gray-900">{t('products.filters')}</h3>
+              <h3 className="text-lg font-bold mb-8 text-gray-900">"筛选"</h3>
               <div className="space-y-14">
                 {/* Sort Dropdown - 移到顶部 */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('home.hero.title').includes('Future') ? 'Sort' : '排序'}</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">{false ? 'Sort' : '排序'}</h4>
                   <CustomSelect
                     options={[
-                      { value: 'newest', label: t('products.sort_new') },
-                      { value: 'price_low', label: t('products.sort_price_low') },
-                      { value: 'price_high', label: t('products.sort_price_high') },
+                      { value: 'newest', label: "按新品排序" },
+                      { value: 'price_low', label: "按价格排序：从低到高" },
+                      { value: 'price_high', label: "按价格排序：从高到低" },
                     ]}
                     value={sortBy}
                     onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
@@ -303,7 +304,7 @@ export default function ProductsPage() {
 
                 {/* Categories */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.categories')}</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">"分类"</h4>
                   <ul className="space-y-4 text-sm">
                     {categories.map((category) => (
                       <li key={category.id}>
@@ -324,7 +325,7 @@ export default function ProductsPage() {
 
                 {/* Price Range */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.price_range')}</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">"价格区间"</h4>
                   <div className="relative pt-1">
                     <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-lg">
                       <div
@@ -367,9 +368,9 @@ export default function ProductsPage() {
             <div className="md:hidden mb-6">
               <CustomSelect
                 options={[
-                  { value: 'newest', label: t('products.sort_new') },
-                  { value: 'price_low', label: t('products.sort_price_low') },
-                  { value: 'price_high', label: t('products.sort_price_high') },
+                  { value: 'newest', label: "按新品排序" },
+                  { value: 'price_low', label: "按价格排序：从低到高" },
+                  { value: 'price_high', label: "按价格排序：从高到低" },
                 ]}
                 value={sortBy}
                 onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
@@ -383,7 +384,7 @@ export default function ProductsPage() {
                 <div className="col-span-full text-center py-12">
                   <p className="text-gray-500">
                     {selectedCategoryCode
-                      ? t('products.no_products_in_category')
+                      ? "此分类下暂无产品"
                       : t('products.no_products_available')}
                   </p>
                 </div>
@@ -438,7 +439,7 @@ export default function ProductsPage() {
                         {/* Added Feedback */}
                         {isAdded && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
-                            <span className="text-white font-semibold text-sm">{t('products.added_message')}</span>
+                            <span className="text-white font-semibold text-sm">{"已加入购物车！"}</span>
                           </div>
                         )}
                       </div>

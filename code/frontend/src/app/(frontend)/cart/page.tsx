@@ -5,16 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
-import { useLanguage } from '@/context/LanguageContext'
 import { useToast } from '@/components/common/ToastContainer'
-import { parseBilingualText } from '@/lib/i18nHelper'
+
+// Temporary stub for remaining translation calls
+const t = (key: string) => key
 
 export default function CartPage() {
   const router = useRouter()
   const toast = useToast()
   const { items, removeItem, updateQuantity, selectedItems, setSelectedItems } = useCart()
   const { isAuthenticated, isLoading } = useAuth()
-  const { t, language } = useLanguage()
 
   const handleCheckout = () => {
     // Check if user is authenticated
@@ -26,7 +26,7 @@ export default function CartPage() {
 
     // If cart is empty, show warning
     if (items.length === 0) {
-      toast.warning(t('cart.empty'))
+      toast.warning("购物车为空")
       return
     }
 
@@ -73,7 +73,7 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-600">{t('cart.loading')}</p>
+          <p className="text-gray-600">"加载中..."</p>
         </div>
       </div>
     )
@@ -90,10 +90,10 @@ export default function CartPage() {
               <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100">
                 <ShoppingBag className="w-7 h-7 text-primary" />
               </div>
-              {t('cart.title')}
+              {"购物车"}
             </h1>
             <p className="mt-3 text-gray-600 ml-15">
-              {items.length > 0 ? `${items.length} ${items.length > 1 ? t('cart.items') : t('cart.item')}` : t('cart.empty')}
+              {items.length > 0 ? `${items.length} ${items.length > 1 ? "件商品" : "件商品"}` : "购物车为空"}
             </p>
           </div>
         </div>
@@ -107,15 +107,15 @@ export default function CartPage() {
               <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
                 <ShoppingBag className="w-16 h-16 text-gray-300" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">{t('cart.empty')}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">{"购物车为空"}</h2>
               <p className="text-gray-600 mb-8">
-                {t('cart.empty_desc')}
+                "开始向购物车中添加产品！"
               </p>
               <Link
                 href="/products"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-all transform hover:scale-105 shadow-lg shadow-primary/30"
               >
-                {t('cart.browse')}
+                "浏览产品"
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
@@ -134,7 +134,7 @@ export default function CartPage() {
                     className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
                   />
                   <span className="text-sm font-medium text-gray-700">
-                    {t('cart.select_all')} ({selectedItems.length}/{items.length})
+                    "全选" ({selectedItems.length}/{items.length})
                   </span>
                 </div>
                 <button
@@ -143,7 +143,7 @@ export default function CartPage() {
                   className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Trash2 className="w-4 h-4" />
-                  {t('cart.delete_selected')}
+                  "删除选中"
                 </button>
               </div>
 
@@ -197,7 +197,7 @@ export default function CartPage() {
                         <button
                           onClick={() => removeItem(item.skuId)}
                           className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-lg"
-                          title={t('cart.remove')}
+                          title="移除"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -255,7 +255,7 @@ export default function CartPage() {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('cart.order_summary')}</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">"订单摘要"</h2>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-gray-600">
@@ -264,7 +264,7 @@ export default function CartPage() {
                       {selectedItems.reduce((sum, skuId) => {
                         const item = items.find(i => i.skuId === skuId)
                         return sum + (item?.quantity || 0)
-                      }, 0)} {t('cart.items')}
+                      }, 0)} {"件商品"}
                     </span>
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export default function CartPage() {
                   disabled={selectedItems.length === 0}
                   className="block w-full h-14 bg-primary text-white font-bold text-lg rounded-xl hover:bg-primary-dark transition-all transform hover:scale-[1.02] shadow-lg shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  {t('cart.proceed_to_confirm')}
+                  "确认订单"
                   <ArrowRight className="w-5 h-5" />
                 </button>
 
@@ -282,7 +282,7 @@ export default function CartPage() {
                   href="/products"
                   className="block w-full h-12 mt-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-primary hover:text-primary transition-all text-center leading-[2.75rem]"
                 >
-                  {t('cart.continue_shopping')}
+                  "继续购物"
                 </Link>
               </div>
             </div>

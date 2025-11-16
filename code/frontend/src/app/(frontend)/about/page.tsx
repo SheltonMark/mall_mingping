@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { X, Mail, Phone, MapPin, ArrowRight } from 'lucide-react'
-import { useLanguage } from '@/context/LanguageContext'
 import { publicApi } from '@/lib/publicApi'
 import { useToast } from '@/components/common/ToastContainer'
 import { ButtonLoader } from '@/components/common/Loader'
@@ -53,8 +52,10 @@ interface AboutConfig {
   contact_address_zh?: string
 }
 
+// Temporary stub for remaining translation calls
+const t = (key: string) => key
+
 export default function AboutPage() {
-  const { t, language } = useLanguage()
   const toast = useToast()
   const [showModal, setShowModal] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -159,7 +160,7 @@ export default function AboutPage() {
     e.preventDefault()
 
     if (!formData.name || !formData.email || !formData.message) {
-      toast.warning(t('about.form_error') || '请填写必填项')
+      toast.warning("请填写必填项" || '请填写必填项')
       return
     }
 
@@ -173,7 +174,7 @@ export default function AboutPage() {
         message: formData.message
       })
 
-      toast.success(t('about.form_success') || '提交成功！我们会尽快与您联系')
+      toast.success("提交成功！我们会尽快与您联系" || '提交成功！我们会尽快与您联系')
       setShowModal(false)
       setFormData({ name: '', company: '', email: '', phone: '', message: '' })
     } catch (error: any) {
@@ -224,7 +225,7 @@ export default function AboutPage() {
               <div className="inline-flex items-center gap-4 px-6 py-2 bg-white border border-neutral-200 rounded-full mb-8 shadow-soft">
                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-slow"></span>
                 <span className="text-xs font-semibold tracking-[0.1em] uppercase text-neutral-600">
-                  {t('about.our_story')}
+                  "我们的故事"
                 </span>
               </div>
 
@@ -236,12 +237,12 @@ export default function AboutPage() {
                   letterSpacing: '-0.02em'
                 }}
               >
-                {getLocalizedField('hero_title_line1') || t('about.hero_title_1')}<br />
+                {getLocalizedField('hero_title_line1') || "用心制作。"}<br />
                 <span
                   className="inline-block text-primary italic"
                   style={{ fontFamily: "'Playfair Display', serif", fontWeight: 500, letterSpacing: '0.02em' }}
                 >
-                  {getLocalizedField('hero_title_line2') || t('about.hero_title_2')}
+                  {getLocalizedField('hero_title_line2') || "清洁的艺术。"}
                 </span>
               </h1>
 
@@ -250,7 +251,7 @@ export default function AboutPage() {
                 className="text-2xl md:text-3xl font-light text-neutral-700 mb-12"
                 style={{ fontFamily: 'var(--font-body)', lineHeight: 1.6 }}
               >
-                {getLocalizedField('hero_subtitle') || t('about.hero_subtitle')}
+                {getLocalizedField('hero_subtitle') || "三十年专注卓越品质"}
               </p>
             </div>
 
@@ -304,31 +305,31 @@ export default function AboutPage() {
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
               <div className="px-6 py-2 border-2 border-primary rounded-md">
                 <span className="text-sm font-bold tracking-[0.2em] uppercase text-primary">
-                  {t('about.our_story')}
+                  "我们的故事"
                 </span>
               </div>
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-semibold mb-6 text-neutral-900" style={{ letterSpacing: '0.02em' }}>
-              {t('about.since_1995')}
+              {"始于1995年"}
               <br />
-              <span className="text-primary">{t('about.factory_direct')}</span>
+              <span className="text-primary">{"工厂直供 品质卓越"}</span>
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">{t('about.born_passion')}</p>
+            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">{"源于对品质的热爱"}</p>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 items-center gap-0">
           <div className="p-12 md:p-16 transition-all duration-700" data-scroll-id="story-1-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
-              {getLocalizedField('story1_title') || t('about.craftsmanship_title')}
+              {getLocalizedField('story1_title') || "匠心工艺"}
             </h3>
             <p className="text-lg md:text-2xl text-gray-600 mb-5">
-              {getLocalizedField('story1_desc1') || t('about.craftsmanship_desc_1')}
+              {getLocalizedField('story1_desc1') || "从小作坊起步,LEMOPX始终坚持品质第一的原则。"}
             </p>
             <p className="text-lg md:text-2xl text-gray-600">
-              {getLocalizedField('story1_desc2') || t('about.craftsmanship_desc_2')}
+              {getLocalizedField('story1_desc2') || "每件产品都经过严格的质量把控。"}
             </p>
           </div>
           <div className="h-96 md:h-auto aspect-video overflow-hidden transition-all duration-700" data-scroll-id="story-1-image">
@@ -350,13 +351,13 @@ export default function AboutPage() {
           </div>
           <div className="p-12 md:p-16 order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
-              {getLocalizedField('story2_title') || t('about.factory_supply_title')}
+              {getLocalizedField('story2_title') || "工厂直供"}
             </h3>
             <p className="text-lg md:text-2xl text-gray-600 mb-5">
-              {getLocalizedField('story2_desc1') || t('about.factory_supply_desc_1')}
+              {getLocalizedField('story2_desc1') || "完整的生产线和研发团队。"}
             </p>
             <p className="text-lg md:text-2xl text-gray-600">
-              {getLocalizedField('story2_desc2') || t('about.factory_supply_desc_2')}
+              {getLocalizedField('story2_desc2') || "极具竞争力的价格与优良的品质。"}
             </p>
           </div>
         </div>
@@ -371,22 +372,22 @@ export default function AboutPage() {
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
               <div className="px-6 py-2 border-2 border-primary rounded-md">
                 <span className="text-sm font-bold tracking-[0.2em] uppercase text-primary">
-                  {t('about.our_values')}
+                  {"我们的价值观"}
                 </span>
               </div>
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-semibold text-neutral-900" style={{ letterSpacing: '0.02em' }}>
-              {t('about.what_we_believe')}
+              {"我们的信念"}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12">
             {[
-              { number: '01', title: t('about.value_1_title'), description: t('about.value_1_desc') },
-              { number: '02', title: t('about.value_2_title'), description: t('about.value_2_desc') },
-              { number: '03', title: t('about.value_3_title'), description: t('about.value_3_desc') }
+              { number: '01', title: "质量第一", description: "严格的质量控制确保每件产品都符合最高标准" },
+              { number: '02', title: "环保责任", description: "使用环保材料,促进可持续发展" },
+              { number: '03', title: "客户至上", description: "提供优质的产品和服务" }
             ].map((value, idx) => (
               <div
                 key={idx}
@@ -424,9 +425,9 @@ export default function AboutPage() {
             </div>
 
             <h2 className="text-4xl md:text-5xl font-semibold mb-6" style={{ letterSpacing: '0.02em' }}>
-              {t('about.modern_production')}
+              {"现代化生产"}
             </h2>
-            <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">{t('about.smart_factory')}</p>
+            <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">{"10,000㎡智能工厂 · 全自动化生产线"}</p>
           </div>
 
           <div className="relative">
@@ -477,9 +478,9 @@ export default function AboutPage() {
                 ) : (
                   // 默认占位内容（如果没有配置）
                   [
-                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbiIeS_8I9cg8G2DxKoNSd2c4etQEF_eM1nrAXWr0fMOS5V9nIi-7waq9GJ1zVBS5CYwejTNYxnqdeDa6f7z6akHTU1fzmm-Q_XaSUWF7VQO5JuN63-WE_ThhDV89_hq72MKk950Cc_D8dtl4HYUhmfjPrRMzJsjFq_Ks1gB91gY6MMk8Eg-k2cmp5lX_lowkNXZ6iyx-ZtZrlq-9CriHkS0R0EN-sm3Yg_0lwz4K3nZIj9F-zDq3e9qRP6QOMxfY_827bfXZ4pJWt', label: t('about.production_line_a') },
-                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: t('about.quality_control') },
-                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: t('about.rd_center') }
+                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbiIeS_8I9cg8G2DxKoNSd2c4etQEF_eM1nrAXWr0fMOS5V9nIi-7waq9GJ1zVBS5CYwejTNYxnqdeDa6f7z6akHTU1fzmm-Q_XaSUWF7VQO5JuN63-WE_ThhDV89_hq72MKk950Cc_D8dtl4HYUhmfjPrRMzJsjFq_Ks1gB91gY6MMk8Eg-k2cmp5lX_lowkNXZ6iyx-ZtZrlq-9CriHkS0R0EN-sm3Yg_0lwz4K3nZIj9F-zDq3e9qRP6QOMxfY_827bfXZ4pJWt', label: "生产线 A" },
+                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: "质量控制" },
+                    { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: "研发中心" }
                   ].map((item, idx) => (
                     <div key={idx} className="min-w-full aspect-video">
                       <div className="relative h-full overflow-hidden">
@@ -525,35 +526,35 @@ export default function AboutPage() {
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
               <div className="px-6 py-2 border-2 border-primary rounded-md">
                 <span className="text-sm font-bold tracking-[0.2em] uppercase text-primary">
-                  {t('about.contact_us')}
+                  "联系我们"
                 </span>
               </div>
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-semibold text-neutral-900 mb-6" style={{ letterSpacing: '0.02em' }}>
-              {t('about.get_in_touch')}
+              {"保持联系"}
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">{t('about.look_forward')}</p>
+            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">{"期待与您合作"}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {[
               {
                 icon: Mail,
-                title: t('about.contact_email'),
+                title: "邮箱",
                 content: aboutConfig.contact_email || 'XXL7702@163.com',
                 href: `mailto:${aboutConfig.contact_email || 'XXL7702@163.com'}`
               },
               {
                 icon: Phone,
-                title: t('about.contact_phone'),
+                title: "电话",
                 content: aboutConfig.contact_phone || '13806777702',
                 href: `tel:${aboutConfig.contact_phone || '13806777702'}`
               },
               {
                 icon: MapPin,
-                title: t('about.contact_address'),
+                title: "地址",
                 content: getLocalizedField('contact_address') || 'Dongyang, Zhejiang, China',
                 href: '#'
               }
@@ -585,7 +586,7 @@ export default function AboutPage() {
               <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
 
               {/* 文字内容 */}
-              <span className="relative z-10">{t('about.start_partnership')}</span>
+              <span className="relative z-10">{"开始合作"}</span>
 
               {/* 箭头图标 */}
               <span className="relative z-10 w-10 h-10 rounded-full border-2 border-white/30 flex items-center justify-center group-hover:border-white transition-all duration-300 group-hover:rotate-45">
@@ -601,7 +602,7 @@ export default function AboutPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl p-8 md:p-10 max-w-xl w-full my-8" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl md:text-3xl font-bold text-neutral-900">{t('about.modal_title')}</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-neutral-900">{"开始合作"}</h3>
               <button
                 onClick={() => setShowModal(false)}
                 className="w-10 h-10 bg-neutral-100 hover:bg-neutral-200 rounded-full flex items-center justify-center transition-colors"
@@ -609,11 +610,11 @@ export default function AboutPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-neutral-600 text-base mb-6">{t('about.modal_subtitle')}</p>
+            <p className="text-neutral-600 text-base mb-6">{"填写下方表单,我们将在24小时内回复您。"}</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{t('about.form_name')} *</label>
+                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{"您的姓名"} *</label>
                 <input
                   type="text"
                   required
@@ -624,7 +625,7 @@ export default function AboutPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{t('about.form_email')} *</label>
+                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{"邮箱"} *</label>
                 <input
                   type="email"
                   required
@@ -635,7 +636,7 @@ export default function AboutPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{t('about.form_company')}</label>
+                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{"公司"}</label>
                 <input
                   type="text"
                   value={formData.company}
@@ -645,7 +646,7 @@ export default function AboutPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{t('about.form_phone')}</label>
+                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{"电话"}</label>
                 <input
                   type="tel"
                   value={formData.phone}
@@ -655,7 +656,7 @@ export default function AboutPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{t('about.form_message')} *</label>
+                <label className="block text-sm font-semibold text-neutral-900 mb-1.5">{"留言"} *</label>
                 <textarea
                   required
                   value={formData.message}
@@ -670,7 +671,7 @@ export default function AboutPage() {
                 disabled={submitting}
                 className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center"
               >
-                {submitting ? <ButtonLoader /> : t('about.form_submit')}
+                {submitting ? <ButtonLoader /> : "提交"}
               </button>
             </form>
           </div>
