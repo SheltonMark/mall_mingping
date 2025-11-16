@@ -123,7 +123,7 @@ export default function HomePage() {
               <div className="max-w-full mx-auto px-8 md:px-12 w-full">
                 <div className="max-w-2xl">
                   {/* Main Title */}
-                  <h1 className="text-white mb-4">
+                  <h1 className="text-white mb-4" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                     {t('home.hero.title').includes('Future') ? (
                       <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
                         Excellence in Every Clean
