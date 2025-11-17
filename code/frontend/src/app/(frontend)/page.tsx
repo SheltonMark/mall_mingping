@@ -347,16 +347,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Certifications & Factory Section */}
+      {/* Certifications & Factory Section - 高级Apple风格 */}
       {certificates.length > 0 && (
-        <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-          <div className="max-w-[1440px] mx-auto px-6">
-            <div className="text-center mb-12 sm:mb-20">
+        <section className="py-20 md:py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+          <div className="w-full max-w-full">
+            {/* Section Header */}
+            <div className="text-center mb-12 md:mb-20 px-6">
               <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
-                {language === 'zh' ? '资质认证' : 'Certifications'}
+                {language === 'zh' ? '资质认证' : 'CERTIFICATIONS'}
               </p>
               <h2
-                className="text-3xl sm:text-5xl md:text-7xl font-light text-neutral-900 mb-4 sm:mb-6"
+                className="text-4xl sm:text-5xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
               >
                 {language === 'zh' ? '资质证书·源头工厂' : 'Certifications & Factory'}
@@ -366,53 +367,101 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Certificates Carousel */}
-            <div className="relative">
-              {/* Navigation Buttons - 移动端隐藏 */}
-              {certificates.length > 3 && (
-                <>
-                  <button
-                    onClick={handlePrevCertificate}
-                    disabled={currentCertificateIndex === 0}
-                    className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
-                    aria-label={language === 'zh' ? '上一张' : 'Previous'}
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <button
-                    onClick={handleNextCertificate}
-                    disabled={currentCertificateIndex >= certificates.length - 3}
-                    className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
-                    aria-label={language === 'zh' ? '下一张' : 'Next'}
-                  >
-                    <ChevronRight size={24} />
-                  </button>
-                </>
-              )}
-
-              {/* Certificates Grid */}
-              <div className="overflow-hidden">
-                <div
-                  className="grid grid-cols-1 md:grid-cols-3 gap-8 transition-transform duration-500 ease-in-out"
-                  style={{
-                    transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`
-                  }}
-                >
-                  {certificates.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
+            {/* Certificates Grid - 3列展示，移动端1列 */}
+            <div className="relative px-6">
+              <div className="max-w-[1440px] mx-auto">
+                {/* Navigation Buttons - 仅桌面端显示 */}
+                {certificates.length > 3 && (
+                  <>
+                    <button
+                      onClick={handlePrevCertificate}
+                      disabled={currentCertificateIndex === 0}
+                      className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-20 w-14 h-14 bg-white rounded-full shadow-xl items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                      aria-label={language === 'zh' ? '上一组' : 'Previous'}
                     >
-                      <div className="aspect-[3/4] relative overflow-hidden bg-neutral-50">
+                      <ChevronLeft size={28} strokeWidth={2.5} />
+                    </button>
+                    <button
+                      onClick={handleNextCertificate}
+                      disabled={currentCertificateIndex >= certificates.length - 3}
+                      className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-20 w-14 h-14 bg-white rounded-full shadow-xl items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                      aria-label={language === 'zh' ? '下一组' : 'Next'}
+                    >
+                      <ChevronRight size={28} strokeWidth={2.5} />
+                    </button>
+                  </>
+                )}
+
+                {/* Certificates容器 - 桌面端横向滚动，移动端纵向堆叠 */}
+                <div className="overflow-hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    {/* 桌面端: 只显示当前3张 */}
+                    {certificates.slice(currentCertificateIndex, currentCertificateIndex + 3).map((cert, index) => (
+                      <div
+                        key={currentCertificateIndex + index}
+                        className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
+                      >
+                        <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100">
+                          <img
+                            src={cert}
+                            alt={`${language === 'zh' ? '证书' : 'Certificate'} ${currentCertificateIndex + index + 1}`}
+                            className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-700"
+                          />
+                          {/* 悬停遮罩 */}
+                          <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-500"></div>
+                        </div>
+                        {/* 底部标签 */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                          <p className="text-white text-sm font-semibold text-center">
+                            {language === 'zh' ? '证书' : 'Certificate'} {currentCertificateIndex + index + 1}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 移动端: 显示所有证书，纵向堆叠 */}
+                <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+                  {certificates.slice(3).map((cert, index) => (
+                    <div
+                      key={index + 3}
+                      className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500"
+                    >
+                      <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100">
                         <img
                           src={cert}
-                          alt={`Certificate ${index + 1}`}
-                          className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                          alt={`${language === 'zh' ? '证书' : 'Certificate'} ${index + 4}`}
+                          className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-700"
                         />
+                        <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-500"></div>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <p className="text-white text-sm font-semibold text-center">
+                          {language === 'zh' ? '证书' : 'Certificate'} {index + 4}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {/* 指示器 - 桌面端显示当前页 */}
+                {certificates.length > 3 && (
+                  <div className="hidden lg:flex justify-center mt-12 gap-2">
+                    {Array.from({ length: Math.ceil((certificates.length - 2) / 1) }).map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentCertificateIndex(index)}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          index === currentCertificateIndex
+                            ? 'w-12 bg-primary'
+                            : 'w-2 bg-neutral-300 hover:bg-neutral-400'
+                        }`}
+                        aria-label={`${language === 'zh' ? '跳转到第' : 'Go to page'} ${index + 1} ${language === 'zh' ? '页' : ''}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
