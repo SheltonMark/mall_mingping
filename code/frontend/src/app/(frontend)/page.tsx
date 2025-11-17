@@ -171,7 +171,7 @@ export default function HomePage() {
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
             <h2
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
-              style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.2 }}
             >
               {t('home.why_choose.title')}
             </h2>
@@ -184,7 +184,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {/* Feature 1 */}
             <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                 01
               </div>
               <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature1.title')}</h3>
@@ -195,7 +195,7 @@ export default function HomePage() {
 
             {/* Feature 2 */}
             <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                 02
               </div>
               <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature2.title')}</h3>
@@ -206,7 +206,7 @@ export default function HomePage() {
 
             {/* Feature 3 */}
             <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                 03
               </div>
               <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature3.title')}</h3>
@@ -217,7 +217,7 @@ export default function HomePage() {
 
             {/* Feature 4 */}
             <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                 04
               </div>
               <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature4.title')}</h3>
@@ -228,7 +228,7 @@ export default function HomePage() {
 
             {/* Feature 5 */}
             <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                 05
               </div>
               <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature5.title')}</h3>
@@ -239,7 +239,7 @@ export default function HomePage() {
 
             {/* Feature 6 */}
             <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: 'var(--font-display)' }}>
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                 06
               </div>
               <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature6.title')}</h3>
@@ -325,7 +325,7 @@ export default function HomePage() {
             <div className="text-center">
               <div
                 className="text-6xl font-semibold text-primary mb-4 leading-none"
-                style={{ fontFamily: 'var(--font-display)' }}
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 15+
               </div>
@@ -338,7 +338,7 @@ export default function HomePage() {
             <div className="text-center">
               <div
                 className="text-6xl font-semibold text-primary mb-4 leading-none"
-                style={{ fontFamily: 'var(--font-display)' }}
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 500+
               </div>
@@ -351,7 +351,7 @@ export default function HomePage() {
             <div className="text-center">
               <div
                 className="text-6xl font-semibold text-primary mb-4 leading-none"
-                style={{ fontFamily: 'var(--font-display)' }}
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 200+
               </div>
@@ -364,7 +364,7 @@ export default function HomePage() {
             <div className="text-center">
               <div
                 className="text-6xl font-semibold text-primary mb-4 leading-none"
-                style={{ fontFamily: 'var(--font-display)' }}
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 99%
               </div>
