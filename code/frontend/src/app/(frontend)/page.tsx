@@ -104,10 +104,10 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* Hero Section - 参考O-Cedar样式 */}
-      <div className="pt-36 pb-0 bg-white">
-        <div className="mx-auto px-4 md:px-20 lg:px-32 xl:px-40">
-          <section className="relative h-[550px] md:h-[650px] lg:h-[700px] overflow-hidden">
+      {/* Hero Section - 优化卡片式,直角设计,舒适留白 */}
+      <div className="pt-28 pb-8 md:pb-12 bg-white">
+        <div className="mx-auto px-6 md:px-12 lg:px-20 xl:px-24 max-w-[1600px]">
+          <section className="relative h-[480px] md:h-[560px] lg:h-[620px] overflow-hidden">
             {/* Hero Image - 铺满整个区域 */}
             <img
               src={heroImage}
