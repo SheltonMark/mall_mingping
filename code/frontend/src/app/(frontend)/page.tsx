@@ -462,7 +462,6 @@ export default function HomePage() {
                 )}
               </div>
             </div>
-          </div>
           ) : (
             // 占位符 - 没有证书时显示
             <div className="relative px-6">
