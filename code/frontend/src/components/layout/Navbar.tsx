@@ -103,7 +103,7 @@ export default function Navbar() {
                 isActive('/about') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              {language === 'zh' ? '联系我们' : 'Contact'}
+              {language === 'zh' ? '关于我们' : 'About'}
               <span className={`absolute top-[-8px] left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full transition-opacity duration-250 ${
                 isActive('/about') ? 'opacity-100' : 'opacity-0'
               }`}></span>
@@ -251,7 +251,7 @@ export default function Navbar() {
                   isActive('/about') ? 'text-neutral-900 bg-gold-50' : 'text-neutral-600 hover:bg-gray-50'
                 }`}
               >
-                {language === 'zh' ? '联系我们' : 'Contact'}
+                {language === 'zh' ? '关于我们' : 'About'}
               </Link>
 
               {/* Language Switcher in Mobile Menu */}
