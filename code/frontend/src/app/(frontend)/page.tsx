@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import { useState, useEffect } from 'react'
 
@@ -47,6 +47,9 @@ export default function HomePage() {
 
   const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>(defaultProducts)
   const [heroImage, setHeroImage] = useState<string>('https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI')
+  const [certificates, setCertificates] = useState<string[]>([])
+  const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   // 从API加载首页配置
   useEffect(() => {
@@ -64,6 +67,24 @@ export default function HomePage() {
               ? data.hero_image
               : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${data.hero_image}`;
             setHeroImage(imageUrl)
+          }
+
+          // 加载certificates配置 (max 6 images)
+          if (data.certificates && Array.isArray(data.certificates) && data.certificates.length > 0) {
+            const certificateUrls = data.certificates
+              .slice(0, 6)
+              .map((cert: any) => {
+                const url = typeof cert === 'string' ? cert : cert.image || cert.url;
+                if (url && !url.startsWith('http')) {
+                  return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${url}`;
+                }
+                return url;
+              })
+              .filter((url: string) => url);
+
+            if (certificateUrls.length > 0) {
+              setCertificates(certificateUrls);
+            }
           }
 
           // 加载featured_products配置
@@ -101,6 +122,30 @@ export default function HomePage() {
 
     loadHomepageConfig()
   }, [])
+
+  // 监听滚动位置，控制回到顶部按钮显示
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // 证书轮播导航
+  const handlePrevCertificate = () => {
+    setCurrentCertificateIndex((prev) => (prev === 0 ? Math.max(0, certificates.length - 3) : prev - 1))
+  }
+
+  const handleNextCertificate = () => {
+    setCurrentCertificateIndex((prev) => (prev >= certificates.length - 3 ? 0 : prev + 1))
+  }
+
+  // 回到顶部
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <div className="flex flex-col bg-white">
@@ -162,92 +207,77 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Excellence in Every Detail - Features Section */}
-      <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-        <div className="max-w-[1440px] mx-auto px-6">
-          <div className="text-center mb-20">
-            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
-            <h2
-              className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
-              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
-            >
-              {t('home.why_choose.title')}
-            </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-              {t('home.why_choose.subtitle')}
-            </p>
-          </div>
-
-          {/* 3x2 Grid - 6 features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Feature 1 */}
-            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-                01
-              </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature1.title')}</h3>
-              <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature1.desc')}
+      {/* Certifications & Factory Section */}
+      {certificates.length > 0 && (
+        <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+          <div className="max-w-[1440px] mx-auto px-6">
+            <div className="text-center mb-20">
+              <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
+                {language === 'zh' ? '资质认证' : 'Certifications'}
+              </p>
+              <h2
+                className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
+              >
+                {language === 'zh' ? '资质证书·源头工厂' : 'Certifications & Factory'}
+              </h2>
+              <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+                {language === 'zh' ? '专业认证，品质保证' : 'Professional certifications, quality assurance'}
               </p>
             </div>
 
-            {/* Feature 2 */}
-            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-                02
-              </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature2.title')}</h3>
-              <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature2.desc')}
-              </p>
-            </div>
+            {/* Certificates Carousel */}
+            <div className="relative">
+              {/* Navigation Buttons */}
+              {certificates.length > 3 && (
+                <>
+                  <button
+                    onClick={handlePrevCertificate}
+                    disabled={currentCertificateIndex === 0}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                    aria-label={language === 'zh' ? '上一张' : 'Previous'}
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button
+                    onClick={handleNextCertificate}
+                    disabled={currentCertificateIndex >= certificates.length - 3}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                    aria-label={language === 'zh' ? '下一张' : 'Next'}
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </>
+              )}
 
-            {/* Feature 3 */}
-            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-                03
+              {/* Certificates Grid */}
+              <div className="overflow-hidden">
+                <div
+                  className="grid grid-cols-1 md:grid-cols-3 gap-8 transition-transform duration-500 ease-in-out"
+                  style={{
+                    transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`
+                  }}
+                >
+                  {certificates.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                    >
+                      <div className="aspect-[3/4] relative overflow-hidden bg-neutral-50">
+                        <img
+                          src={cert}
+                          alt={`Certificate ${index + 1}`}
+                          className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature3.title')}</h3>
-              <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature3.desc')}
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-                04
-              </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature4.title')}</h3>
-              <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature4.desc')}
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-                05
-              </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature5.title')}</h3>
-              <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature5.desc')}
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
-              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-                06
-              </div>
-              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature6.title')}</h3>
-              <p className="text-neutral-600 leading-relaxed">
-                {t('home.why_choose.feature6.desc')}
-              </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Featured Products Section - Apple Style 2x2 Grid */}
       <section className="py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
@@ -406,6 +436,20 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-20 right-10 z-50 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gold-400 hover:-translate-y-1 transition-all duration-300 group"
+          aria-label={language === 'zh' ? '回到顶部' : 'Back to top'}
+        >
+          <ChevronUp size={24} className="transition-transform duration-300 group-hover:-translate-y-0.5" />
+          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-xs px-3 py-1.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            {language === 'zh' ? '顶部' : 'Top'}
+          </span>
+        </button>
+      )}
     </div>
   )
 }
