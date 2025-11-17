@@ -179,11 +179,11 @@ export default function HomePage() {
   return (
     <div className="flex flex-col bg-white">
       {/* BUY NOW Button - Above Hero, below logo (O-Cedar style) */}
-      <div className="bg-white pt-20 pb-4">
+      <div className="bg-white pt-32 pb-8">
         <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
           <Link
-            href="/order-form"
-            className="group relative inline-flex items-center justify-center px-20 py-3.5 bg-primary text-white font-bold text-base tracking-widest uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
+            href="/products"
+            className="group relative inline-flex items-center justify-center px-20 py-2.5 bg-primary text-white font-bold text-base tracking-widest uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
             style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.12em' }}
           >
             <span className="relative z-10">
