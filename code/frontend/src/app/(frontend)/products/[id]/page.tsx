@@ -37,6 +37,9 @@ export default function ProductDetailPage() {
   // 视图模式
   const [viewMode, setViewMode] = useState<ViewMode>('gallery')
 
+  // 粘性按钮定位状态 - 移动端专用
+  const [isButtonSticky, setIsButtonSticky] = useState(true)
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -95,6 +98,35 @@ export default function ProductDetailPage() {
       }
     }
   }, [productGroup, selectedSku, language])
+
+  // 监听滚动，控制粘性按钮定位（仅移动端）
+  useEffect(() => {
+    const handleScroll = () => {
+      // 只在移动端执行（宽度小于1024px）
+      if (window.innerWidth >= 1024) {
+        setIsButtonSticky(true)
+        return
+      }
+
+      const scrollHeight = document.documentElement.scrollHeight
+      const scrollTop = window.scrollY
+      const windowHeight = window.innerHeight
+
+      // 当距离页面底部小于180px时，切换为absolute定位
+      // 180px = 按钮高度约140px + 一些缓冲
+      const distanceToBottom = scrollHeight - (scrollTop + windowHeight)
+      setIsButtonSticky(distanceToBottom > 180)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('resize', handleScroll)
+    handleScroll() // 初始检查
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
+  }, [])
 
   // 处理品名选择
   const handleSkuSelect = (displayName: string) => {
@@ -440,9 +472,9 @@ export default function ProductDetailPage() {
           </div>
 
           {/* 右侧: 产品信息 */}
-          <div className="relative pb-36 lg:pb-0">
+          <div className="relative">
             {/* 滚动内容区域 */}
-            <div className="space-y-5 lg:space-y-6 lg:pb-8">
+            <div className="space-y-5 lg:space-y-6 pb-40 lg:pb-8">
             {/* 标题 - 仅显示当前语言 */}
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -538,8 +570,8 @@ export default function ProductDetailPage() {
             </div>
             {/* 结束滚动内容区域 */}
 
-            {/* 固定按钮区域 - 移动端固定在底部，桌面端sticky */}
-            <div className="fixed lg:sticky bottom-0 left-0 right-0 lg:bottom-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-2.5 lg:p-6 z-40">
+            {/* 固定按钮区域 - 移动端智能定位：滚动时fixed底部，接近页脚时absolute */}
+            <div className={`${isButtonSticky ? 'fixed' : 'absolute'} lg:sticky bottom-0 left-0 right-0 lg:bottom-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-2.5 lg:p-6 z-40`}>
               {/* 数量选择器 */}
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-gray-700 font-medium text-xs lg:text-base whitespace-nowrap">
