@@ -178,22 +178,6 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* BUY NOW Button - Above Hero, below logo (O-Cedar style) */}
-      <div className="bg-white pt-32 pb-8">
-        <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
-          <Link
-            href="/products"
-            className="group relative inline-flex items-center justify-center px-20 py-2.5 bg-primary text-white font-bold text-base tracking-widest uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
-            style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.12em' }}
-          >
-            <span className="relative z-10">
-              {language === 'zh' ? '立即下单' : 'BUY NOW'}
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-          </Link>
-        </div>
-      </div>
-
       {/* Hero Section - O-Cedar style */}
       <div className="pb-12 md:pb-16 bg-white">
         <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
@@ -217,7 +201,25 @@ export default function HomePage() {
                 />
               </div>
             ))}
-{/* Hero Left/Right Navigation Buttons - squared style */}            {heroImages.length > 1 && (              <>                <button                  onClick={() => setCurrentHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))}                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"                  aria-label={language === 'zh' ? '上一张' : 'Previous'}                >                  <ChevronLeft size={24} strokeWidth={2} />                </button>                <button                  onClick={() => setCurrentHeroIndex((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))}                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"                  aria-label={language === 'zh' ? '下一张' : 'Next'}                >                  <ChevronRight size={24} strokeWidth={2} />                </button>              </>            )}
+{/* Hero Left/Right Navigation Buttons */}
+            {heroImages.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrentHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))}
+                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"
+                  aria-label="Previous"
+                >
+                  <ChevronLeft size={24} strokeWidth={2} />
+                </button>
+                <button
+                  onClick={() => setCurrentHeroIndex((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))}
+                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"
+                  aria-label="Next"
+                >
+                  <ChevronRight size={24} strokeWidth={2} />
+                </button>
+              </>
+            )}
 
             {/* Navigation Dots */}
             {heroImages.length > 1 && (
@@ -242,7 +244,7 @@ export default function HomePage() {
               <div className="max-w-full mx-auto px-8 md:px-12 w-full">
                 <div className="max-w-2xl">
                   {/* Main Title */}
-                  <h1 className="text-white mb-4" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                  <h1 className="text-white mb-4 animate-fade-in-up" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                     {t('home.hero.title').includes('Future') ? (
                       <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
                         Excellence in Every Clean
@@ -255,27 +257,27 @@ export default function HomePage() {
                   </h1>
 
                   {/* Subtitle */}
-                  <p className="text-white/90 text-base md:text-lg font-normal mb-2 leading-relaxed">
+                  <p className="text-white/90 text-base md:text-lg animate-fade-in-up animation-delay-200 font-normal mb-2 leading-relaxed">
                     {t('home.hero.title').includes('Future')
                       ? 'Premium cleaning solutions for modern living'
                       : '为现代生活而生的高端清洁方案'}
                   </p>
 
                   {/* Terms text */}
-                  <p className="text-white/70 text-sm mb-8">
+                  <p className="text-white/70 text-sm mb-8 animate-fade-in-up animation-delay-400">
                     {t('home.hero.title').includes('Future')
                       ? 'Discover our premium collection'
                       : '探索我们的高端系列'}
                   </p>
 
-                  {/* Explore Products Button - Inside Hero */}
+                  {/* BUY NOW Button - Inside Hero */}
                   <Link
                     href="/products"
-                    className="group relative inline-flex items-center justify-center px-8 py-2.5 sm:px-10 sm:py-3 bg-primary text-neutral-900 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_20px_rgba(189,183,107,0.6)]"
+                    className="group relative inline-flex items-center justify-center px-8 py-2.5 sm:px-10 sm:py-3 bg-primary text-neutral-900 animate-fade-in-up animation-delay-600 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_20px_rgba(189,183,107,0.6)]"
                     style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                   >
                     <span className="relative z-10">
-                      {language === 'zh' ? '探索产品' : 'Explore Products'}
+                      {language === 'zh' ? '立即下单' : 'BUY NOW'}
                     </span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                   </Link>
@@ -287,7 +289,7 @@ export default function HomePage() {
       </div>
 
       {/* Certifications & Factory Section - 高级Apple风格 */}
-      <section className="py-20 md:py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+      <section className="py-20 md:py-32 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="w-full max-w-full">
           {/* Section Header */}
           <div className="text-center mb-12 md:mb-20 px-6">
@@ -381,7 +383,25 @@ export default function HomePage() {
                   ))}
                 </div>
 
-{/* Linear Progress Indicator - 线性进度条 */}                {certificates.length > 0 && (                  <div className="flex justify-center mt-12 px-6">                    <div className="max-w-md w-full flex gap-1">                      {certificates.map((_, index) => (                        <button                          key={index}                          onClick={() => setCurrentCertificateIndex(index)}                          className={`flex-1 h-1 rounded-sm transition-all duration-300 ${                            index === currentCertificateIndex                              ? 'bg-primary'                              : 'bg-neutral-300 hover:bg-neutral-400'                          }`}                          aria-label={`${language === 'zh' ? '跳转到证书' : 'Go to certificate'} ${index + 1}`}                        />                      ))}                    </div>                  </div>                )}
+{/* Linear Progress Indicator */}
+                {certificates.length > 0 && (
+                  <div className="flex justify-center mt-12 px-6">
+                    <div className="max-w-md w-full flex gap-1">
+                      {certificates.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentCertificateIndex(index)}
+                          className={`flex-1 h-1 rounded-sm transition-all duration-300 ${
+                            index === currentCertificateIndex
+                              ? 'bg-primary'
+                              : 'bg-neutral-300 hover:bg-neutral-400'
+                          }`}
+                          aria-label={`Go to certificate ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -412,7 +432,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products Section - Apple Style 2x2 Grid */}
-      <section className="py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+      <section className="py-32 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="w-full max-w-full">
           {/* Section Header */}
           <div className="text-center mb-20 px-6">

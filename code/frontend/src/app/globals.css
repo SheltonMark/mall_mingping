@@ -335,3 +335,21 @@ body {
   animation: shrinkWidth linear;
 }
 
+
+/* Hero fade-in-up animation */
+.animate-fade-in-up {
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
