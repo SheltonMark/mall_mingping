@@ -11,9 +11,12 @@ type TabType = 'homepage' | 'about' | 'site';
 interface HomepageConfig {
   heroTitle?: string;
   heroSubtitle?: string;
-  hero_image?: string;
-  hero_images?: string[]; // 轮播图数组(最多6张)
-  certificates?: string[]; // 证书数组(最多6张)
+  hero_images?: string[]; // 轮播图数组(最多6张) - 替代单张hero_image
+  certificates?: Array<{
+    image: string;
+    label_zh?: string;
+    label_en?: string;
+  }>; // 证书数组(最多6张，支持中英文标签)
   features?: Array<{
     icon: string;
     title: string;
@@ -369,36 +372,6 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
     }
   };
 
-  // 上传Hero图片
-  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // 验证文件类型
-    if (!file.type.startsWith('image/')) {
-      toast.error('请上传图片文件');
-      return;
-    }
-
-    // 验证文件大小（限制5MB）
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('图片大小不能超过5MB');
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const result = await uploadApi.uploadSingle(file, 'image');
-      setConfig({ ...config, hero_image: result.url });
-      toast.success('首屏图片上传成功');
-    } catch (error: any) {
-      console.error('Upload failed:', error);
-      toast.error(error.message || '图片上传失败');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   // 上传Hero轮播图
   const handleHeroCarouselUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -464,7 +437,7 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
     try {
       setUploading(true);
       const result = await uploadApi.uploadSingle(file, 'image');
-      setConfig({ ...config, certificates: [...currentCerts, result.url] });
+      setConfig({ ...config, certificates: [...currentCerts, { image: result.url, label_zh: '', label_en: '' }] });
       toast.success('证书图片上传成功');
     } catch (error: any) {
       console.error('Upload failed:', error);
@@ -473,6 +446,13 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
       setUploading(false);
     }
   };
+
+  // 更新证书标签
+  const updateCertificateLabel = (index: number, field: 'label_zh' | 'label_en', value: string) => {
+    const newCerts = [...(config.certificates || [])];
+    newCerts[index] = { ...newCerts[index], [field]: value };
+    setConfig({ ...config, certificates: newCerts });
+  }
 
   // 删除证书图片
   const handleDeleteCertificate = (index: number) => {
@@ -483,53 +463,131 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
 
   return (
     <div className="space-y-8">
-      {/* Hero Section */}
+      {/* Hero 轮播图 */}
       <div className="border-b border-gray-200 pb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 首屏区域</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">🎠 Hero 轮播图</h3>
+        <p className="text-sm text-gray-600 mb-4">首页Hero区域的轮播图片集（最多6张，替代原有的单张hero_image）</p>
         <div className="space-y-4">
-          {/* Hero Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              首屏Hero图片
-            </label>
-            {config.hero_image ? (
-              <div className="relative">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {(config.hero_images || []).map((imageUrl, index) => (
+              <div key={index} className="relative group">
                 <img
-                  src={config.hero_image.startsWith('http') ? config.hero_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${config.hero_image}`}
-                  alt="Hero"
-                  className="w-full h-64 object-cover rounded-lg"
+                  src={imageUrl.startsWith('http') ? imageUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${imageUrl}`}
+                  alt={`Hero Carousel ${index + 1}`}
+                  className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
                 />
                 <button
-                  onClick={() => setConfig({ ...config, hero_image: '' })}
-                  className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition-colors"
+                  onClick={() => handleDeleteHeroCarouselImage(index)}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
                 >
-                  删除
+                  ✕
                 </button>
+                <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                  {index + 1}/6
+                </div>
               </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors bg-white">
+            ))}
+            {(!config.hero_images || config.hero_images.length < 6) && (
+              <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-gray-50 hover:bg-gray-100 transition-colors">
                 <div className="text-center">
                   <div className="text-4xl text-gray-400 mb-2">📷</div>
-                  <div className="text-sm text-gray-600 font-medium mb-1">
-                    {uploading ? '上传中...' : '点击上传首屏图片'}
+                  <div className="text-sm font-medium text-gray-700 mb-1">
+                    {uploading ? '上传中...' : '添加轮播图'}
                   </div>
                   <div className="text-xs text-gray-500">
-                    支持 JPG、PNG、WebP，最大5MB
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    建议尺寸：1920x1080 或更大
+                    {config.hero_images?.length || 0}/6
                   </div>
                 </div>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/jpg"
-                  onChange={handleHeroImageUpload}
+                  onChange={handleHeroCarouselUpload}
                   className="hidden"
                   disabled={uploading}
                 />
               </label>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* 证书认证 */}
+      <div className="border-b border-gray-200 pb-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">🏆 证书认证</h3>
+        <p className="text-sm text-gray-600 mb-4">展示企业资质和产品认证证书（最多6张），支持悬停显示中英文说明</p>
+        <div className="space-y-6">
+          {(config.certificates || []).map((cert, index) => (
+            <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-gray-900">证书 {index + 1}</h4>
+                <button
+                  onClick={() => handleDeleteCertificate(index)}
+                  className="text-red-600 hover:text-red-700 text-sm"
+                >
+                  删除
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 证书图片 */}
+                <div className="md:col-span-1">
+                  <img
+                    src={cert.image.startsWith('http') ? cert.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${cert.image}`}
+                    alt={`Certificate ${index + 1}`}
+                    className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                  />
+                </div>
+                {/* 标签输入 */}
+                <div className="md:col-span-2 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      🇨🇳 中文标签（悬停显示）
+                    </label>
+                    <input
+                      type="text"
+                      value={cert.label_zh || ''}
+                      onChange={(e) => updateCertificateLabel(index, 'label_zh', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="例：ISO 9001质量管理体系认证"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      🇬🇧 英文标签（悬停显示）
+                    </label>
+                    <input
+                      type="text"
+                      value={cert.label_en || ''}
+                      onChange={(e) => updateCertificateLabel(index, 'label_en', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., ISO 9001 Quality Management System Certification"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* 上传按钮 */}
+          {(!config.certificates || config.certificates.length < 6) && (
+            <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-white hover:bg-gray-50 transition-colors">
+              <div className="text-center">
+                <div className="text-4xl text-gray-400 mb-2">🏅</div>
+                <div className="text-sm font-medium text-gray-700 mb-1">
+                  {uploading ? '上传中...' : '添加证书'}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {config.certificates?.length || 0}/6
+                </div>
+              </div>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/jpg"
+                onChange={handleCertificateUpload}
+                className="hidden"
+                disabled={uploading}
+              />
+            </label>
+          )}
         </div>
       </div>
 
