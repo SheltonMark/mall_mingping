@@ -248,7 +248,7 @@ export default function AboutPage() {
               {/* Subtitle */}
               <p
                 className="text-2xl md:text-3xl font-light text-neutral-700 mb-12"
-                style={{ fontFamily: 'var(--font-body)', lineHeight: 1.6 }}
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.6, fontWeight: 300 }}
               >
                 {getLocalizedField('hero_subtitle') || t('about.hero_subtitle')}
               </p>

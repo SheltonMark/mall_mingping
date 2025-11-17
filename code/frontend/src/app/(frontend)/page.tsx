@@ -104,10 +104,10 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* Hero Section - 优化卡片式,直角设计,舒适留白 */}
-      <div className="pt-28 pb-8 md:pb-12 bg-white">
-        <div className="mx-auto px-6 md:px-12 lg:px-20 xl:px-24 max-w-[1600px]">
-          <section className="relative h-[480px] md:h-[560px] lg:h-[620px] overflow-hidden">
+      {/* Hero Section - 参考O-Cedar样式，顶部留白，左右留白，更扁平的宽高比 */}
+      <div className="pt-36 md:pt-40 pb-12 md:pb-16 bg-white">
+        <div className="mx-auto px-8 md:px-16 lg:px-24 xl:px-32 max-w-[1600px]">
+          <section className="relative h-[420px] md:h-[500px] lg:h-[550px] overflow-hidden">
             {/* Hero Image - 铺满整个区域 */}
             <img
               src={heroImage}
@@ -171,7 +171,7 @@ export default function HomePage() {
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
             <h2
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
-              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.2 }}
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
             >
               {t('home.why_choose.title')}
             </h2>
@@ -259,7 +259,7 @@ export default function HomePage() {
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{language === 'zh' ? '我们的系列' : 'Our Collection'}</p>
             <h2
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
-              style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
             >
               {t('home.signature.title')}
             </h2>
