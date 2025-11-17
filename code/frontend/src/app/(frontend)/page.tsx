@@ -347,26 +347,25 @@ export default function HomePage() {
       </section>
 
       {/* Certifications & Factory Section - 高级Apple风格 */}
-      {certificates.length > 0 && (
-        <section className="py-20 md:py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-          <div className="w-full max-w-full">
-            {/* Section Header */}
-            <div className="text-center mb-12 md:mb-20 px-6">
-              <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
-                {t('home.why_choose.tag')}
-              </p>
-              <h2
-                className="text-4xl sm:text-5xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6"
-                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
-              >
-                {language === 'zh' ? '源头工厂·资质保障' : 'Factory Direct, Quality Assured'}
-              </h2>
-              <p className="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                {language === 'zh' ? '自有工厂，专业认证，品质保证' : 'Own factory with professional certifications and quality assurance'}
-              </p>
-            </div>
+      <section className="py-20 md:py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+        <div className="w-full max-w-full">
+          {/* Section Header */}
+          <div className="text-center mb-12 md:mb-20 px-6">
+            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
+              {t('home.why_choose.tag')}
+            </p>
+            <h2
+              className="text-4xl sm:text-5xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6"
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
+            >
+              {language === 'zh' ? '源头工厂·资质保障' : 'Factory Direct, Quality Assured'}
+            </h2>
+            <p className="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+              {language === 'zh' ? '自有工厂，专业认证，品质保证' : 'Own factory with professional certifications and quality assurance'}
+            </p>
+          </div>
 
-            {/* Certificates Grid - 3列展示，移动端1列 */}
+          {certificates.length > 0 ? (
             <div className="relative px-6">
               <div className="max-w-[1440px] mx-auto">
                 {/* Navigation Buttons - 仅桌面端显示 */}
@@ -464,8 +463,32 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </section>
-      )}
+          ) : (
+            // 占位符 - 没有证书时显示
+            <div className="relative px-6">
+              <div className="max-w-[1440px] mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="group relative bg-white rounded-2xl overflow-hidden shadow-md"
+                    >
+                      <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
+                        <div className="text-center p-8">
+                          <div className="text-6xl mb-4">📜</div>
+                          <p className="text-neutral-400 text-sm">
+                            {language === 'zh' ? '证书展示位' : 'Certificate Placeholder'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Stats Section - 数字化展示 */}
       <section
