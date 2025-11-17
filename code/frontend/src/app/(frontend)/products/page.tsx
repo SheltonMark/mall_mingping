@@ -413,7 +413,7 @@ export default function ProductsPage() {
                   return (
                     <div key={productGroup.id} className="group relative flex flex-col gap-3 pb-3">
                       {/* Product Image */}
-                      <div className="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-800">
+                      <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-800">
                         <Link href={`/products/${productGroup.id}`}>
                           <div
                             className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-300 group-hover:scale-105"
@@ -437,7 +437,7 @@ export default function ProductsPage() {
 
                         {/* Added Feedback */}
                         {isAdded && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl">
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
                             <span className="text-white font-semibold text-sm">{t('products.added_message')}</span>
                           </div>
                         )}

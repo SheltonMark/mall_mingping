@@ -154,7 +154,7 @@ export default function HomePage() {
                     href="/products"
                     className="group relative inline-block px-8 py-3.5 bg-primary text-neutral-900 font-semibold text-sm rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
                   >
-                    <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'View products' : '查看产品'}</span>
+                    <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'Buy now' : '立即购买'}</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                   </Link>
                 </div>
