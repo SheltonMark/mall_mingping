@@ -129,9 +129,11 @@ export class SystemService {
       'homepage_hero_title',
       'homepage_hero_subtitle',
       'homepage_hero_image',
+      'homepage_hero_images', // 轮播图数组(最多6张)
       'homepage_featured_products',
       'homepage_banner_images',
       'homepage_about_section',
+      'homepage_certificates', // 证书图片数组(最多6张)
     ];
 
     const configs = await this.getConfigs(keys);
