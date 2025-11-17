@@ -202,24 +202,22 @@ export default function HomePage() {
               </div>
             ))}
 {/* Hero Left/Right Navigation Buttons */}
-            {heroImages.length > 1 && (
-              <>
+            <>
                 <button
                   onClick={() => setCurrentHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))}
-                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"
-                  aria-label="Previous"
+                  className={`absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300 ${heroImages.length <= 1 ? 'hidden' : ''}`}
+                aria-label="Previous"
                 >
                   <ChevronLeft size={24} strokeWidth={2} />
                 </button>
                 <button
                   onClick={() => setCurrentHeroIndex((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))}
-                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"
-                  aria-label="Next"
+                  className={`absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300 ${heroImages.length <= 1 ? 'hidden' : ''}`}
+                aria-label="Next"
                 >
                   <ChevronRight size={24} strokeWidth={2} />
                 </button>
-              </>
-            )}
+            </>
 
             {/* Navigation Dots */}
             {heroImages.length > 1 && (
@@ -384,7 +382,7 @@ export default function HomePage() {
                 </div>
 
 {/* Linear Progress Indicator */}
-                {certificates.length > 0 && (
+                <div className={certificates.length === 0 ? 'hidden' : ''}>
                   <div className="flex justify-center mt-12 px-6">
                     <div className="max-w-md w-full flex gap-1">
                       {certificates.map((_, index) => (
@@ -401,7 +399,7 @@ export default function HomePage() {
                       ))}
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           ) : (
