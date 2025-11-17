@@ -178,13 +178,13 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* WHERE TO BUY Button - Above Hero Section (O-Cedar style) */}
-      <div className="bg-white pt-28 pb-6">
-        <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px] flex justify-center">
+      {/* BUY NOW Button - Above Hero, below logo (O-Cedar style) */}
+      <div className="bg-white pt-20 pb-4">
+        <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
           <Link
             href="/order-form"
-            className="group relative inline-flex items-center justify-center px-16 py-6 bg-red-600 text-white font-bold text-xl tracking-wider uppercase rounded overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_16px_40px_rgba(220,38,38,0.4)]"
-            style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.15em' }}
+            className="group relative inline-flex items-center justify-center px-20 py-3.5 bg-primary text-white font-bold text-base tracking-widest uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
+            style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.12em' }}
           >
             <span className="relative z-10">
               {language === 'zh' ? '立即下单' : 'BUY NOW'}
@@ -198,7 +198,7 @@ export default function HomePage() {
       <div className="pb-12 md:pb-16 bg-white">
         <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
           <section
-            className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden"
+            className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden rounded-lg"
             onMouseEnter={() => setIsHeroHovering(true)}
             onMouseLeave={() => setIsHeroHovering(false)}
           >
@@ -270,7 +270,7 @@ export default function HomePage() {
                   {/* Explore Products Button - Inside Hero */}
                   <Link
                     href="/products"
-                    className="group relative inline-flex items-center justify-center px-8 py-3 sm:px-10 sm:py-4 bg-primary text-neutral-900 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-full overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(189,183,107,0.6)]"
+                    className="group relative inline-flex items-center justify-center px-8 py-2.5 sm:px-10 sm:py-3 bg-primary text-neutral-900 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_20px_rgba(189,183,107,0.6)]"
                     style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                   >
                     <span className="relative z-10">
@@ -353,16 +353,16 @@ export default function HomePage() {
             {/* Section Header */}
             <div className="text-center mb-12 md:mb-20 px-6">
               <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
-                {language === 'zh' ? '资质认证' : 'CERTIFICATIONS'}
+                {t('home.why_choose.tag')}
               </p>
               <h2
                 className="text-4xl sm:text-5xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
               >
-                {language === 'zh' ? '资质证书·源头工厂' : 'Certifications & Factory'}
+                {language === 'zh' ? '源头工厂·资质保障' : 'Factory Direct, Quality Assured'}
               </h2>
               <p className="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                {language === 'zh' ? '专业认证，品质保证' : 'Professional certifications, quality assurance'}
+                {language === 'zh' ? '自有工厂，专业认证，品质保证' : 'Own factory with professional certifications and quality assurance'}
               </p>
             </div>
 
