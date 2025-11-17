@@ -252,11 +252,11 @@ export default function HomePage() {
                   </p>
 
                   {/* Button Group */}
-                  <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                     {/* BUY NOW Button - Large primary button */}
                     <Link
                       href="/order-form"
-                      className="group relative inline-flex items-center justify-center px-12 py-5 bg-primary text-white font-bold text-base tracking-wider uppercase rounded overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(189,183,107,0.6)]"
+                      className="group relative inline-flex items-center justify-center px-8 py-3 sm:px-12 sm:py-5 bg-primary text-white font-bold text-sm sm:text-base tracking-wider uppercase rounded overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(189,183,107,0.6)]"
                       style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                     >
                       <span className="relative z-10">
@@ -268,7 +268,7 @@ export default function HomePage() {
                     {/* Explore Products Button - Secondary button */}
                     <Link
                       href="/products"
-                      className="group relative inline-flex items-center justify-center px-12 py-5 bg-white/10 backdrop-blur-sm text-white font-semibold text-base tracking-wider uppercase rounded border-2 border-white/30 overflow-hidden hover:bg-white/20 hover:border-white/50 hover:-translate-y-1 transition-all duration-300"
+                      className="group relative inline-flex items-center justify-center px-8 py-3 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-sm text-white font-semibold text-sm sm:text-base tracking-wider uppercase rounded border-2 border-white/30 overflow-hidden hover:bg-white/20 hover:border-white/50 hover:-translate-y-1 transition-all duration-300"
                       style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                     >
                       <span className="relative z-10">
@@ -330,15 +330,15 @@ export default function HomePage() {
           </div>
 
           {/* VIEW ALL Button */}
-          <div className="flex justify-center mt-16 px-6">
+          <div className="flex justify-center mt-12 sm:mt-16 px-6">
             <Link
               href="/products"
-              className="relative inline-flex items-center gap-3 px-12 py-5 bg-[#494A45] text-white text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:!bg-primary hover:-translate-y-1 transition-all duration-300"
+              className="relative inline-flex items-center gap-2 sm:gap-3 px-8 py-3.5 sm:px-12 sm:py-5 bg-[#494A45] text-white text-base sm:text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:!bg-primary hover:-translate-y-1 transition-all duration-300"
               style={{ boxShadow: 'var(--shadow-large)' }}
             >
               <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
               <span className="relative z-10">{t('home.signature.view_all')}</span>
-              <ArrowRight className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5" size={20} />
+              <ArrowRight className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5" size={18} />
             </Link>
           </div>
         </div>
@@ -348,30 +348,30 @@ export default function HomePage() {
       {certificates.length > 0 && (
         <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
           <div className="max-w-[1440px] mx-auto px-6">
-            <div className="text-center mb-20">
+            <div className="text-center mb-12 sm:mb-20">
               <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
                 {language === 'zh' ? '资质认证' : 'Certifications'}
               </p>
               <h2
-                className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
+                className="text-3xl sm:text-5xl md:text-7xl font-light text-neutral-900 mb-4 sm:mb-6"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
               >
                 {language === 'zh' ? '资质证书·源头工厂' : 'Certifications & Factory'}
               </h2>
-              <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
                 {language === 'zh' ? '专业认证，品质保证' : 'Professional certifications, quality assurance'}
               </p>
             </div>
 
             {/* Certificates Carousel */}
             <div className="relative">
-              {/* Navigation Buttons */}
+              {/* Navigation Buttons - 移动端隐藏 */}
               {certificates.length > 3 && (
                 <>
                   <button
                     onClick={handlePrevCertificate}
                     disabled={currentCertificateIndex === 0}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                    className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
                     aria-label={language === 'zh' ? '上一张' : 'Previous'}
                   >
                     <ChevronLeft size={24} />
@@ -379,7 +379,7 @@ export default function HomePage() {
                   <button
                     onClick={handleNextCertificate}
                     disabled={currentCertificateIndex >= certificates.length - 3}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                    className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
                     aria-label={language === 'zh' ? '下一张' : 'Next'}
                   >
                     <ChevronRight size={24} />
