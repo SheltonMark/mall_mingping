@@ -46,7 +46,9 @@ export default function HomePage() {
   ]
 
   const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>(defaultProducts)
-  const [heroImage, setHeroImage] = useState<string>('https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI')
+  const [heroImages, setHeroImages] = useState<string[]>(['https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI'])
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0)
+  const [isHeroHovering, setIsHeroHovering] = useState(false)
   const [certificates, setCertificates] = useState<string[]>([])
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
   const [showBackToTop, setShowBackToTop] = useState(false)
@@ -61,12 +63,28 @@ export default function HomePage() {
         if (response.ok) {
           const data = await response.json()
 
-          // 加载hero图片 - 从首页配置读取
-          if (data.hero_image) {
+          // 加载hero图片 - 支持 hero_images 数组（最多6张），fallback 到 hero_image
+          if (data.hero_images && Array.isArray(data.hero_images) && data.hero_images.length > 0) {
+            const imageUrls = data.hero_images
+              .slice(0, 6) // 限制最多6张
+              .map((img: any) => {
+                const url = typeof img === 'string' ? img : img.image || img.url;
+                if (url && !url.startsWith('http')) {
+                  return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${url}`;
+                }
+                return url;
+              })
+              .filter((url: string) => url);
+
+            if (imageUrls.length > 0) {
+              setHeroImages(imageUrls);
+            }
+          } else if (data.hero_image) {
+            // Fallback to single hero_image
             const imageUrl = data.hero_image.startsWith('http')
               ? data.hero_image
               : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${data.hero_image}`;
-            setHeroImage(imageUrl)
+            setHeroImages([imageUrl]);
           }
 
           // 加载certificates配置 (max 6 images)
@@ -123,6 +141,17 @@ export default function HomePage() {
     loadHomepageConfig()
   }, [])
 
+  // Hero carousel auto-play effect
+  useEffect(() => {
+    if (heroImages.length <= 1 || isHeroHovering) return;
+
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(interval);
+  }, [heroImages.length, isHeroHovering]);
+
   // 监听滚动位置，控制回到顶部按钮显示
   useEffect(() => {
     const handleScroll = () => {
@@ -149,16 +178,47 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* Hero Section - 更宽更高的Hero，减少两侧留白 */}
-      <div className="pt-36 md:pt-40 pb-12 md:pb-16 bg-white">
-        <div className="mx-auto px-4 md:px-8 lg:px-12 xl:px-16 max-w-[1800px]">
-          <section className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden">
-            {/* Hero Image - 铺满整个区域 */}
-            <img
-              src={heroImage}
-              className="w-full h-full object-cover"
-              alt="Hero"
-            />
+      {/* Hero Section - O-Cedar style with larger top spacing */}
+      <div className="pt-40 md:pt-48 pb-12 md:pb-16 bg-white">
+        <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
+          <section
+            className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden"
+            onMouseEnter={() => setIsHeroHovering(true)}
+            onMouseLeave={() => setIsHeroHovering(false)}
+          >
+            {/* Hero Carousel Images */}
+            {heroImages.map((image, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-opacity duration-1000 ${
+                  index === currentHeroIndex ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <img
+                  src={image}
+                  className="w-full h-full object-cover"
+                  alt={`Hero ${index + 1}`}
+                />
+              </div>
+            ))}
+
+            {/* Navigation Dots */}
+            {heroImages.length > 1 && (
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                {heroImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentHeroIndex(index)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      index === currentHeroIndex
+                        ? 'bg-white w-8'
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Text content - Left aligned */}
             <div className="absolute inset-0 flex items-center">
@@ -191,15 +251,31 @@ export default function HomePage() {
                       : '探索我们的高端系列'}
                   </p>
 
-                  {/* CTA Button - 白色文字，粗体，O-Cedar风格，更宽更扁，最小圆角 */}
-                  <Link
-                    href="/products"
-                    className="group relative inline-block px-12 py-2.5 bg-primary text-white font-bold text-sm tracking-wider uppercase rounded overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
-                    style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
-                  >
-                    <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'Buy now' : '立即购买'}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  </Link>
+                  {/* Button Group */}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {/* BUY NOW Button - Large primary button */}
+                    <Link
+                      href="/order-form"
+                      className="group relative inline-flex items-center justify-center px-12 py-5 bg-primary text-white font-bold text-base tracking-wider uppercase rounded overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(189,183,107,0.6)]"
+                      style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
+                    >
+                      <span className="relative z-10">
+                        {language === 'zh' ? '立即下单' : 'BUY NOW'}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                    </Link>
+
+                    {/* Explore Products Button - Secondary button */}
+                    <Link
+                      href="/products"
+                      className="group relative inline-flex items-center justify-center px-12 py-5 bg-white/10 backdrop-blur-sm text-white font-semibold text-base tracking-wider uppercase rounded border-2 border-white/30 overflow-hidden hover:bg-white/20 hover:border-white/50 hover:-translate-y-1 transition-all duration-300"
+                      style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
+                    >
+                      <span className="relative z-10">
+                        {language === 'zh' ? '探索产品' : 'Explore Products'}
+                      </span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -207,77 +283,92 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Certifications & Factory Section */}
-      {certificates.length > 0 && (
-        <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-          <div className="max-w-[1440px] mx-auto px-6">
-            <div className="text-center mb-20">
-              <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
-                {language === 'zh' ? '资质认证' : 'Certifications'}
-              </p>
-              <h2
-                className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
-                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
-              >
-                {language === 'zh' ? '资质证书·源头工厂' : 'Certifications & Factory'}
-              </h2>
-              <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                {language === 'zh' ? '专业认证，品质保证' : 'Professional certifications, quality assurance'}
+      {/* Excellence in Every Detail - Features Section */}
+      <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+        <div className="max-w-[1440px] mx-auto px-6">
+          <div className="text-center mb-20">
+            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
+            <h2
+              className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
+            >
+              {t('home.why_choose.title')}
+            </h2>
+            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+              {t('home.why_choose.subtitle')}
+            </p>
+          </div>
+
+          {/* 3x2 Grid - 6 features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Feature 1 */}
+            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                01
+              </div>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature1.title')}</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                {t('home.why_choose.feature1.desc')}
               </p>
             </div>
 
-            {/* Certificates Carousel */}
-            <div className="relative">
-              {/* Navigation Buttons */}
-              {certificates.length > 3 && (
-                <>
-                  <button
-                    onClick={handlePrevCertificate}
-                    disabled={currentCertificateIndex === 0}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
-                    aria-label={language === 'zh' ? '上一张' : 'Previous'}
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <button
-                    onClick={handleNextCertificate}
-                    disabled={currentCertificateIndex >= certificates.length - 3}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
-                    aria-label={language === 'zh' ? '下一张' : 'Next'}
-                  >
-                    <ChevronRight size={24} />
-                  </button>
-                </>
-              )}
-
-              {/* Certificates Grid */}
-              <div className="overflow-hidden">
-                <div
-                  className="grid grid-cols-1 md:grid-cols-3 gap-8 transition-transform duration-500 ease-in-out"
-                  style={{
-                    transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`
-                  }}
-                >
-                  {certificates.map((cert, index) => (
-                    <div
-                      key={index}
-                      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
-                    >
-                      <div className="aspect-[3/4] relative overflow-hidden bg-neutral-50">
-                        <img
-                          src={cert}
-                          alt={`Certificate ${index + 1}`}
-                          className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            {/* Feature 2 */}
+            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                02
               </div>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature2.title')}</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                {t('home.why_choose.feature2.desc')}
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                03
+              </div>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature3.title')}</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                {t('home.why_choose.feature3.desc')}
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                04
+              </div>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature4.title')}</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                {t('home.why_choose.feature4.desc')}
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                05
+              </div>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature5.title')}</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                {t('home.why_choose.feature5.desc')}
+              </p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="p-12 bg-neutral-50 rounded-2xl border border-transparent hover:border-primary hover:bg-white hover:-translate-y-2 transition-all duration-250 cursor-pointer">
+              <div className="text-6xl font-light text-primary opacity-30 mb-6 leading-none" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                06
+              </div>
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-6">{t('home.why_choose.feature6.title')}</h3>
+              <p className="text-neutral-600 leading-relaxed">
+                {t('home.why_choose.feature6.desc')}
+              </p>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Featured Products Section - Apple Style 2x2 Grid */}
       <section className="py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
@@ -441,16 +532,12 @@ export default function HomePage() {
       {showBackToTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-20 right-10 z-50 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:bg-gold-400 hover:-translate-y-1 transition-all duration-300 group"
-          aria-label={language === 'zh' ? '回到顶部' : 'Back to top'}
+          className="fixed bottom-8 right-8 z-50 p-4 bg-primary text-neutral-900 rounded-full shadow-lg hover:bg-gold-400 hover:-translate-y-1 transition-all duration-300"
+          aria-label="Back to top"
         >
-          <ChevronUp size={24} className="transition-transform duration-300 group-hover:-translate-y-0.5" />
-          <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-xs px-3 py-1.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-            {language === 'zh' ? '顶部' : 'Top'}
-          </span>
+          <ChevronUp size={24} />
         </button>
       )}
     </div>
   )
 }
-
