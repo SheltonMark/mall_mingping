@@ -165,7 +165,7 @@ export default function HomePage() {
       </div>
 
       {/* Excellence in Every Detail - Features Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="max-w-[1440px] mx-auto px-6">
           <div className="text-center mb-20">
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{t('home.why_choose.tag')}</p>
@@ -252,7 +252,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products Section - Apple Style 2x2 Grid */}
-      <section className="py-32 bg-neutral-50">
+      <section className="py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="w-full max-w-full">
           {/* Section Header */}
           <div className="text-center mb-20 px-6">
@@ -316,7 +316,8 @@ export default function HomePage() {
       <section
         className="py-24 px-6 border-t border-b border-gold-200 relative overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, #FFFCF5 0%, #FFF9E6 50%, #FFFCF5 100%)'
+          background: 'linear-gradient(180deg, #FFFCF5 0%, #FFF9E6 50%, #FFFCF5 100%)',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif'
         }}
       >
         <div className="max-w-[1200px] mx-auto">
@@ -377,7 +378,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section - Begin Your Journey */}
-      <section className="py-32 px-6 bg-neutral-900 text-white text-center relative overflow-hidden">
+      <section className="py-32 px-6 bg-neutral-900 text-white text-center relative overflow-hidden" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         {/* Pulsing light effect */}
         <div
           className="absolute top-1/2 left-1/2 w-[800px] h-[800px] -translate-x-1/2 -translate-y-1/2"
