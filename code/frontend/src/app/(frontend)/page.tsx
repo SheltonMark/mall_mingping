@@ -179,7 +179,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section - O-Cedar style */}
-      <div className="pb-12 md:pb-16 bg-white">
+      <div className="pt-20 pb-12 md:pb-16 bg-white">
         <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
           <section
             className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden"

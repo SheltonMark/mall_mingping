@@ -294,45 +294,6 @@ export default function HomepageConfigPage() {
       {/* 主内容区 */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="space-y-8">
-          {/* Hero区域 */}
-          <Section title="Hero 首屏区域" description="首页顶部的主要视觉区域">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Hero主图 (右侧大图)</label>
-              {config.hero_image ? (
-                <div className="relative group">
-                  <img
-                    src={config.hero_image.startsWith('http') ? config.hero_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${config.hero_image}`}
-                    alt="Hero"
-                    className="w-full h-64 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => setConfig({ ...config, hero_image: '' })}
-                    className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <div className="text-center">
-                    <Upload className="mx-auto mb-3 text-gray-400" size={40} />
-                    <div className="text-sm font-medium text-gray-700 mb-1">
-                      {uploading ? '上传中...' : '点击上传Hero图片'}
-                    </div>
-                    <div className="text-xs text-gray-500">支持 JPG、PNG、WebP，最大5MB</div>
-                    <div className="text-xs text-gray-500 mt-1">建议尺寸：1200x900 像素</div>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/jpg"
-                    onChange={handleHeroImageUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
-                </label>
-              )}
-            </div>
-          </Section>
 
           {/* Hero轮播图 */}
           <Section title="Hero 轮播图" description="首页Hero区域的轮播图片集（最多6张）">
