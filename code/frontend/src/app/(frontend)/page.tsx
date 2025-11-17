@@ -198,7 +198,7 @@ export default function HomePage() {
       <div className="pb-12 md:pb-16 bg-white">
         <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
           <section
-            className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden rounded-lg"
+            className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden"
             onMouseEnter={() => setIsHeroHovering(true)}
             onMouseLeave={() => setIsHeroHovering(false)}
           >
@@ -217,6 +217,7 @@ export default function HomePage() {
                 />
               </div>
             ))}
+{/* Hero Left/Right Navigation Buttons - squared style */}            {heroImages.length > 1 && (              <>                <button                  onClick={() => setCurrentHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))}                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"                  aria-label={language === 'zh' ? '上一张' : 'Previous'}                >                  <ChevronLeft size={24} strokeWidth={2} />                </button>                <button                  onClick={() => setCurrentHeroIndex((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))}                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-sm flex items-center justify-center hover:bg-white/20 hover:border-white/50 transition-all duration-300"                  aria-label={language === 'zh' ? '下一张' : 'Next'}                >                  <ChevronRight size={24} strokeWidth={2} />                </button>              </>            )}
 
             {/* Navigation Dots */}
             {heroImages.length > 1 && (
@@ -285,67 +286,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Featured Products Section - Apple Style 2x2 Grid */}
-      <section className="py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-        <div className="w-full max-w-full">
-          {/* Section Header */}
-          <div className="text-center mb-20 px-6">
-            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{language === 'zh' ? '我们的系列' : 'Our Collection'}</p>
-            <h2
-              className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
-              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
-            >
-              {t('home.signature.title')}
-            </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-              {t('home.signature.subtitle')}
-            </p>
-          </div>
-
-          {/* Apple-style 2x2 grid with 0.25rem gap */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-            {featuredProducts.map((product, index) => (
-              <Link key={index} href={product.link} className="group relative h-[600px] md:h-[600px] overflow-hidden bg-black">
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-108"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/80 group-hover:via-black/40 transition-all duration-500 z-10"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-12 z-20 flex flex-col">
-                  <h3 className="text-5xl md:text-6xl font-bold text-white mb-3 tracking-tight leading-tight transition-transform duration-500 group-hover:-translate-y-2">
-                    {language === 'zh' ? product.title : (product.title_en || product.title)}
-                  </h3>
-                  <p className="text-xl text-white/90 mb-6 leading-relaxed max-w-lg opacity-0 translate-y-5 transition-all duration-500 delay-100 group-hover:opacity-100 group-hover:translate-y-0">
-                    {language === 'zh' ? product.description : (product.description_en || product.description)}
-                  </p>
-                  <div className="opacity-0 translate-y-5 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0">
-                    <span className="relative inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-neutral-900 text-sm font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden hover:bg-gold-400 hover:-translate-y-0.5 transition-all duration-300">
-                      <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
-                      <span className="relative z-10">{t('home.signature.learn_more')}</span>
-                      <ArrowRight className="relative z-10" size={16} />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* VIEW ALL Button */}
-          <div className="flex justify-center mt-12 sm:mt-16 px-6">
-            <Link
-              href="/products"
-              className="relative inline-flex items-center gap-2 sm:gap-3 px-8 py-3.5 sm:px-12 sm:py-5 bg-[#494A45] text-white text-base sm:text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:!bg-primary hover:-translate-y-1 transition-all duration-300"
-              style={{ boxShadow: 'var(--shadow-large)' }}
-            >
-              <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
-              <span className="relative z-10">{t('home.signature.view_all')}</span>
-              <ArrowRight className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5" size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Certifications & Factory Section - 高级Apple风格 */}
       <section className="py-20 md:py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="w-full max-w-full">
@@ -373,16 +313,14 @@ export default function HomePage() {
                   <>
                     <button
                       onClick={handlePrevCertificate}
-                      disabled={currentCertificateIndex === 0}
-                      className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-20 w-14 h-14 bg-white rounded-full shadow-xl items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                      className="flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white border-2 border-neutral-300 rounded-full shadow-lg items-center justify-center text-neutral-700 hover:border-primary hover:text-primary hover:shadow-xl transition-all duration-300"
                       aria-label={language === 'zh' ? '上一组' : 'Previous'}
                     >
                       <ChevronLeft size={28} strokeWidth={2.5} />
                     </button>
                     <button
                       onClick={handleNextCertificate}
-                      disabled={currentCertificateIndex >= certificates.length - 3}
-                      className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-20 w-14 h-14 bg-white rounded-full shadow-xl items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                      className="flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white border-2 border-neutral-300 rounded-full shadow-lg items-center justify-center text-neutral-700 hover:border-primary hover:text-primary hover:shadow-xl transition-all duration-300"
                       aria-label={language === 'zh' ? '下一组' : 'Next'}
                     >
                       <ChevronRight size={28} strokeWidth={2.5} />
@@ -443,23 +381,7 @@ export default function HomePage() {
                   ))}
                 </div>
 
-                {/* 指示器 - 桌面端显示当前页 */}
-                {certificates.length > 3 && (
-                  <div className="hidden lg:flex justify-center mt-12 gap-2">
-                    {Array.from({ length: Math.ceil((certificates.length - 2) / 1) }).map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentCertificateIndex(index)}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          index === currentCertificateIndex
-                            ? 'w-12 bg-primary'
-                            : 'w-2 bg-neutral-300 hover:bg-neutral-400'
-                        }`}
-                        aria-label={`${language === 'zh' ? '跳转到第' : 'Go to page'} ${index + 1} ${language === 'zh' ? '页' : ''}`}
-                      />
-                    ))}
-                  </div>
-                )}
+{/* Linear Progress Indicator - 线性进度条 */}                {certificates.length > 0 && (                  <div className="flex justify-center mt-12 px-6">                    <div className="max-w-md w-full flex gap-1">                      {certificates.map((_, index) => (                        <button                          key={index}                          onClick={() => setCurrentCertificateIndex(index)}                          className={`flex-1 h-1 rounded-sm transition-all duration-300 ${                            index === currentCertificateIndex                              ? 'bg-primary'                              : 'bg-neutral-300 hover:bg-neutral-400'                          }`}                          aria-label={`${language === 'zh' ? '跳转到证书' : 'Go to certificate'} ${index + 1}`}                        />                      ))}                    </div>                  </div>                )}
               </div>
             </div>
           ) : (
@@ -486,6 +408,67 @@ export default function HomePage() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Featured Products Section - Apple Style 2x2 Grid */}
+      <section className="py-32 bg-neutral-50" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+        <div className="w-full max-w-full">
+          {/* Section Header */}
+          <div className="text-center mb-20 px-6">
+            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{language === 'zh' ? '我们的系列' : 'Our Collection'}</p>
+            <h2
+              className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
+            >
+              {t('home.signature.title')}
+            </h2>
+            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+              {t('home.signature.subtitle')}
+            </p>
+          </div>
+
+          {/* Apple-style 2x2 grid with 0.25rem gap */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+            {featuredProducts.map((product, index) => (
+              <Link key={index} href={product.link} className="group relative h-[600px] md:h-[600px] overflow-hidden bg-black">
+                <img
+                  src={product.image}
+                  alt={product.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-[800ms] ease-out group-hover:scale-108"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/80 group-hover:via-black/40 transition-all duration-500 z-10"></div>
+                <div className="absolute bottom-0 left-0 right-0 p-12 z-20 flex flex-col">
+                  <h3 className="text-5xl md:text-6xl font-bold text-white mb-3 tracking-tight leading-tight transition-transform duration-500 group-hover:-translate-y-2">
+                    {language === 'zh' ? product.title : (product.title_en || product.title)}
+                  </h3>
+                  <p className="text-xl text-white/90 mb-6 leading-relaxed max-w-lg opacity-0 translate-y-5 transition-all duration-500 delay-100 group-hover:opacity-100 group-hover:translate-y-0">
+                    {language === 'zh' ? product.description : (product.description_en || product.description)}
+                  </p>
+                  <div className="opacity-0 translate-y-5 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0">
+                    <span className="relative inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-neutral-900 text-sm font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden hover:bg-gold-400 hover:-translate-y-0.5 transition-all duration-300">
+                      <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
+                      <span className="relative z-10">{t('home.signature.learn_more')}</span>
+                      <ArrowRight className="relative z-10" size={16} />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* VIEW ALL Button */}
+          <div className="flex justify-center mt-12 sm:mt-16 px-6">
+            <Link
+              href="/products"
+              className="relative inline-flex items-center gap-2 sm:gap-3 px-8 py-3.5 sm:px-12 sm:py-5 bg-[#494A45] text-white text-base sm:text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:!bg-primary hover:-translate-y-1 transition-all duration-300"
+              style={{ boxShadow: 'var(--shadow-large)' }}
+            >
+              <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
+              <span className="relative z-10">{t('home.signature.view_all')}</span>
+              <ArrowRight className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5" size={18} />
+            </Link>
+          </div>
         </div>
       </section>
 
