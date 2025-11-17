@@ -439,7 +439,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* 右侧: 产品信息 */}
-          <div className="relative pb-40 lg:pb-0">
+          <div className="relative pb-48 lg:pb-0">
             {/* 滚动内容区域 */}
             <div className="space-y-6 lg:pb-8">
             {/* 标题 - 仅显示当前语言 */}
@@ -480,7 +480,7 @@ export default function ProductDetailPage() {
               </h3>
 
               {/* 品名网格 */}
-              <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
+              <div className="grid grid-cols-3 gap-2 max-h-[300px] lg:max-h-[400px] overflow-y-auto">
                 {productGroup.skus.map((sku) => {
                   const skuDisplayName = language === 'zh' ? sku.productName : (sku.productNameEn || sku.productName)
                   const isSelected = selectedSku?.id === sku.id
@@ -490,14 +490,14 @@ export default function ProductDetailPage() {
                       key={sku.id}
                       onClick={() => handleSkuSelect(skuDisplayName)}
                       className={`
-                        p-4 rounded-lg border-2 text-center transition-all
+                        p-2.5 rounded-lg border-2 text-center transition-all
                         ${isSelected
                           ? 'border-primary bg-primary/5'
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                         }
                       `}
                     >
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-xs lg:text-sm font-medium text-gray-900 leading-tight">
                         {skuDisplayName}
                       </div>
                     </button>
@@ -538,16 +538,16 @@ export default function ProductDetailPage() {
             {/* 结束滚动内容区域 */}
 
             {/* 固定按钮区域 - 移动端固定在底部，桌面端sticky */}
-            <div className="fixed lg:sticky bottom-0 left-0 right-0 lg:bottom-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-3 lg:p-6 z-40">
+            <div className="fixed lg:sticky bottom-0 left-0 right-0 lg:bottom-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-2.5 lg:p-6 z-40">
               {/* 数量选择器 */}
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-gray-700 font-medium text-sm lg:text-base whitespace-nowrap">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-gray-700 font-medium text-xs lg:text-base whitespace-nowrap">
                   {language === 'zh' ? '数量' : 'Qty'}:
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg border-2 border-gray-300 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center text-xl font-bold active:scale-95"
+                    className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg border-2 border-gray-300 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center text-lg lg:text-xl font-bold active:scale-95"
                   >
                     −
                   </button>
@@ -555,11 +555,11 @@ export default function ProductDetailPage() {
                     type="number"
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-16 lg:w-24 h-9 lg:h-10 text-center text-base lg:text-lg font-bold border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-14 lg:w-24 h-8 lg:h-10 text-center text-sm lg:text-lg font-bold border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg border-2 border-gray-300 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center text-xl font-bold active:scale-95"
+                    className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg border-2 border-gray-300 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center text-lg lg:text-xl font-bold active:scale-95"
                   >
                     +
                   </button>
@@ -567,7 +567,7 @@ export default function ProductDetailPage() {
               </div>
 
               {/* 按钮组 */}
-              <div className="space-y-2 lg:space-y-3">
+              <div className="space-y-1.5 lg:space-y-3">
                 {/* 加入购物车按钮 */}
                 <div className="relative">
                   <button
@@ -579,7 +579,7 @@ export default function ProductDetailPage() {
                       }
                     }}
                     disabled={!selectedSku || addedToCart}
-                    className={`w-full h-12 lg:h-14 font-bold text-white text-base lg:text-lg transition-all flex items-center justify-center gap-2 lg:gap-3 active:scale-98 ${
+                    className={`w-full h-11 lg:h-14 font-bold text-white text-sm lg:text-lg transition-all flex items-center justify-center gap-1.5 lg:gap-3 active:scale-98 ${
                       addedToCart
                         ? 'bg-green-500'
                         : 'bg-primary hover:bg-primary-dark'
@@ -587,13 +587,13 @@ export default function ProductDetailPage() {
                   >
                     {addedToCart ? (
                       <>
-                        <Check size={20} className="lg:w-6 lg:h-6" />
+                        <Check size={18} className="lg:w-6 lg:h-6" />
                         <span className="hidden sm:inline">{language === 'zh' ? '已加入购物车' : 'Added to Cart'}</span>
                         <span className="sm:hidden">{language === 'zh' ? '已加入' : 'Added'}</span>
                       </>
                     ) : (
                       <>
-                        <ShoppingCart size={20} className="lg:w-6 lg:h-6" />
+                        <ShoppingCart size={18} className="lg:w-6 lg:h-6" />
                         <span className="hidden sm:inline">{language === 'zh' ? '加入购物车' : 'Add to Cart'}</span>
                         <span className="sm:hidden">{language === 'zh' ? '加入' : 'Add'}</span>
                       </>
@@ -617,7 +617,7 @@ export default function ProductDetailPage() {
                     }
                   }}
                   disabled={!selectedSku}
-                  className={`w-full h-12 lg:h-14 font-bold text-primary text-base lg:text-lg transition-all flex items-center justify-center gap-2 lg:gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 active:scale-98 ${!selectedSku ? 'cursor-default' : ''}`}
+                  className={`w-full h-11 lg:h-14 font-bold text-primary text-sm lg:text-lg transition-all flex items-center justify-center gap-1.5 lg:gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 active:scale-98 ${!selectedSku ? 'cursor-default' : ''}`}
                 >
                   {language === 'zh' ? '立即购买' : 'Buy Now'}
                 </button>
