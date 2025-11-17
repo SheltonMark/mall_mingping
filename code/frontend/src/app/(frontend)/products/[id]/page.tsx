@@ -275,8 +275,8 @@ export default function ProductDetailPage() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* 左侧: 图片/视频/参数展示区 */}
           <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
-            {/* 主显示区域 - 固定600x600px正方形 */}
-            <div className="relative w-[600px] h-[600px] aspect-square bg-gray-100 overflow-hidden border border-gray-200">
+            {/* 主显示区域 - 响应式正方形: 移动端全宽, 桌面端600px */}
+            <div className="relative w-full max-w-[600px] mx-auto aspect-square bg-gray-100 overflow-hidden border border-gray-200">
               {viewMode === 'gallery' && (
                 <img
                   src={currentImage}
@@ -378,8 +378,8 @@ export default function ProductDetailPage() {
             {/* 小图111px内容区,选中border-4(总115px),未选中border-2(总113px),间隙6px */}
             {/* 5张小图总宽约591px,<5张时自动居中左右留白 */}
             {images.length >= 2 && (
-              <div className="w-[600px] flex justify-center">
-                <div className="flex gap-1.5">
+              <div className="w-full max-w-[600px] mx-auto flex justify-center">
+                <div className="flex gap-1.5 overflow-x-auto pb-2">
                   {images.map((img, index) => (
                     <button
                       key={index}
@@ -387,7 +387,7 @@ export default function ProductDetailPage() {
                         setCurrentImageIndex(index)
                         setViewMode('gallery')
                       }}
-                      className={`w-[111px] h-[111px] rounded-md overflow-hidden transition-all flex-shrink-0 ${
+                      className={`w-20 h-20 md:w-[111px] md:h-[111px] rounded-md overflow-hidden transition-all flex-shrink-0 ${
                         index === currentImageIndex && viewMode === 'gallery'
                           ? 'border-primary border-4'
                           : 'border-2 border-gray-200 hover:border-gray-300'
@@ -401,7 +401,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* 视图切换按钮 */}
-            <div className="w-[600px] flex gap-4 justify-center pt-2">
+            <div className="w-full max-w-[600px] mx-auto flex gap-4 justify-center pt-2">
               <button
                 onClick={() => setViewMode('gallery')}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${

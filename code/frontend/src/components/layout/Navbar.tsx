@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, User, ShoppingCart, ChevronDown, LogOut, Globe } from 'lucide-react'
+import { Search, User, ShoppingCart, ChevronDown, LogOut, Globe, Menu, X } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
@@ -17,6 +17,7 @@ export default function Navbar() {
   const { customer, isAuthenticated, logout } = useAuth()
   const { totalItems, logoutCart, syncCartOnLogin } = useCart()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -72,8 +73,8 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Center Navigation with dot indicators */}
-          <nav className="flex items-center gap-4 md:gap-12" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}>
+          {/* Center Navigation with dot indicators - Desktop */}
+          <nav className="hidden md:flex items-center gap-4 md:gap-12" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}>
             <Link
               href="/"
               className={`relative text-xs md:text-sm font-normal transition-colors duration-250 ${
@@ -111,10 +112,19 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 md:gap-6">
-            {/* Language Switcher Button */}
+            {/* Mobile Menu Button - Only visible on mobile */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-gold-50 transition-all duration-250"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+
+            {/* Language Switcher Button - Hidden on mobile */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
-              className="flex items-center gap-2 px-4 py-2 bg-transparent border border-neutral-300 rounded-full text-xs font-semibold tracking-[0.05em] text-neutral-600 hover:border-primary hover:text-primary hover:bg-gold-50 transition-all duration-250"
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-transparent border border-neutral-300 rounded-full text-xs font-semibold tracking-[0.05em] text-neutral-600 hover:border-primary hover:text-primary hover:bg-gold-50 transition-all duration-250"
             >
               <Globe size={14} />
               <span>{language === 'en' ? '中文' : 'EN'}</span>
@@ -203,6 +213,61 @@ export default function Navbar() {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu Panel */}
+        {isMobileMenuOpen && (
+          <div
+            className="md:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50"
+            style={{
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
+              backdropFilter: 'blur(30px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)'
+            }}
+          >
+            <nav className="flex flex-col py-4">
+              <Link
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-6 py-4 text-base font-normal transition-colors ${
+                  isActive('/') ? 'text-neutral-900 bg-gold-50' : 'text-neutral-600 hover:bg-gray-50'
+                }`}
+              >
+                {t('nav.home')}
+              </Link>
+              <Link
+                href="/products"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-6 py-4 text-base font-normal transition-colors ${
+                  isActive('/products') ? 'text-neutral-900 bg-gold-50' : 'text-neutral-600 hover:bg-gray-50'
+                }`}
+              >
+                {t('nav.products')}
+              </Link>
+              <Link
+                href="/about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-6 py-4 text-base font-normal transition-colors ${
+                  isActive('/about') ? 'text-neutral-900 bg-gold-50' : 'text-neutral-600 hover:bg-gray-50'
+                }`}
+              >
+                {language === 'zh' ? '联系我们' : 'Contact'}
+              </Link>
+
+              {/* Language Switcher in Mobile Menu */}
+              <button
+                onClick={() => {
+                  setLanguage(language === 'en' ? 'zh' : 'en')
+                  setIsMobileMenuOpen(false)
+                }}
+                className="mx-6 mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-transparent border border-neutral-300 rounded-full text-sm font-semibold text-neutral-600 hover:border-primary hover:text-primary hover:bg-gold-50 transition-all"
+              >
+                <Globe size={16} />
+                <span>{language === 'en' ? '中文' : 'EN'}</span>
+              </button>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   )

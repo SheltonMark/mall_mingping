@@ -106,7 +106,7 @@ export default function HomePage() {
     <div className="flex flex-col bg-white">
       {/* Hero Section - 参考O-Cedar样式 */}
       <div className="pt-36 pb-0 bg-white">
-        <div className="mx-auto px-20 md:px-32 lg:px-40">
+        <div className="mx-auto px-4 md:px-20 lg:px-32 xl:px-40">
           <section className="relative h-[550px] md:h-[650px] lg:h-[700px] overflow-hidden">
             {/* Hero Image - 铺满整个区域 */}
             <img
