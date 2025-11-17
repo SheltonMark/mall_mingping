@@ -77,7 +77,7 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center gap-4 md:gap-12" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}>
             <Link
               href="/"
-              className={`relative text-xs md:text-sm font-normal transition-colors duration-250 ${
+              className={`relative text-sm md:text-base font-normal transition-colors duration-250 ${
                 isActive('/') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -88,7 +88,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/products"
-              className={`relative text-xs md:text-sm font-normal transition-colors duration-250 ${
+              className={`relative text-sm md:text-base font-normal transition-colors duration-250 ${
                 isActive('/products') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
@@ -99,7 +99,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/about"
-              className={`relative text-xs md:text-sm font-normal transition-colors duration-250 ${
+              className={`relative text-sm md:text-base font-normal transition-colors duration-250 ${
                 isActive('/about') ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >

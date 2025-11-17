@@ -12,7 +12,7 @@ interface IOSPickerProps {
   language?: 'zh' | 'en' // 语言参数
 }
 
-const ITEM_HEIGHT = 44 // 每个选项的高度 (px)
+const ITEM_HEIGHT = 36 // 每个选项的高度 (px) - 从44px缩小到36px
 const VISIBLE_ITEMS = 5 // 可见项目数量
 const CENTER_INDEX = Math.floor(VISIBLE_ITEMS / 2) // 中间索引
 

@@ -115,9 +115,6 @@ export default function HomePage() {
               alt="Hero"
             />
 
-            {/* Dark overlay - ONLY on image */}
-            <div className="absolute inset-0 bg-black/40"></div>
-
             {/* Text content - Left aligned */}
             <div className="absolute inset-0 flex items-center">
               <div className="max-w-full mx-auto px-8 md:px-12 w-full">
@@ -149,10 +146,10 @@ export default function HomePage() {
                       : '探索我们的高端系列'}
                   </p>
 
-                  {/* CTA Button - 白色文字，粗体，O-Cedar风格 */}
+                  {/* CTA Button - 白色文字，粗体，O-Cedar风格，更宽更扁，最小圆角 */}
                   <Link
                     href="/products"
-                    className="group relative inline-block px-8 py-3.5 bg-primary text-white font-bold text-sm tracking-wider uppercase rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
+                    className="group relative inline-block px-12 py-2.5 bg-primary text-white font-bold text-sm tracking-wider uppercase rounded overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
                     style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                   >
                     <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'Buy now' : '立即购买'}</span>
@@ -302,8 +299,8 @@ export default function HomePage() {
           <div className="flex justify-center mt-16 px-6">
             <Link
               href="/products"
-              className="relative inline-flex items-center gap-3 px-12 py-5 bg-neutral-900 text-white text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:bg-primary hover:-translate-y-1 transition-all duration-300"
-              style={{ boxShadow: 'var(--shadow-large)' }}
+              className="relative inline-flex items-center gap-3 px-12 py-5 text-white text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:bg-primary hover:-translate-y-1 transition-all duration-300"
+              style={{ backgroundColor: '#494A45', boxShadow: 'var(--shadow-large)' }}
             >
               <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
               <span className="relative z-10">{t('home.signature.view_all')}</span>
