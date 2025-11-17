@@ -17,41 +17,24 @@ interface FeaturedProduct {
 export default function HomePage() {
   const { t, language } = useLanguage()
 
-  // 默认产品数据
-  const defaultProducts: FeaturedProduct[] = [
-    {
-      title: 'Replacement Mop Head',
-      description: 'Premium microfiber for superior cleaning performance.',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD5UYC8qgDXU6D1UE5QnIR2Wz13ZQrdzpzr4AfeNm9noL_BXTbP4jcMVG1yOs3ELCLbZVS4uGpp1ftxuQhni3yhnfbpabiUmRJv6XFvVXisthLUwErS-4lXiHOmmUPO55pJYQF7WFU1EYG2scwoh8KhwmLe3zYv4BG2yilEx4LFvE-MJ-7jCoGNaS7DSINkFmZ9ZhbBQachFpTd2zyKvjpKYVkf6rq5QsrN_eKW2eOdt1cB70KBGDrOQcqQz4BsingVI_ZhkO24kg10',
-      link: '/products/group-1'
-    },
-    {
-      title: 'All-Purpose Cleaner',
-      description: 'Eco-friendly formula for every surface in your home.',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBD5UlYcy8jdVHJcVD1YHJ1YEr2svqy6uJb6FotxOXmECOXu-YCWZbgaP9RPWcrqBWIcjWj_w9NNBSA2bkgy5V1CMzYZH-SXv7jhazfGXZ63jLe8DKo3rrt6YUytp1avbMtXXQs_uu5RuHPX2cz5tw4Rx7h4oJHLP5U7vMiyrZEyOnyCvJUBvtx5RaQRXoTpTgi_KqI4iqf-72o53Z9omRkr4Aw8VukBFwoEFLj1vMXrw7ZcT6T0AAlQolkL2b8CbWWtNYptBvD2T_Y',
-      link: '/products/group-2'
-    },
-    {
-      title: 'Dustpan & Brush Set',
-      description: 'Elegant design meets everyday functionality.',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBX8Kfa692hXPI5Bp98AoYM2T1C4HY9zclZFFsN4gMLAYvZf1IQhuGk9OqYsyQPQOcVhAy13cZ7rc4yBHlEaG7rEX1AZeq1vX4lfh2zERXVK3wqHjNIU-zC5cDOC51wFJ6vEwQxr4WTSUPXPIeuGIl6maVViC5gndeLhOhc7xZfI8R9A8SuDIKeTipHsee4wRSEpht3Zta1gUKRUOw1B8jliBH0AOlp2QBuVYd183qE_bEAG5r03pNeP4kWuJDAanJYBF4O4by_11z3',
-      link: '/products/group-3'
-    },
-    {
-      title: 'Storage Caddy',
-      description: 'Keep your cleaning essentials beautifully organized.',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBOkd4HZLcZIaUwwHJ2cgthgbSHkYuGKfNuGwGdbj7dm2n0Tl6VIvUsAigqHq61bTNKyMB9McK4rra6S7v1xuG-imgzSkA9myd7EvlhJJDNDoRWivgk2vRkHx8p6bblP8gOmnTMie11rdKXqYJ8pHxBxX8Ssyc4hd8vX0hJtEoBGHNMFt9NLa4O1S6cqiGZ3HPmslL4uNByqcNi4SL2VRUhOZMTFyJlKjJTQk5dtuG4KJekAxjrHX_aBK-sEptxs8paA2teR9MwsGdF',
-      link: '/products/group-7'
-    }
-  ]
-
-  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>(defaultProducts)
-  const [heroImages, setHeroImages] = useState<string[]>(['https://lh3.googleusercontent.com/aida-public/AB6AXuDSV4aulz9sIes42kl4uCCUZl_2JAHsp5KLbB1I84Iwb45hHb7Y2yAJ0CVWcFYbDQARNQvIVC0NbDNGqs89BKRUA4g2HQdEw4g5ZEf-xEee8ySqhkXD8QQOSTzQmOsxPciGGCFChki1rZfqbMVKDMJKPkGOfIv4yNfPtkdd7vUAuXvDWo3-L6hnLSkAN9O2g-h7DnN7Lw2wPsYtubHu36G5BAFOdUJUucXcIEi5UNSFBgj_xlac_2ePsWt_nSF-jNDmrBtXOKmL71kI'])
+  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
+  const [heroImages, setHeroImages] = useState<string[]>([])
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0)
   const [isHeroHovering, setIsHeroHovering] = useState(false)
   const [certificates, setCertificates] = useState<string[]>([])
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
   const [showBackToTop, setShowBackToTop] = useState(false)
+
+  // Certificates自动轮播（3秒）
+  useEffect(() => {
+    if (certificates.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentCertificateIndex((prev) => (prev === certificates.length - 1 ? 0 : prev + 1));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [certificates.length]);
 
   // 从API加载首页配置
   useEffect(() => {
@@ -107,22 +90,22 @@ export default function HomePage() {
 
           // 加载featured_products配置
           if (data.featured_products && Array.isArray(data.featured_products) && data.featured_products.length > 0) {
-            // 过滤掉完全空的产品,但允许部分字段为空(会显示默认值)
+            // 只加载完整配置的产品（必须有图片和链接）
             const configuredProducts = data.featured_products
-              .map((p: any, index: number) => {
+              .map((p: any) => {
                 // 处理图片URL
-                let imageUrl = p.image || defaultProducts[index]?.image || '';
+                let imageUrl = p.image || '';
                 if (imageUrl && !imageUrl.startsWith('http')) {
                   imageUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${imageUrl}`;
                 }
 
                 return {
-                  title: p.title || defaultProducts[index]?.title || '',
-                  title_en: p.title_en || p.title || defaultProducts[index]?.title || '',
-                  description: p.description || defaultProducts[index]?.description || '',
-                  description_en: p.description_en || p.description || defaultProducts[index]?.description || '',
+                  title: p.title || '',
+                  title_en: p.title_en || p.title || '',
+                  description: p.description || '',
+                  description_en: p.description_en || p.description || '',
                   image: imageUrl,
-                  link: p.link || defaultProducts[index]?.link || '#'
+                  link: p.link || '#'
                 }
               })
               .filter((p: FeaturedProduct) => p.image && p.link) // 至少要有图片和链接

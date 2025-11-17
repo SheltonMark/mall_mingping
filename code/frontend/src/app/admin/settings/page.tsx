@@ -12,6 +12,8 @@ interface HomepageConfig {
   heroTitle?: string;
   heroSubtitle?: string;
   hero_image?: string;
+  hero_images?: string[]; // 轮播图数组(最多6张)
+  certificates?: string[]; // 证书数组(最多6张)
   features?: Array<{
     icon: string;
     title: string;
@@ -395,6 +397,88 @@ function HomepageTab({ config, setConfig }: { config: HomepageConfig; setConfig:
     } finally {
       setUploading(false);
     }
+  };
+
+  // 上传Hero轮播图
+  const handleHeroCarouselUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('请上传图片文件');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('图片大小不能超过5MB');
+      return;
+    }
+
+    const currentImages = config.hero_images || [];
+    if (currentImages.length >= 6) {
+      toast.error('最多只能上传6张轮播图');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const result = await uploadApi.uploadSingle(file, 'image');
+      setConfig({ ...config, hero_images: [...currentImages, result.url] });
+      toast.success('轮播图上传成功');
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      toast.error(error.message || '图片上传失败');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // 删除Hero轮播图
+  const handleDeleteHeroCarouselImage = (index: number) => {
+    const newImages = (config.hero_images || []).filter((_, i) => i !== index);
+    setConfig({ ...config, hero_images: newImages });
+    toast.success('轮播图已删除');
+  };
+
+  // 上传证书图片
+  const handleCertificateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('请上传图片文件');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('图片大小不能超过5MB');
+      return;
+    }
+
+    const currentCerts = config.certificates || [];
+    if (currentCerts.length >= 6) {
+      toast.error('最多只能上传6张证书图片');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const result = await uploadApi.uploadSingle(file, 'image');
+      setConfig({ ...config, certificates: [...currentCerts, result.url] });
+      toast.success('证书图片上传成功');
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      toast.error(error.message || '图片上传失败');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // 删除证书图片
+  const handleDeleteCertificate = (index: number) => {
+    const newCerts = (config.certificates || []).filter((_, i) => i !== index);
+    setConfig({ ...config, certificates: newCerts });
+    toast.success('证书图片已删除');
   };
 
   return (
