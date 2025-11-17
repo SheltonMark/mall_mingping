@@ -178,8 +178,24 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* Hero Section - O-Cedar style with larger top spacing */}
-      <div className="pt-40 md:pt-48 pb-12 md:pb-16 bg-white">
+      {/* WHERE TO BUY Button - Above Hero Section (O-Cedar style) */}
+      <div className="bg-white pt-28 pb-6">
+        <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px] flex justify-center">
+          <Link
+            href="/order-form"
+            className="group relative inline-flex items-center justify-center px-16 py-6 bg-red-600 text-white font-bold text-xl tracking-wider uppercase rounded overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_16px_40px_rgba(220,38,38,0.4)]"
+            style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.15em' }}
+          >
+            <span className="relative z-10">
+              {language === 'zh' ? '立即下单' : 'BUY NOW'}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Hero Section - O-Cedar style */}
+      <div className="pb-12 md:pb-16 bg-white">
         <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
           <section
             className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden"
@@ -251,30 +267,17 @@ export default function HomePage() {
                       : '探索我们的高端系列'}
                   </p>
 
-                  {/* Button Group */}
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                    {/* BUY NOW Button - Large primary button */}
-                    <Link
-                      href="/order-form"
-                      className="group relative inline-flex items-center justify-center px-8 py-3 sm:px-12 sm:py-5 bg-primary text-white font-bold text-sm sm:text-base tracking-wider uppercase rounded overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(189,183,107,0.6)]"
-                      style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
-                    >
-                      <span className="relative z-10">
-                        {language === 'zh' ? '立即下单' : 'BUY NOW'}
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                    </Link>
-
-                    {/* Explore Products Button - Secondary button */}
-                    <Link
-                      href="/products"
-                      className="group relative inline-flex items-center justify-center px-8 py-3 sm:px-12 sm:py-5 bg-white/10 backdrop-blur-sm text-white font-semibold text-sm sm:text-base tracking-wider uppercase rounded border-2 border-white/30 overflow-hidden hover:bg-white/20 hover:border-white/50 hover:-translate-y-1 transition-all duration-300"
-                      style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
-                    >
-                      <span className="relative z-10">
-                        {language === 'zh' ? '探索产品' : 'Explore Products'}
-                      </span>
-                    </Link>
+                  {/* Explore Products Button - Inside Hero */}
+                  <Link
+                    href="/products"
+                    className="group relative inline-flex items-center justify-center px-8 py-3 sm:px-10 sm:py-4 bg-primary text-neutral-900 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-full overflow-hidden hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(189,183,107,0.6)]"
+                    style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
+                  >
+                    <span className="relative z-10">
+                      {language === 'zh' ? '探索产品' : 'Explore Products'}
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  </Link>
                   </div>
                 </div>
               </div>
