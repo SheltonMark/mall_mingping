@@ -92,7 +92,7 @@ export default function IOSPicker({
           onChange(options[currentIndex])
           if (playSound) {
             triggerHaptic()
-            playClickSound() // 启用音效
+            // playClickSound() // 移除音效
           }
         }
       }

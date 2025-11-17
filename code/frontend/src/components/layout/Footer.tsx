@@ -1,10 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
+import { Facebook, Instagram, Linkedin, Youtube, Mail } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function Footer() {
+  const { t } = useLanguage()
   const [socialMedia, setSocialMedia] = useState<any>({})
 
   // 加载社交媒体配置
@@ -28,6 +30,7 @@ export default function Footer() {
   return (
     <footer
       className="bg-neutral-900 text-neutral-400 py-24 px-6 border-t border-neutral-800 print:hidden"
+      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Footer Grid */}
@@ -42,34 +45,34 @@ export default function Footer() {
               />
             </Link>
             <p className="text-neutral-500 leading-relaxed">
-              {"以创新、环保的产品革新清洁方式,让您的生活更轻松,家居更洁净。"}
+              {t('footer.tagline') || 'Crafting excellent cleaning solutions with artisan spirit, creating elegant living experiences for global clients.'}
             </p>
           </div>
 
           {/* Products Column */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
-              {"产品"}
+              {t('footer.products') || 'Products'}
             </h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"所有产品"}
+                  {t('footer.all_products') || 'Cleaning Tools'}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"新品上市"}
+                  {t('footer.new_arrivals') || 'Kitchen Items'}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"热销产品"}
+                  {t('footer.best_sellers') || 'Storage Solutions'}
                 </Link>
               </li>
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"专业系列"}
+                  {t('footer.professional_series')}
                 </Link>
               </li>
             </ul>
@@ -78,27 +81,27 @@ export default function Footer() {
           {/* Company Column */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
-              {"公司"}
+              {t('footer.company') || 'Company'}
             </h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"关于"}
+                  {t('footer.about') || 'About Us'}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"我们的故事"}
+                  {t('footer.our_story')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"可持续发展"}
+                  {t('footer.sustainability')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"招聘"}
+                  {t('footer.careers') || 'Careers'}
                 </Link>
               </li>
             </ul>
@@ -107,27 +110,27 @@ export default function Footer() {
           {/* Support Column */}
           <div>
             <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
-              {"支持"}
+              {t('footer.support') || 'Support'}
             </h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"联系我们"}
+                  {t('footer.contact_us') || 'Contact Us'}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"帮助中心"}
+                  {t('footer.help_center')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"隐私政策"}
+                  {t('footer.privacy_policy')}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
-                  {"服务条款"}
+                  {t('footer.terms_of_service')}
                 </Link>
               </li>
             </ul>
@@ -154,9 +157,12 @@ export default function Footer() {
               rel={socialMedia.twitter ? 'noopener noreferrer' : undefined}
               onClick={(e) => !socialMedia.twitter && e.preventDefault()}
               className="group w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center transition-all duration-250 cursor-pointer border-2 border-neutral-800 hover:border-primary"
-              aria-label="Twitter"
+              aria-label="X (Twitter)"
             >
-              <Twitter size={18} className="text-neutral-400 group-hover:text-primary transition-colors duration-250" />
+              {/* X (Twitter) SVG Icon */}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-neutral-400 group-hover:text-primary transition-colors duration-250">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor"/>
+              </svg>
             </a>
             <a
               href={socialMedia.instagram || '#'}

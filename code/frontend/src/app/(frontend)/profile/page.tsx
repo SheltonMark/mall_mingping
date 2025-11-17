@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
 import { useRouter } from 'next/navigation'
 import { User, Mail, Calendar, Package, ChevronRight, ShoppingBag, ChevronDown, ChevronUp } from 'lucide-react'
+import { parseBilingualText } from '@/lib/i18nHelper'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -22,11 +24,9 @@ interface OrderForm {
   createdAt: string
 }
 
-// Temporary stub for remaining translation calls
-const t = (key: string) => key
-
 export default function ProfilePage() {
   const { customer, isAuthenticated, isLoading } = useAuth()
+  const { t, language } = useLanguage()
   const router = useRouter()
   const [orders, setOrders] = useState<OrderForm[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
@@ -78,7 +78,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
-        <div className="text-lg text-gray-600">"加载中..."</div>
+        <div className="text-lg text-gray-600">{t('profile.loading')}</div>
       </div>
     )
   }
@@ -88,12 +88,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-20">
+    <div className="min-h-screen bg-[#FAFAFA] pt-32 pb-20" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
       <div className="max-w-[1440px] mx-auto px-6">
         {/* Page Header - 奢华标题 */}
         <div className="mb-12">
           <h1 className="text-5xl font-light text-black tracking-wide mb-3" style={{ fontFamily: 'var(--font-display)' }}>
-            "我的账户"
+            {t('profile.my_account')}
           </h1>
           <div className="w-24 h-[2px] bg-gradient-to-r from-primary to-transparent"></div>
         </div>
@@ -131,7 +131,7 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-6 mt-auto">
                 <div className="text-center">
                   <div className="text-3xl font-light text-black mb-1">{orders.length}</div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wider">"订单"</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wider">{t('profile.orders')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-light text-black mb-1">
@@ -149,7 +149,7 @@ export default function ProfilePage() {
               {/* Section Title */}
               <div className="mb-8">
                 <h3 className="text-xl font-light text-black tracking-wide mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-                  "账户信息"
+                  {t('profile.account_information')}
                 </h3>
                 <div className="w-16 h-[1px] bg-primary"></div>
               </div>
@@ -163,7 +163,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1 pt-1">
                       <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
-                        "邮箱地址"
+                        {t('profile.email_address')}
                       </label>
                       <p className="text-base text-black font-light">{customer.email}</p>
                     </div>
@@ -179,7 +179,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex-1 pt-1">
                         <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
-                          "全名"
+                          {t('profile.full_name')}
                         </label>
                         <p className="text-base text-black font-light">{customer.name}</p>
                       </div>
@@ -195,7 +195,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1 pt-1">
                       <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">
-                        {"加入时间"}
+                        {t('profile.member_since')}
                       </label>
                       <p className="text-base text-black font-light">
                         {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
@@ -218,13 +218,13 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-xl font-light text-black tracking-wide mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-                "我的订单"
+                {t('profile.my_orders')}
               </h3>
               <div className="w-16 h-[1px] bg-primary"></div>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Package className="w-4 h-4" strokeWidth={1.5} />
-              <span className="font-light">"总计": {orders.length}</span>
+              <span className="font-light">{t('profile.total')}: {orders.length}</span>
             </div>
           </div>
 
@@ -243,7 +243,7 @@ export default function ProfilePage() {
               </div>
 
               <h4 className="text-2xl font-light text-black mb-3 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
-                "暂无订单"
+                {t('profile.no_orders_yet')}
               </h4>
               <p className="text-gray-500 mb-10 max-w-md mx-auto font-light leading-relaxed">
                 {t('profile.no_orders_desc')}
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                 onClick={() => router.push('/products')}
                 className="group inline-flex items-center gap-3 px-8 py-4 bg-primary text-white font-light tracking-wider uppercase text-sm transition-all duration-300 hover:bg-primary-dark hover:shadow-lg"
               >
-                <span>"浏览产品"</span>
+                <span>{t('profile.explore_products')}</span>
                 <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" strokeWidth={1.5} />
               </button>
             </div>
@@ -266,7 +266,7 @@ export default function ProfilePage() {
                   <div className="flex items-start justify-between mb-6 pb-6 border-b border-gray-100">
                     <div>
                       <h4 className="text-lg font-light text-black mb-2 tracking-wide" style={{ fontFamily: 'var(--font-display)' }}>
-                        "订单 #"{order.formNumber}
+                        {t('profile.order_number')}{order.formNumber}
                       </h4>
                       <p className="text-sm text-gray-500 font-light">
                         {new Date(order.submittedAt).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
@@ -279,7 +279,7 @@ export default function ProfilePage() {
                       </p>
                     </div>
                     <div className="px-4 py-2 bg-gradient-to-r from-primary/10 to-primary/5 rounded-none border-l-2 border-primary">
-                      <span className="text-xs text-primary font-medium uppercase tracking-wider">{"已提交"}</span>
+                      <span className="text-xs text-primary font-medium uppercase tracking-wider">{t('profile.submitted')}</span>
                     </div>
                   </div>
 
@@ -288,7 +288,7 @@ export default function ProfilePage() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <Package className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-600 font-light">{order.items.length} {order.items.length > 1 ? "件商品" : "件商品"}</span>
+                        <span className="text-sm text-gray-600 font-light">{order.items.length} {order.items.length > 1 ? t('profile.items') : t('profile.item')}</span>
                       </div>
                       <button
                         onClick={() => toggleOrderDetails(order.id)}
@@ -373,20 +373,20 @@ export default function ProfilePage() {
                   {/* Contact Details */}
                   <div className="space-y-3 text-sm">
                     <div>
-                      <span className="text-gray-500">{"联系人"}:</span>{' '}
+                      <span className="text-gray-500">{t('profile.contact')}:</span>{' '}
                       <span className="text-black">{order.contactName}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">{"电话"}:</span>{' '}
+                      <span className="text-gray-500">{t('profile.phone')}:</span>{' '}
                       <span className="text-black">{order.phone}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">{"地址"}:</span>{' '}
+                      <span className="text-gray-500">{t('profile.address')}:</span>{' '}
                       <span className="text-black">{order.address}</span>
                     </div>
                     {order.notes && (
                       <div>
-                        <span className="text-gray-500">{"备注"}:</span>{' '}
+                        <span className="text-gray-500">{t('profile.notes')}:</span>{' '}
                         <span className="text-black">{order.notes}</span>
                       </div>
                     )}
