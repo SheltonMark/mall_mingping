@@ -8,9 +8,13 @@ import { Upload, X, Save, Search } from 'lucide-react';
 
 interface HomepageConfig {
   hero_image?: string;
+  hero_images?: string[]; // 轮播图数组(最多6张)
+  certificates?: string[]; // 证书图片数组(最多6张)
   featured_products?: Array<{
     title: string;
+    title_en?: string;
     description: string;
+    description_en?: string;
     image: string;
     link: string;
   }>;
@@ -140,6 +144,86 @@ export default function HomepageConfigPage() {
     }
   };
 
+  const handleHeroCarouselUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('请上传图片文件');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('图片大小不能超过5MB');
+      return;
+    }
+
+    const currentImages = config.hero_images || [];
+    if (currentImages.length >= 6) {
+      toast.error('最多只能上传6张轮播图');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const result = await uploadApi.uploadSingle(file, 'image');
+      setConfig({ ...config, hero_images: [...currentImages, result.url] });
+      toast.success('轮播图上传成功');
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      toast.error(error.message || '图片上传失败');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteHeroCarouselImage = (index: number) => {
+    const currentImages = config.hero_images || [];
+    const newImages = currentImages.filter((_, i) => i !== index);
+    setConfig({ ...config, hero_images: newImages });
+    toast.success('轮播图已删除');
+  };
+
+  const handleCertificateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('请上传图片文件');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('图片大小不能超过5MB');
+      return;
+    }
+
+    const currentCerts = config.certificates || [];
+    if (currentCerts.length >= 6) {
+      toast.error('最多只能上传6张证书图片');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const result = await uploadApi.uploadSingle(file, 'image');
+      setConfig({ ...config, certificates: [...currentCerts, result.url] });
+      toast.success('证书图片上传成功');
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      toast.error(error.message || '图片上传失败');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteCertificate = (index: number) => {
+    const currentCerts = config.certificates || [];
+    const newCerts = currentCerts.filter((_, i) => i !== index);
+    setConfig({ ...config, certificates: newCerts });
+    toast.success('证书图片已删除');
+  };
+
   const featuredProducts = config.featured_products || [
     { title: '', description: '', image: '', link: '' },
     { title: '', description: '', image: '', link: '' },
@@ -247,6 +331,68 @@ export default function HomepageConfigPage() {
                   />
                 </label>
               )}
+            </div>
+          </Section>
+
+          {/* Hero轮播图 */}
+          <Section title="Hero 轮播图" description="首页Hero区域的轮播图片集（最多6张）">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {(config.hero_images || []).map((imageUrl, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={imageUrl.startsWith('http') ? imageUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${imageUrl}`}
+                      alt={`Hero Carousel ${index + 1}`}
+                      className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                    />
+                    <button
+                      onClick={() => handleDeleteHeroCarouselImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <X size={16} />
+                    </button>
+                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                      {index + 1}/6
+                    </div>
+                  </div>
+                ))}
+
+                {(!config.hero_images || config.hero_images.length < 6) && (
+                  <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="text-center">
+                      <Upload className="mx-auto mb-2 text-gray-400" size={32} />
+                      <div className="text-sm font-medium text-gray-700 mb-1">
+                        {uploading ? '上传中...' : '添加轮播图'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {config.hero_images?.length || 0}/6
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      onChange={handleHeroCarouselUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-600 text-xl">💡</span>
+                  <div className="text-sm text-blue-800">
+                    <p className="font-semibold mb-2">轮播图提示：</p>
+                    <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <li>建议尺寸：1920x1080 像素或更大，保持16:9比例</li>
+                      <li>最多上传6张图片，支持 JPG、PNG、WebP 格式</li>
+                      <li>单个文件大小不超过5MB</li>
+                      <li>图片会按照上传顺序在首页轮播展示</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           </Section>
 
@@ -385,6 +531,68 @@ export default function HomepageConfigPage() {
                     <li>只支持本地图片上传（JPG/PNG/WebP格式，最大5MB）</li>
                     <li>跳转链接自动从产品库中加载，如没有所需产品请先在"产品管理"中创建</li>
                   </ul>
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          {/* 证书图片 */}
+          <Section title="证书认证" description="展示企业资质和产品认证证书（最多6张）">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {(config.certificates || []).map((certUrl, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={certUrl.startsWith('http') ? certUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${certUrl}`}
+                      alt={`Certificate ${index + 1}`}
+                      className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+                    />
+                    <button
+                      onClick={() => handleDeleteCertificate(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <X size={16} />
+                    </button>
+                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                      {index + 1}/6
+                    </div>
+                  </div>
+                ))}
+
+                {(!config.certificates || config.certificates.length < 6) && (
+                  <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="text-center">
+                      <Upload className="mx-auto mb-2 text-gray-400" size={32} />
+                      <div className="text-sm font-medium text-gray-700 mb-1">
+                        {uploading ? '上传中...' : '添加证书'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {config.certificates?.length || 0}/6
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      onChange={handleCertificateUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <span className="text-blue-600 text-xl">💡</span>
+                  <div className="text-sm text-blue-800">
+                    <p className="font-semibold mb-2">证书图片提示：</p>
+                    <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <li>建议尺寸：800x1000 像素或更大，保持4:5比例</li>
+                      <li>最多上传6张证书图片，支持 JPG、PNG、WebP 格式</li>
+                      <li>单个文件大小不超过5MB</li>
+                      <li>建议上传清晰的证书扫描件或照片</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
