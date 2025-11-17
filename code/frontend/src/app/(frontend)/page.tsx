@@ -333,8 +333,8 @@ export default function HomePage() {
           <div className="flex justify-center mt-16 px-6">
             <Link
               href="/products"
-              className="relative inline-flex items-center gap-3 px-12 py-5 text-white text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:bg-primary hover:-translate-y-1 transition-all duration-300"
-              style={{ backgroundColor: '#494A45', boxShadow: 'var(--shadow-large)' }}
+              className="relative inline-flex items-center gap-3 px-12 py-5 bg-[#494A45] text-white text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:!bg-primary hover:-translate-y-1 transition-all duration-300"
+              style={{ boxShadow: 'var(--shadow-large)' }}
             >
               <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
               <span className="relative z-10">{t('home.signature.view_all')}</span>
