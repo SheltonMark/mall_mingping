@@ -377,9 +377,10 @@ export default function ProductDetailPage() {
             {/* 缩略图列表 - 600px容器,小图居中显示 */}
             {/* 小图111px内容区,选中border-4(总115px),未选中border-2(总113px),间隙6px */}
             {/* 5张小图总宽约591px,<5张时自动居中左右留白 */}
+            {/* 缩略图 - 移动端更小 */}
             {images.length >= 2 && (
               <div className="w-full max-w-[600px] mx-auto flex justify-center">
-                <div className="flex gap-1.5 overflow-x-auto pb-2">
+                <div className="flex gap-2 overflow-x-auto pb-2">
                   {images.map((img, index) => (
                     <button
                       key={index}
@@ -387,7 +388,7 @@ export default function ProductDetailPage() {
                         setCurrentImageIndex(index)
                         setViewMode('gallery')
                       }}
-                      className={`w-20 h-20 md:w-[111px] md:h-[111px] rounded-md overflow-hidden transition-all flex-shrink-0 ${
+                      className={`w-16 h-16 md:w-20 md:h-20 lg:w-[111px] lg:h-[111px] rounded-md overflow-hidden transition-all flex-shrink-0 ${
                         index === currentImageIndex && viewMode === 'gallery'
                           ? 'border-primary border-4'
                           : 'border-2 border-gray-200 hover:border-gray-300'
@@ -400,48 +401,48 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* 视图切换按钮 */}
-            <div className="w-full max-w-[600px] mx-auto flex gap-4 justify-center pt-2">
+            {/* 视图切换按钮 - 移动端更紧凑 */}
+            <div className="w-full max-w-[600px] mx-auto flex gap-2 md:gap-4 justify-center pt-2">
               <button
                 onClick={() => setViewMode('gallery')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                className={`flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all text-sm md:text-base ${
                   viewMode === 'gallery'
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <ImageIcon size={20} />
-                {language === 'zh' ? '图集' : 'Gallery'}
+                <ImageIcon size={18} className="md:w-5 md:h-5" />
+                <span className="hidden sm:inline">{language === 'zh' ? '图集' : 'Gallery'}</span>
               </button>
               <button
                 onClick={() => setViewMode('video')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                className={`flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all text-sm md:text-base ${
                   viewMode === 'video'
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <Play size={20} />
-                {language === 'zh' ? '视频' : 'Video'}
+                <Play size={18} className="md:w-5 md:h-5" />
+                <span className="hidden sm:inline">{language === 'zh' ? '视频' : 'Video'}</span>
               </button>
               <button
                 onClick={() => setViewMode('params')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                className={`flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all text-sm md:text-base ${
                   viewMode === 'params'
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <FileText size={20} />
-                {language === 'zh' ? '参数' : 'Parameters'}
+                <FileText size={18} className="md:w-5 md:h-5" />
+                <span className="hidden sm:inline">{language === 'zh' ? '参数' : 'Parameters'}</span>
               </button>
             </div>
           </div>
 
           {/* 右侧: 产品信息 */}
-          <div className="relative pb-48 lg:pb-0">
+          <div className="relative pb-36 lg:pb-0">
             {/* 滚动内容区域 */}
-            <div className="space-y-6 lg:pb-8">
+            <div className="space-y-5 lg:space-y-6 lg:pb-8">
             {/* 标题 - 仅显示当前语言 */}
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -474,13 +475,13 @@ export default function ProductDetailPage() {
             </div>
 
             {/* 品名选择器 (网格卡片) */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">
+            <div className="space-y-3">
+              <h3 className="text-base lg:text-lg font-bold text-gray-900">
                 {language === 'zh' ? '选择品名' : 'Select Product Name'} *
               </h3>
 
-              {/* 品名网格 */}
-              <div className="grid grid-cols-3 gap-2 max-h-[300px] lg:max-h-[400px] overflow-y-auto">
+              {/* 品名网格 - 移动端一排一个，桌面端一排两个 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 max-h-[300px] lg:max-h-[400px] overflow-y-auto">
                 {productGroup.skus.map((sku) => {
                   const skuDisplayName = language === 'zh' ? sku.productName : (sku.productNameEn || sku.productName)
                   const isSelected = selectedSku?.id === sku.id
@@ -490,14 +491,14 @@ export default function ProductDetailPage() {
                       key={sku.id}
                       onClick={() => handleSkuSelect(skuDisplayName)}
                       className={`
-                        p-2.5 rounded-lg border-2 text-center transition-all
+                        p-3 md:p-2.5 rounded-lg border-2 text-center transition-all
                         ${isSelected
                           ? 'border-primary bg-primary/5'
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                         }
                       `}
                     >
-                      <div className="text-xs lg:text-sm font-medium text-gray-900 leading-tight">
+                      <div className="text-sm md:text-xs lg:text-sm font-medium text-gray-900 leading-tight">
                         {skuDisplayName}
                       </div>
                     </button>
@@ -508,11 +509,11 @@ export default function ProductDetailPage() {
 
             {/* 货品规格 - 选择品名后显示 */}
             {selectedSku && ((language === 'zh' && selectedSku.specification) || (language === 'en' && selectedSku.specificationEn)) && (
-              <div className="space-y-4 bg-gray-50 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-gray-900">
+              <div className="space-y-3 bg-gray-50 rounded-xl p-4 lg:p-6">
+                <h3 className="text-base lg:text-lg font-bold text-gray-900">
                   {language === 'zh' ? '货品规格' : 'Product Specification'}
                 </h3>
-                <div className="text-gray-700 whitespace-pre-line leading-relaxed">
+                <div className="text-sm lg:text-base text-gray-700 whitespace-pre-line leading-relaxed">
                   {language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification)}
                 </div>
               </div>
@@ -520,8 +521,8 @@ export default function ProductDetailPage() {
 
             {/* 附加属性选择器 (iOS风格) */}
             {selectedSku && optionalAttributes.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">
+              <div className="space-y-3">
+                <h3 className="text-base lg:text-lg font-bold text-gray-900">
                   {language === 'zh' ? '附加属性（潘通色号）' : 'Optional Attributes (Pantone Number)'}
                 </h3>
                 <IOSPicker
