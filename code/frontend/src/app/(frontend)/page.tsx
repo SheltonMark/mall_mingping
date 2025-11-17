@@ -104,10 +104,10 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* Hero Section - 参考O-Cedar样式，顶部留白，左右留白，更扁平的宽高比 */}
+      {/* Hero Section - 更宽更高的Hero，减少两侧留白 */}
       <div className="pt-36 md:pt-40 pb-12 md:pb-16 bg-white">
-        <div className="mx-auto px-8 md:px-16 lg:px-24 xl:px-32 max-w-[1600px]">
-          <section className="relative h-[420px] md:h-[500px] lg:h-[550px] overflow-hidden">
+        <div className="mx-auto px-4 md:px-8 lg:px-12 xl:px-16 max-w-[1800px]">
+          <section className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden">
             {/* Hero Image - 铺满整个区域 */}
             <img
               src={heroImage}
@@ -149,10 +149,11 @@ export default function HomePage() {
                       : '探索我们的高端系列'}
                   </p>
 
-                  {/* CTA Button */}
+                  {/* CTA Button - 白色文字，粗体，O-Cedar风格 */}
                   <Link
                     href="/products"
-                    className="group relative inline-block px-8 py-3.5 bg-primary text-neutral-900 font-semibold text-sm rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
+                    className="group relative inline-block px-8 py-3.5 bg-primary text-white font-bold text-sm tracking-wider uppercase rounded-full overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(189,183,107,0.5)]"
+                    style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                   >
                     <span className="relative z-10">{t('home.hero.title').includes('Future') ? 'Buy now' : '立即购买'}</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
