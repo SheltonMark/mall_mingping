@@ -344,6 +344,78 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Certifications & Factory Section */}
+      {certificates.length > 0 && (
+        <section className="py-24 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+          <div className="max-w-[1440px] mx-auto px-6">
+            <div className="text-center mb-20">
+              <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
+                {language === 'zh' ? '资质认证' : 'Certifications'}
+              </p>
+              <h2
+                className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
+              >
+                {language === 'zh' ? '资质证书·源头工厂' : 'Certifications & Factory'}
+              </h2>
+              <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
+                {language === 'zh' ? '专业认证，品质保证' : 'Professional certifications, quality assurance'}
+              </p>
+            </div>
+
+            {/* Certificates Carousel */}
+            <div className="relative">
+              {/* Navigation Buttons */}
+              {certificates.length > 3 && (
+                <>
+                  <button
+                    onClick={handlePrevCertificate}
+                    disabled={currentCertificateIndex === 0}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                    aria-label={language === 'zh' ? '上一张' : 'Previous'}
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button
+                    onClick={handleNextCertificate}
+                    disabled={currentCertificateIndex >= certificates.length - 3}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-900 hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-neutral-900"
+                    aria-label={language === 'zh' ? '下一张' : 'Next'}
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </>
+              )}
+
+              {/* Certificates Grid */}
+              <div className="overflow-hidden">
+                <div
+                  className="grid grid-cols-1 md:grid-cols-3 gap-8 transition-transform duration-500 ease-in-out"
+                  style={{
+                    transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`
+                  }}
+                >
+                  {certificates.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                    >
+                      <div className="aspect-[3/4] relative overflow-hidden bg-neutral-50">
+                        <img
+                          src={cert}
+                          alt={`Certificate ${index + 1}`}
+                          className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Stats Section - 数字化展示 */}
       <section
         className="py-24 px-6 border-t border-b border-gold-200 relative overflow-hidden"
