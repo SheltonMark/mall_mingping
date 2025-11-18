@@ -319,8 +319,9 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 items-center gap-0">
-          <div className="p-12 md:p-16 transition-all duration-700" data-scroll-id="story-1-text">
+        <div className="max-w-[1440px] mx-auto px-6 pb-20">
+        <div className="grid md:grid-cols-2 items-center gap-8">
+          <div className="p-8 md:p-12 transition-all duration-700" data-scroll-id="story-1-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
               {getLocalizedField('story1_title') || t('about.craftsmanship_title')}
             </h3>
@@ -340,7 +341,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 items-center gap-0">
+        <div className="grid md:grid-cols-2 items-center gap-8 mt-8">
           <div className="h-96 md:h-auto aspect-video overflow-hidden order-2 md:order-1 transition-all duration-700" data-scroll-id="story-2-image">
             <img
               src={aboutConfig.story2_image?.startsWith('http') ? aboutConfig.story2_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.story2_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuCwU9EPbCeWtPXd3LnWWxDR3m0NWwkvRXgwA6Ydjbwd_q39jNDNsSuLz7gTVDC9E3moGGwTQ8gDJ-qeenFCorzD6oeFBTXpqffoWd0usjGwznRbQkT8R8_cW-9EntOyzc2E2JlfiZj4q0Tc2VGaTL4ugwPQqFCSqa44CdgnV7dp7k41NenFhCRk1uQ6gr8MlDM8aifbSFgRvsDUHFTiQMyCyNHUlj6Q64AqfpSBsWtw0FHFGDOujY-kWQ-8fKO6NI11mJ9enoREtIPe"}
@@ -348,7 +349,7 @@ export default function AboutPage() {
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-600"
             />
           </div>
-          <div className="p-12 md:p-16 order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
+          <div className="p-8 md:p-12 order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
               {getLocalizedField('story2_title') || t('about.factory_supply_title')}
             </h3>
@@ -359,6 +360,7 @@ export default function AboutPage() {
               {getLocalizedField('story2_desc2') || t('about.factory_supply_desc_2')}
             </p>
           </div>
+        </div>
         </div>
       </section>
 
