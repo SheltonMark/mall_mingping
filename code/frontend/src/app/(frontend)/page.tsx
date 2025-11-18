@@ -338,7 +338,7 @@ export default function HomePage() {
                             <button
                               key={index}
                               onClick={() => setCurrentCertificateIndex(index)}
-                              className={`flex-1 h-0.5 rounded-full transition-all duration-300 ${
+                              className={`flex-1 h-px rounded-full transition-all duration-300 ${
                                 index === currentCertificateIndex
                                   ? 'bg-primary'
                                   : 'bg-neutral-300 hover:bg-neutral-400'
@@ -442,7 +442,7 @@ export default function HomePage() {
           <div className="text-center mb-20">
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{language === 'zh' ? '我们的系列' : 'Our Collection'}</p>
             <h2
-              className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
+              className="text-4xl md:text-5xl font-light text-neutral-900 mb-6"
               style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif', lineHeight: 1.05, fontWeight: 300, letterSpacing: '-0.015em' }}
             >
               {t('home.signature.title')}
@@ -455,7 +455,7 @@ export default function HomePage() {
           {/* Apple-style 2x2 grid with 0.25rem gap */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {featuredProducts.map((product, index) => (
-              <Link key={index} href={product.link} className="group relative h-[400px] md:h-[450px] overflow-hidden bg-black">
+              <Link key={index} href={product.link} className="group relative h-[300px] md:h-[340px] overflow-hidden bg-black">
                 <img
                   src={product.image}
                   alt={product.title}

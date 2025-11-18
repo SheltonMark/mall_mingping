@@ -443,7 +443,7 @@ export default function AboutPage() {
                     const mediaUrl = item.media_url?.startsWith('http') ? item.media_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.media_url}`
 
                     return (
-                      <div key={idx} className="min-w-full h-[350px] md:h-[450px]">
+                      <div key={idx} className="min-w-full h-[400px] md:h-[696px]">
                         <div className="relative h-full overflow-hidden">
                           {item.media_type === 'video' ? (
                             <video
@@ -483,7 +483,7 @@ export default function AboutPage() {
                     { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: t('about.quality_control') },
                     { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: t('about.rd_center') }
                   ].map((item, idx) => (
-                    <div key={idx} className="min-w-full h-[350px] md:h-[450px]">
+                    <div key={idx} className="min-w-full h-[400px] md:h-[696px]">
                       <div className="relative h-full overflow-hidden">
                         <img src={item.img} alt={item.label} className="w-full h-full object-cover transition-transform duration-600 hover:scale-105" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
@@ -502,14 +502,14 @@ export default function AboutPage() {
               <button
                 onClick={handlePrevSlide}
                 disabled={currentSlide === 0}
-                className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
+                className="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-300 text-white hover:bg-neutral-800 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
               >
                 ←
               </button>
               <button
                 onClick={handleNextSlide}
                 disabled={currentSlide === totalSlides - 1}
-                className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
+                className="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-300 text-white hover:bg-neutral-800 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
               >
                 →
               </button>
