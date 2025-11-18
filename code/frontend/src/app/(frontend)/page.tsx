@@ -293,19 +293,18 @@ export default function HomePage() {
                       </button>
 
                       {/* 证书轮播容器 */}
-                      <div className="relative h-[300px] md:h-[370px] overflow-hidden">
-                        <div className="w-[75%] mx-auto h-full">
-                          <div className="flex gap-6 transition-transform duration-700 ease-in-out h-full"
-                               style={{
-                                 transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`,
-                               }}>
-                            {/* 证书轮播 */}
-                            {certificates.map((cert, idx) => (
-                              <div key={idx} className="flex-shrink-0 w-1/3 px-3">
+                      <div className="relative h-[300px] md:h-[370px] overflow-hidden mx-auto" style={{ maxWidth: '1100px' }}>
+                        <div className="flex gap-6 transition-transform duration-700 ease-in-out h-full"
+                             style={{
+                               transform: `translateX(-${currentCertificateIndex * 33.333}%)`,
+                             }}>
+                          {/* 无限循环：复制证书数组3次 */}
+                          {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
+                            <div key={idx} className="flex-shrink-0" style={{ width: 'calc(33.333% - 16px)' }}>
                               <div className="group relative h-full bg-white rounded-lg shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105">
                                 <img
                                   src={cert.image}
-                                  alt={`Certificate ${idx + 1}`}
+                                  alt={`Certificate ${(idx % certificates.length) + 1}`}
                                   className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                                 />
                                 {(cert.label_zh || cert.label_en) && (
@@ -318,7 +317,6 @@ export default function HomePage() {
                               </div>
                             </div>
                           ))}
-                          </div>
                         </div>
                       </div>
 
@@ -354,15 +352,19 @@ export default function HomePage() {
                   ) : (
                     // 少于3张：居中静态显示，显示淡色按钮
                     <>
-                      {/* 左侧按钮（淡色） */}
+                      {/* 左侧按钮 */}
                       <button
-                        onClick={() => setCurrentCertificateIndex(prev =>
-                          prev === 0 ? certificates.length - 1 : prev - 1
-                        )}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
+                        onClick={() => {
+                          if (certificates.length <= 3) return;
+                          setCurrentCertificateIndex(prev =>
+                            prev === 0 ? certificates.length - 1 : prev - 1
+                          );
+                        }}
+                        disabled={certificates.length <= 3}
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110 ${certificates.length <= 3 ? 'opacity-30 cursor-not-allowed' : ''}`}
                         aria-label="Previous certificate"
                       >
-                        <ChevronLeft size={40} strokeWidth={3} className="text-primary/30 hover:text-primary/40 transition-colors" />
+                        <ChevronLeft size={72} strokeWidth={1} className="text-primary hover:text-primary/80 transition-colors" />
                       </button>
 
                       {/* 证书静态显示 */}
@@ -387,15 +389,19 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      {/* 右侧按钮（淡色） */}
+                      {/* 右侧按钮 */}
                       <button
-                        onClick={() => setCurrentCertificateIndex(prev =>
-                          prev === certificates.length - 1 ? 0 : prev + 1
-                        )}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
+                        onClick={() => {
+                          if (certificates.length <= 3) return;
+                          setCurrentCertificateIndex(prev =>
+                            prev === certificates.length - 1 ? 0 : prev + 1
+                          );
+                        }}
+                        disabled={certificates.length <= 3}
+                        className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110 ${certificates.length <= 3 ? 'opacity-30 cursor-not-allowed' : ''}`}
                         aria-label="Next certificate"
                       >
-                        <ChevronRight size={40} strokeWidth={3} className="text-primary/30 hover:text-primary/40 transition-colors" />
+                        <ChevronRight size={72} strokeWidth={1} className="text-primary hover:text-primary/80 transition-colors" />
                       </button>
                     </>
                   )}
