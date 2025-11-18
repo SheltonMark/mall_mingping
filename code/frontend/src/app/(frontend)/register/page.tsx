@@ -104,7 +104,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 placeholder={t('auth.password_placeholder')}
               />
               <p className="mt-1 text-xs text-gray-500">{t('auth.password_min_length')}</p>
