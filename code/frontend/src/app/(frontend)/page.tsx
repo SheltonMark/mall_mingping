@@ -455,7 +455,7 @@ export default function HomePage() {
           {/* Apple-style 2x2 grid with 0.25rem gap */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {featuredProducts.map((product, index) => (
-              <Link key={index} href={product.link} className="group relative h-[600px] md:h-[600px] overflow-hidden bg-black">
+              <Link key={index} href={product.link} className="group relative h-[400px] md:h-[450px] overflow-hidden bg-black">
                 <img
                   src={product.image}
                   alt={product.title}
