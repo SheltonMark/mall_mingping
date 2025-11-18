@@ -255,7 +255,7 @@ export default function HomePage() {
       </div>
 
             {/* Certificates Section - 3-item Carousel (Desktop) & Single Display (Mobile) */}
-      <section className="py-20 md:py-28 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+      <section className="py-12 md:py-16 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="w-full max-w-full">
           {/* Section Header */}
           <div className="text-center mb-12 md:mb-20 px-6">
