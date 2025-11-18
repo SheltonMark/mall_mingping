@@ -289,7 +289,7 @@ export default function HomePage() {
                         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
                         aria-label="Previous certificate"
                       >
-                        <ChevronLeft size={40} strokeWidth={3} className="text-primary hover:text-primary/80 transition-colors" />
+                        <ChevronLeft size={72} strokeWidth={1} className="text-primary hover:text-primary/80 transition-colors" />
                       </button>
 
                       {/* 证书轮播容器 */}
@@ -299,13 +299,13 @@ export default function HomePage() {
                                style={{
                                  transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`,
                                }}>
-                            {/* 复制3次证书数组实现无缝循环 */}
-                            {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
+                            {/* 证书轮播 */}
+                            {certificates.map((cert, idx) => (
                               <div key={idx} className="flex-shrink-0 w-1/3 px-3">
                               <div className="group relative h-full bg-white rounded-lg shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105">
                                 <img
                                   src={cert.image}
-                                  alt={`Certificate ${(idx % certificates.length) + 1}`}
+                                  alt={`Certificate ${idx + 1}`}
                                   className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                                 />
                                 {(cert.label_zh || cert.label_en) && (
@@ -330,7 +330,7 @@ export default function HomePage() {
                         className="absolute right-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
                         aria-label="Next certificate"
                       >
-                        <ChevronRight size={40} strokeWidth={3} className="text-primary hover:text-primary/80 transition-colors" />
+                        <ChevronRight size={72} strokeWidth={1} className="text-primary hover:text-primary/80 transition-colors" />
                       </button>
 
                       {/* Linear Progress Indicator */}
