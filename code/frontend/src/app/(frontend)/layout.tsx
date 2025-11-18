@@ -1,5 +1,6 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import BackToTop from '@/components/BackToTop'
 import { CartProvider } from '@/context/CartContext'
 import { AuthProvider } from '@/context/AuthContext'
 
@@ -16,6 +17,7 @@ export default function FrontendLayout({
             <Navbar />
             <main>{children}</main>
             <Footer />
+          <BackToTop />
           </div>
         </div>
       </CartProvider>

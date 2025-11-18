@@ -23,7 +23,7 @@ export default function HomePage() {
   const [isHeroHovering, setIsHeroHovering] = useState(false)
   const [certificates, setCertificates] = useState<Array<{image: string, label_zh?: string, label_en?: string}>>([])
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
-  const [showBackToTop, setShowBackToTop] = useState(false)
+  
 
   // 已取消证书自动轮播
 
@@ -137,15 +137,6 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [heroImages.length, isHeroHovering]);
 
-  // 监听滚动位置，控制回到顶部按钮显示
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 300)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // 证书轮播导航
   const handlePrevCertificate = () => {
@@ -154,11 +145,6 @@ export default function HomePage() {
 
   const handleNextCertificate = () => {
     setCurrentCertificateIndex((prev) => (prev >= certificates.length - 3 ? 0 : prev + 1))
-  }
-
-  // 回到顶部
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -592,17 +578,6 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
-
-      {/* Back to Top Button */}
-      {showBackToTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 p-4 bg-primary text-neutral-900 rounded-full shadow-lg hover:bg-gold-400 hover:-translate-y-1 transition-all duration-300"
-          aria-label="Back to top"
-        >
-          <ChevronUp size={24} />
-        </button>
-      )}
     </div>
   )
 }
