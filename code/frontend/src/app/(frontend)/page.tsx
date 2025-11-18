@@ -280,7 +280,7 @@ export default function HomePage() {
           {/* Section Header */}
           <div className="text-center mb-12 md:mb-20 px-6">
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">
-              {language === 'zh' ? '资质保障' : 'CERTIFICATIONS'}
+              {language === 'zh' ? '资质保障' : 'OUR CERTIFICATIONS'}
             </p>
             <h2
               className="text-4xl sm:text-5xl md:text-7xl font-light text-neutral-900 mb-4 md:mb-6"
@@ -296,12 +296,24 @@ export default function HomePage() {
           {certificates.length > 0 && (
             <>
               {/* Desktop: Certificate Display */}
-              <div className="hidden md:block relative px-6">
-                <div className="max-w-[1200px] mx-auto">
+              <div className="hidden md:block relative">
+                <div className="max-w-[1440px] mx-auto px-6 relative">
                   {certificates.length >= 3 ? (
-                    // 3张或更多：使用轮播
+                    // 3张或更多：使用轮播，显示左右按钮（品牌色）
                     <>
-                      <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+                      {/* 左侧按钮 */}
+                      <button
+                        onClick={() => setCurrentCertificateIndex(prev =>
+                          prev === 0 ? certificates.length - 1 : prev - 1
+                        )}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary hover:bg-primary/90 text-neutral-900 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        aria-label="Previous certificate"
+                      >
+                        <ChevronLeft size={28} strokeWidth={2.5} />
+                      </button>
+
+                      {/* 证书轮播容器 */}
+                      <div className="relative h-[300px] md:h-[350px] overflow-hidden px-16">
                         <div className="flex gap-6 transition-transform duration-700 ease-in-out"
                              style={{
                                transform: `translateX(-${(currentCertificateIndex * 100) / 3}%)`,
@@ -313,7 +325,7 @@ export default function HomePage() {
                                 <img
                                   src={cert.image}
                                   alt={`Certificate ${(idx % certificates.length) + 1}`}
-                                  className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                                  className="w-full h-full object-contain p-6 transition-transform duration-500 group-hover:scale-105"
                                 />
                                 {(cert.label_zh || cert.label_en) && (
                                   <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
@@ -328,7 +340,18 @@ export default function HomePage() {
                         </div>
                       </div>
 
-                      {/* Linear Progress Indicator - 只在轮播时显示 */}
+                      {/* 右侧按钮 */}
+                      <button
+                        onClick={() => setCurrentCertificateIndex(prev =>
+                          prev === certificates.length - 1 ? 0 : prev + 1
+                        )}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary hover:bg-primary/90 text-neutral-900 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        aria-label="Next certificate"
+                      >
+                        <ChevronRight size={28} strokeWidth={2.5} />
+                      </button>
+
+                      {/* Linear Progress Indicator */}
                       <div className="flex justify-center mt-12 px-6">
                         <div className="max-w-md w-full flex gap-1">
                           {certificates.map((_, index) => (
@@ -347,25 +370,50 @@ export default function HomePage() {
                       </div>
                     </>
                   ) : (
-                    // 少于3张：居中静态显示
-                    <div className={`flex justify-center gap-6 ${certificates.length === 1 ? 'max-w-md mx-auto' : 'max-w-3xl mx-auto'}`}>
-                      {certificates.map((cert, index) => (
-                        <div key={index} className="group relative h-[400px] md:h-[500px] bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden" style={{ flex: '1 1 0' }}>
-                          <img
-                            src={cert.image}
-                            alt={`Certificate ${index + 1}`}
-                            className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-                          />
-                          {(cert.label_zh || cert.label_en) && (
-                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
-                              <p className="text-white text-center text-lg md:text-xl font-medium">
-                                {language === 'zh' ? (cert.label_zh || cert.label_en) : (cert.label_en || cert.label_zh)}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    // 少于3张：居中静态显示，显示淡色按钮
+                    <>
+                      {/* 左侧按钮（淡色） */}
+                      <button
+                        onClick={() => setCurrentCertificateIndex(prev =>
+                          prev === 0 ? certificates.length - 1 : prev - 1
+                        )}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary/30 hover:bg-primary/40 text-neutral-700 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        aria-label="Previous certificate"
+                      >
+                        <ChevronLeft size={28} strokeWidth={2.5} />
+                      </button>
+
+                      {/* 证书静态显示 */}
+                      <div className={`flex justify-center gap-6 px-16 ${certificates.length === 1 ? 'max-w-md' : 'max-w-3xl'} mx-auto`}>
+                        {certificates.map((cert, index) => (
+                          <div key={index} className="group relative h-[300px] md:h-[350px] bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden" style={{ flex: '1 1 0' }}>
+                            <img
+                              src={cert.image}
+                              alt={`Certificate ${index + 1}`}
+                              className="w-full h-full object-contain p-6 transition-transform duration-500 group-hover:scale-105"
+                            />
+                            {(cert.label_zh || cert.label_en) && (
+                              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
+                                <p className="text-white text-center text-lg md:text-xl font-medium">
+                                  {language === 'zh' ? (cert.label_zh || cert.label_en) : (cert.label_en || cert.label_zh)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* 右侧按钮（淡色） */}
+                      <button
+                        onClick={() => setCurrentCertificateIndex(prev =>
+                          prev === certificates.length - 1 ? 0 : prev + 1
+                        )}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary/30 hover:bg-primary/40 text-neutral-700 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        aria-label="Next certificate"
+                      >
+                        <ChevronRight size={28} strokeWidth={2.5} />
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
