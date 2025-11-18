@@ -313,14 +313,15 @@ export default function HomePage() {
                       </button>
 
                       {/* 证书轮播容器 */}
-                      <div className="relative h-[450px] md:h-[550px] overflow-hidden px-20">
-                        <div className="flex gap-6 transition-transform duration-700 ease-in-out"
-                             style={{
-                               transform: `translateX(-${(currentCertificateIndex * 100) / 3}%)`,
-                             }}>
-                          {/* 复制3次证书数组实现无缝循环 */}
-                          {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
-                            <div key={idx} className="flex-shrink-0 w-1/3 px-3">
+                      <div className="relative h-[450px] md:h-[550px] overflow-hidden">
+                        <div className="w-[85%] mx-auto h-full">
+                          <div className="flex gap-6 transition-transform duration-700 ease-in-out h-full"
+                               style={{
+                                 transform: `translateX(-${(currentCertificateIndex * 100) / 3}%)`,
+                               }}>
+                            {/* 复制3次证书数组实现无缝循环 */}
+                            {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
+                              <div key={idx} className="flex-shrink-0 w-1/3 px-3">
                               <div className="group relative h-full bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden">
                                 <img
                                   src={cert.image}
@@ -337,6 +338,7 @@ export default function HomePage() {
                               </div>
                             </div>
                           ))}
+                          </div>
                         </div>
                       </div>
 
@@ -384,7 +386,8 @@ export default function HomePage() {
                       </button>
 
                       {/* 证书静态显示 */}
-                      <div className={`flex justify-center gap-6 px-20 ${certificates.length === 1 ? 'max-w-md' : 'max-w-3xl'} mx-auto`}>
+                      <div className="w-[85%] mx-auto">
+                        <div className={`flex justify-center gap-6 ${certificates.length === 1 ? 'max-w-md' : 'max-w-3xl'} mx-auto`}>
                         {certificates.map((cert, index) => (
                           <div key={index} className="group relative h-[450px] md:h-[550px] bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden" style={{ flex: '1 1 0' }}>
                             <img
@@ -401,6 +404,7 @@ export default function HomePage() {
                             )}
                           </div>
                         ))}
+                        </div>
                       </div>
 
                       {/* 右侧按钮（淡色） */}
