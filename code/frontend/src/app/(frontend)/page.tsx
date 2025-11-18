@@ -437,9 +437,9 @@ export default function HomePage() {
 
       {/* Featured Products Section - Apple Style 2x2 Grid */}
       <section className="pt-16 pb-32 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
-        <div className="w-full max-w-full">
+        <div className="max-w-[1440px] mx-auto px-6">
           {/* Section Header */}
-          <div className="text-center mb-20 px-6">
+          <div className="text-center mb-20">
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-4">{language === 'zh' ? '我们的系列' : 'Our Collection'}</p>
             <h2
               className="text-5xl md:text-7xl font-light text-neutral-900 mb-6"
@@ -453,7 +453,7 @@ export default function HomePage() {
           </div>
 
           {/* Apple-style 2x2 grid with 0.25rem gap */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {featuredProducts.map((product, index) => (
               <Link key={index} href={product.link} className="group relative h-[600px] md:h-[600px] overflow-hidden bg-black">
                 <img
@@ -482,7 +482,7 @@ export default function HomePage() {
           </div>
 
           {/* VIEW ALL Button */}
-          <div className="flex justify-center mt-12 sm:mt-16 px-6">
+          <div className="flex justify-center mt-12 sm:mt-16">
             <Link
               href="/products"
               className="relative inline-flex items-center gap-2 sm:gap-3 px-8 py-3.5 sm:px-12 sm:py-5 bg-[#494A45] text-white text-base sm:text-lg font-bold tracking-[0.05em] uppercase rounded-full overflow-hidden group hover:!bg-primary hover:-translate-y-1 transition-all duration-300"
