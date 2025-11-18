@@ -25,27 +25,7 @@ export default function HomePage() {
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
   const [showBackToTop, setShowBackToTop] = useState(false)
 
-  // Certificates自动轮播（3秒）
-  useEffect(() => {
-    if (certificates.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentCertificateIndex((prev) => (prev === certificates.length - 1 ? 0 : prev + 1));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [certificates.length]);
-
-  // 证书自动轮播（3秒）
-  useEffect(() => {
-    if (certificates.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentCertificateIndex((prev) => (prev === certificates.length - 1 ? 0 : prev + 1));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [certificates.length]);
+  // 已取消证书自动轮播
 
   // 从API加载首页配置
   useEffect(() => {
@@ -313,8 +293,8 @@ export default function HomePage() {
                       </button>
 
                       {/* 证书轮播容器 */}
-                      <div className="relative h-[450px] md:h-[550px] overflow-hidden">
-                        <div className="w-[85%] mx-auto h-full">
+                      <div className="relative h-[300px] md:h-[370px] overflow-hidden">
+                        <div className="w-[75%] mx-auto h-full">
                           <div className="flex gap-6 transition-transform duration-700 ease-in-out h-full"
                                style={{
                                  transform: `translateX(-${(currentCertificateIndex * 100) / 3}%)`,
@@ -322,15 +302,15 @@ export default function HomePage() {
                             {/* 复制3次证书数组实现无缝循环 */}
                             {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
                               <div key={idx} className="flex-shrink-0 w-1/3 px-3">
-                              <div className="group relative h-full bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden">
+                              <div className="group relative h-full bg-white rounded-lg shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105">
                                 <img
                                   src={cert.image}
                                   alt={`Certificate ${(idx % certificates.length) + 1}`}
                                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                                 {(cert.label_zh || cert.label_en) && (
-                                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
-                                    <p className="text-white text-center text-lg md:text-xl font-medium">
+                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-16 pb-6 px-6">
+                                    <p className="text-white text-left text-base md:text-lg font-medium">
                                       {language === 'zh' ? (cert.label_zh || cert.label_en) : (cert.label_en || cert.label_zh)}
                                     </p>
                                   </div>
@@ -360,7 +340,7 @@ export default function HomePage() {
                             <button
                               key={index}
                               onClick={() => setCurrentCertificateIndex(index)}
-                              className={`flex-1 h-1 rounded-sm transition-all duration-300 ${
+                              className={`flex-1 h-0.5 rounded-full transition-all duration-300 ${
                                 index === currentCertificateIndex
                                   ? 'bg-primary'
                                   : 'bg-neutral-300 hover:bg-neutral-400'
@@ -386,20 +366,20 @@ export default function HomePage() {
                       </button>
 
                       {/* 证书静态显示 */}
-                      <div className="w-[85%] mx-auto">
+                      <div className="w-[75%] mx-auto">
                         <div className={`flex justify-center gap-6 ${certificates.length === 1 ? 'max-w-md' : 'max-w-3xl'} mx-auto`}>
                         {certificates.map((cert, index) => (
-                          <div key={index} className="group relative h-[450px] md:h-[550px] bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden" style={{ flex: '1 1 0' }}>
+                          <div key={index} className="group relative h-[300px] md:h-[370px] bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden" style={{ flex: '1 1 0' }}>
                             <img
                               src={cert.image}
                               alt={`Certificate ${index + 1}`}
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             {(cert.label_zh || cert.label_en) && (
-                              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
-                                <p className="text-white text-center text-lg md:text-xl font-medium">
-                                  {language === 'zh' ? (cert.label_zh || cert.label_en) : (cert.label_en || cert.label_zh)}
-                                </p>
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-16 pb-6 px-6">
+                                <p className="text-white text-left text-base md:text-lg font-medium">
+                                      {language === 'zh' ? (cert.label_zh || cert.label_en) : (cert.label_en || cert.label_zh)}
+                                    </p>
                               </div>
                             )}
                           </div>
