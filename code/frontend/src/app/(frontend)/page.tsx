@@ -297,7 +297,7 @@ export default function HomePage() {
                         <div className="w-[75%] mx-auto h-full">
                           <div className="flex gap-6 transition-transform duration-700 ease-in-out h-full"
                                style={{
-                                 transform: `translateX(-${(currentCertificateIndex * 100) / 3}%)`,
+                                 transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`,
                                }}>
                             {/* 复制3次证书数组实现无缝循环 */}
                             {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
@@ -306,7 +306,7 @@ export default function HomePage() {
                                 <img
                                   src={cert.image}
                                   alt={`Certificate ${(idx % certificates.length) + 1}`}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                                 />
                                 {(cert.label_zh || cert.label_en) && (
                                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-16 pb-6 px-6">
@@ -373,7 +373,7 @@ export default function HomePage() {
                             <img
                               src={cert.image}
                               alt={`Certificate ${index + 1}`}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                             />
                             {(cert.label_zh || cert.label_en) && (
                               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-16 pb-6 px-6">
@@ -430,7 +430,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products Section - Apple Style 2x2 Grid */}
-      <section className="py-32 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+      <section className="pt-16 pb-32 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="w-full max-w-full">
           {/* Section Header */}
           <div className="text-center mb-20 px-6">
