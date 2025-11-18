@@ -306,10 +306,10 @@ export default function HomePage() {
                         onClick={() => setCurrentCertificateIndex(prev =>
                           prev === 0 ? certificates.length - 1 : prev - 1
                         )}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary hover:bg-primary/90 text-neutral-900 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
                         aria-label="Previous certificate"
                       >
-                        <ChevronLeft size={28} strokeWidth={2.5} />
+                        <ChevronLeft size={40} strokeWidth={3} className="text-primary hover:text-primary/80 transition-colors" />
                       </button>
 
                       {/* 证书轮播容器 */}
@@ -345,10 +345,10 @@ export default function HomePage() {
                         onClick={() => setCurrentCertificateIndex(prev =>
                           prev === certificates.length - 1 ? 0 : prev + 1
                         )}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary hover:bg-primary/90 text-neutral-900 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
                         aria-label="Next certificate"
                       >
-                        <ChevronRight size={28} strokeWidth={2.5} />
+                        <ChevronRight size={40} strokeWidth={3} className="text-primary hover:text-primary/80 transition-colors" />
                       </button>
 
                       {/* Linear Progress Indicator */}
@@ -377,10 +377,10 @@ export default function HomePage() {
                         onClick={() => setCurrentCertificateIndex(prev =>
                           prev === 0 ? certificates.length - 1 : prev - 1
                         )}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary/30 hover:bg-primary/40 text-neutral-700 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
                         aria-label="Previous certificate"
                       >
-                        <ChevronLeft size={28} strokeWidth={2.5} />
+                        <ChevronLeft size={40} strokeWidth={3} className="text-primary/30 hover:text-primary/40 transition-colors" />
                       </button>
 
                       {/* 证书静态显示 */}
@@ -408,10 +408,10 @@ export default function HomePage() {
                         onClick={() => setCurrentCertificateIndex(prev =>
                           prev === certificates.length - 1 ? 0 : prev + 1
                         )}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary/30 hover:bg-primary/40 text-neutral-700 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-300 hover:scale-110"
                         aria-label="Next certificate"
                       >
-                        <ChevronRight size={28} strokeWidth={2.5} />
+                        <ChevronRight size={40} strokeWidth={3} className="text-primary/30 hover:text-primary/40 transition-colors" />
                       </button>
                     </>
                   )}
