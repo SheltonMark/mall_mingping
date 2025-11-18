@@ -36,6 +36,17 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [certificates.length]);
 
+  // 证书自动轮播（3秒）
+  useEffect(() => {
+    if (certificates.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentCertificateIndex((prev) => (prev === certificates.length - 1 ? 0 : prev + 1));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [certificates.length]);
+
   // 从API加载首页配置
   useEffect(() => {
     const loadHomepageConfig = async () => {
@@ -70,27 +81,27 @@ export default function HomePage() {
             setHeroImages([imageUrl]);
           }
 
-          // 加载certificates配置 (max 6 images)
+          // 加载certificates配置 (max 6 images with labels)
           if (data.certificates && Array.isArray(data.certificates) && data.certificates.length > 0) {
             const certificateData = data.certificates
               .slice(0, 6)
               .map((cert: any) => {
-                let imageUrl = '';
                 if (typeof cert === 'string') {
-                  imageUrl = cert;
+                  // 兼容旧版纯字符串格式
+                  return {
+                    image: cert.startsWith('http') ? cert : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${cert}`,
+                    label_zh: '',
+                    label_en: ''
+                  };
                 } else {
-                  imageUrl = cert.image || cert.url || '';
+                  // 新版对象格式
+                  const imageUrl = cert.image || cert.url || '';
+                  return {
+                    image: imageUrl.startsWith('http') ? imageUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${imageUrl}`,
+                    label_zh: cert.label_zh || '',
+                    label_en: cert.label_en || ''
+                  };
                 }
-
-                if (imageUrl && !imageUrl.startsWith('http')) {
-                  imageUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${imageUrl}`;
-                }
-
-                return {
-                  image: imageUrl,
-                  label_zh: cert.label_zh || '',
-                  label_en: cert.label_en || ''
-                };
               })
               .filter((cert: any) => cert.image);
 
@@ -248,7 +259,7 @@ export default function HomePage() {
                   {/* BUY NOW Button - Inside Hero */}
                   <Link
                     href="/products"
-                    className="group relative inline-flex items-center justify-center px-8 py-2.5 sm:px-10 sm:py-3 bg-primary text-neutral-900 animate-fade-in-up animation-delay-600 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_20px_rgba(189,183,107,0.6)]"
+                    className="group relative inline-flex items-center justify-center px-8 py-2.5 sm:px-10 sm:py-3 bg-primary text-white animate-fade-in-up animation-delay-600 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_20px_rgba(189,183,107,0.6)]"
                     style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                   >
                     <span className="relative z-10">
@@ -263,7 +274,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Certificates Section - 3-item Carousel */}
+            {/* Certificates Section - 3-item Carousel (Desktop) & Single Display (Mobile) */}
       <section className="py-20 md:py-28 bg-white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         <div className="w-full max-w-full">
           {/* Section Header */}
@@ -282,31 +293,24 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* 3-Item Carousel */}
           {certificates.length > 0 && (
-            <div className="relative px-6 overflow-hidden">
-              <div className="max-w-[1200px] mx-auto">
-                <div className="relative h-[400px] md:h-[500px]">
-                  {/* 显示3张证书的循环轮播 */}
-                  <div
-                    className="flex gap-6 absolute inset-0 transition-transform duration-700 ease-in-out"
-                    style={{
-                      transform: `translateX(-${currentCertificateIndex * (100 / 3)}%)`,
-                      width: `${certificates.length * (100 / 3)}%`
-                    }}
-                  >
-                    {[...certificates, ...certificates, ...certificates].map((cert, idx) => {
-                      const actualIndex = idx % certificates.length;
-                      return (
-                        <div
-                          key={idx}
-                          className="flex-shrink-0"
-                          style={{ width: `${100 / certificates.length / 3}%` }}
-                        >
-                          <div className="group relative h-full mx-3 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden">
+            <>
+              {/* Desktop: 3-Item Carousel */}
+              <div className="hidden md:block relative px-6 overflow-hidden">
+                <div className="max-w-[1200px] mx-auto">
+                  <div className="relative h-[400px] md:h-[500px]">
+                    {/* 显示3张证书的循环轮播 */}
+                    <div className="flex gap-6 transition-transform duration-700 ease-in-out"
+                         style={{
+                           transform: `translateX(-${(currentCertificateIndex * 100) / 3}%)`,
+                         }}>
+                      {/* 复制3次证书数组实现无缝循环 */}
+                      {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
+                        <div key={idx} className="flex-shrink-0 w-1/3 px-3">
+                          <div className="group relative h-full bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden">
                             <img
                               src={cert.image}
-                              alt={`Certificate ${actualIndex + 1}`}
+                              alt={`Certificate ${(idx % certificates.length) + 1}`}
                               className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
                             />
                             {/* 悬停显示文字 */}
@@ -319,30 +323,53 @@ export default function HomePage() {
                             )}
                           </div>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Linear Progress Indicator */}
-                <div className="flex justify-center mt-12 px-6">
-                  <div className="max-w-md w-full flex gap-1">
-                    {certificates.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentCertificateIndex(index)}
-                        className={`flex-1 h-1 rounded-sm transition-all duration-300 ${
-                          index === currentCertificateIndex
-                            ? 'bg-primary'
-                            : 'bg-neutral-300 hover:bg-neutral-400'
-                        }`}
-                        aria-label={`Go to certificate ${index + 1}`}
-                      />
-                    ))}
+                  {/* Linear Progress Indicator */}
+                  <div className="flex justify-center mt-12 px-6">
+                    <div className="max-w-md w-full flex gap-1">
+                      {certificates.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentCertificateIndex(index)}
+                          className={`flex-1 h-1 rounded-sm transition-all duration-300 ${
+                            index === currentCertificateIndex
+                              ? 'bg-primary'
+                              : 'bg-neutral-300 hover:bg-neutral-400'
+                          }`}
+                          aria-label={`Go to certificate ${index + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+
+              {/* Mobile: Display All Certificates */}
+              <div className="md:hidden px-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                  {certificates.map((cert, index) => (
+                    <div key={index} className="group relative bg-white rounded-lg shadow-md overflow-hidden">
+                      <img
+                        src={cert.image}
+                        alt={`Certificate ${index + 1}`}
+                        className="w-full h-64 object-contain p-4"
+                      />
+                      {/* 移动端也支持点击显示文字 */}
+                      {(cert.label_zh || cert.label_en) && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                          <p className="text-white text-sm font-medium">
+                            {language === 'zh' ? (cert.label_zh || cert.label_en) : (cert.label_en || cert.label_zh)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       </section>
