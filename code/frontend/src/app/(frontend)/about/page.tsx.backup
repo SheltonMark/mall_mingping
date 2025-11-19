@@ -319,9 +319,8 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="max-w-[1440px] mx-auto px-6 pb-20">
         <div className="grid md:grid-cols-2 items-center gap-0">
-          <div className="p-0 w-full h-[350px] md:h-[400px] flex flex-col justify-end transition-all duration-700" data-scroll-id="story-1-text">
+          <div className="p-12 md:p-16 transition-all duration-700" data-scroll-id="story-1-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
               {getLocalizedField('story1_title') || t('about.craftsmanship_title')}
             </h3>
@@ -332,7 +331,7 @@ export default function AboutPage() {
               {getLocalizedField('story1_desc2') || t('about.craftsmanship_desc_2')}
             </p>
           </div>
-          <div className="h-[350px] md:h-[400px] overflow-hidden transition-all duration-700" data-scroll-id="story-1-image">
+          <div className="h-96 md:h-auto aspect-video overflow-hidden transition-all duration-700" data-scroll-id="story-1-image">
             <img
               src={aboutConfig.story1_image?.startsWith('http') ? aboutConfig.story1_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.story1_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuBfi1K58Srl81ZITOYuNmNL-H9Pjd-C1kWaLRJPCoJZ-jYYqOFcGoYZQP69NgzaY-yqU5h-8Bp-kWdtJGVHveeKt7P2pBYIQvaCbEQ1xW0Sn4ryEboi7EftPzrRvQ1DddRFioFynEpqDDrQApQTeV78224hX1hyWju2WhrDBOtUY1XjABYDRnh3lbTGTnTbmxSplwI2MbWJNUVb2ivKnIDZlnbOgnP0-Fez2ei6nvbZHyBMM13PPY-PM1OW0jKaPGJL5JioexDR0MZJ"}
               alt="Craftsmanship"
@@ -341,15 +340,15 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 items-center gap-0 -mt-1">
-          <div className="h-[350px] md:h-[400px] overflow-hidden order-2 md:order-1 transition-all duration-700" data-scroll-id="story-2-image">
+        <div className="grid md:grid-cols-2 items-center gap-0">
+          <div className="h-96 md:h-auto aspect-video overflow-hidden order-2 md:order-1 transition-all duration-700" data-scroll-id="story-2-image">
             <img
               src={aboutConfig.story2_image?.startsWith('http') ? aboutConfig.story2_image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${aboutConfig.story2_image}` || "https://lh3.googleusercontent.com/aida-public/AB6AXuCwU9EPbCeWtPXd3LnWWxDR3m0NWwkvRXgwA6Ydjbwd_q39jNDNsSuLz7gTVDC9E3moGGwTQ8gDJ-qeenFCorzD6oeFBTXpqffoWd0usjGwznRbQkT8R8_cW-9EntOyzc2E2JlfiZj4q0Tc2VGaTL4ugwPQqFCSqa44CdgnV7dp7k41NenFhCRk1uQ6gr8MlDM8aifbSFgRvsDUHFTiQMyCyNHUlj6Q64AqfpSBsWtw0FHFGDOujY-kWQ-8fKO6NI11mJ9enoREtIPe"}
               alt="Factory Direct"
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-600"
             />
           </div>
-          <div className="p-0 w-full h-[350px] md:h-[400px] flex flex-col justify-start order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
+          <div className="p-12 md:p-16 order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
               {getLocalizedField('story2_title') || t('about.factory_supply_title')}
             </h3>
@@ -360,7 +359,6 @@ export default function AboutPage() {
               {getLocalizedField('story2_desc2') || t('about.factory_supply_desc_2')}
             </p>
           </div>
-        </div>
         </div>
       </section>
 
@@ -411,9 +409,9 @@ export default function AboutPage() {
       </section>
 
       {/* Factory Carousel Section - 独特的标题设计 */}
-      <section className="py-32 bg-white">
+      <section className="py-32 bg-neutral-900">
         <div className="max-w-[1440px] mx-auto px-6">
-          <div className="text-center mb-16 text-neutral-900">
+          <div className="text-center mb-16 text-white">
             {/* 带边框的白色标签 */}
             <div className="flex items-center justify-center gap-4 mb-6">
               <div className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent"></div>
@@ -428,11 +426,11 @@ export default function AboutPage() {
             <h2 className="text-4xl md:text-5xl font-semibold mb-6" style={{ letterSpacing: '0.02em' }}>
               {t('about.modern_production')}
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">{t('about.smart_factory')}</p>
+            <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">{t('about.smart_factory')}</p>
           </div>
 
           <div className="relative">
-            <div className="overflow-hidden rounded-none" style={{ boxShadow: 'var(--shadow-xlarge)' }}>
+            <div className="overflow-hidden rounded-3xl" style={{ boxShadow: 'var(--shadow-xlarge)' }}>
               <div
                 className="flex transition-transform duration-500 ease-out"
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -443,7 +441,7 @@ export default function AboutPage() {
                     const mediaUrl = item.media_url?.startsWith('http') ? item.media_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.media_url}`
 
                     return (
-                      <div key={idx} className="min-w-full h-[400px] md:h-[696px]">
+                      <div key={idx} className="min-w-full aspect-video">
                         <div className="relative h-full overflow-hidden">
                           {item.media_type === 'video' ? (
                             <video
@@ -483,7 +481,7 @@ export default function AboutPage() {
                     { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCA-xhSQMIXCEToPuBIcgJtoEhRyFOe3go7GPbACC5duLevFYOO0vNn-TtoCja7pky40tgPS9KzdFnJDakuDg-YIdwVUy8_xFG6eDySJUr_IkFkq7j6ect3gAHPg3ca0YeZBWsdUutEvOzU0bi0aPxAVI6K-igFBtHPb-hkRzKUsyijzulrD1EBRnUCg6OrNYig7_onhy7Cez4gb7FN6Life15OLW58Vk5sRoMDzLOO_3YStL7D5_tYGEkxN5n-JrNGIqFn3FyeiB1g', label: t('about.quality_control') },
                     { img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBvR4ZS6iXxPFjf_owlhSPtxe5rlS3z6hvFKe58cv5BSORe-WqryNsuUX_Ne8neN4gnS5YUYF57Kpw4fgtLFvpdeMCyaQ7EShr8TANoGQDzKAWI1g5vXgFc8kSegkeQJKZ70F2cv_jf5loG3XNcmwWVgpGa4gneqxJW7baf_rbz21PvoQWOTf_JjdUV8u6OuSMgKZJoL4xWM9xjckJwXmc8kJgjKjXhJvooJrhFFhBXBC4GTBR5obA_oAOsSRNjWKAMpOOHO9HAwj_8', label: t('about.rd_center') }
                   ].map((item, idx) => (
-                    <div key={idx} className="min-w-full h-[400px] md:h-[696px]">
+                    <div key={idx} className="min-w-full aspect-video">
                       <div className="relative h-full overflow-hidden">
                         <img src={item.img} alt={item.label} className="w-full h-full object-cover transition-transform duration-600 hover:scale-105" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
@@ -502,14 +500,14 @@ export default function AboutPage() {
               <button
                 onClick={handlePrevSlide}
                 disabled={currentSlide === 0}
-                className="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-300 text-white hover:bg-neutral-800 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
+                className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
               >
                 ←
               </button>
               <button
                 onClick={handleNextSlide}
                 disabled={currentSlide === totalSlides - 1}
-                className="w-14 h-14 rounded-full bg-neutral-900 border border-neutral-300 text-white hover:bg-neutral-800 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
+                className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 disabled:opacity-30 transition-all flex items-center justify-center text-xl"
               >
                 →
               </button>
