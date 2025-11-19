@@ -321,7 +321,7 @@ export default function AboutPage() {
 
         <div className="max-w-[1440px] mx-auto px-6 pb-20">
         <div className="grid md:grid-cols-2 items-start gap-0">
-          <div className="p-0 w-full  transition-all duration-700" data-scroll-id="story-1-text">
+          <div className="pr-8 md:pr-12 w-full  transition-all duration-700" data-scroll-id="story-1-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
               {getLocalizedField('story1_title') || t('about.craftsmanship_title')}
             </h3>
@@ -349,7 +349,7 @@ export default function AboutPage() {
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-600"
             />
           </div>
-          <div className="p-0 w-full flex flex-col justify-center order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
+          <div className="pl-8 md:pl-12 w-full flex flex-col justify-center order-1 md:order-2 transition-all duration-700" data-scroll-id="story-2-text">
             <h3 className="text-4xl md:text-5xl font-bold mb-6">
               {getLocalizedField('story2_title') || t('about.factory_supply_title')}
             </h3>
