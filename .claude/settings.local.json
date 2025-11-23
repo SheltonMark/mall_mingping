@@ -179,7 +179,13 @@
       "Bash(stat:*)",
       "Bash(md5sum:*)",
       "Bash(certutil:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(npx prisma db pull:*)",
+      "Bash(npx prisma validate:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(set PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=现在是测试阶段 数据库的数据都是mock的数据 不重要 我只是懒得上传那么多产品图片和描述 所以 结论是 yes)",
+      "Bash(cmd.exe /c db-reset.bat)"
     ],
     "deny": [],
     "ask": []

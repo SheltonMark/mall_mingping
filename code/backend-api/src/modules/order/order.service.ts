@@ -262,8 +262,6 @@ export class OrderService {
             accountId: true,
             chineseName: true,
             
-            email: true,
-            phone: true,
           },
         },
         items: {
@@ -638,7 +636,7 @@ export class OrderService {
       状态: order.status,
       客户: order.customer.name,
       联系人: order.customer.contactPerson || '-',
-      业务员: `${order.salesperson.chineseName} (${order.salesperson.englishName})`,
+      业务员: `${order.salesperson.chineseName}`,
       订单总额: order.totalAmount?.toNumber() || 0,
       明细数量: order.items.length,
     }));

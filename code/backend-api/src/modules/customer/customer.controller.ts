@@ -26,14 +26,12 @@ export class CustomerController {
   @Get()
   findAll(
     @Query('search') search?: string,
-    @Query('salespersonId') salespersonId?: string,
     @Query('customerType') customerType?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     return this.customerService.findAll({
       search,
-      salespersonId,
       customerType,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
@@ -58,11 +56,4 @@ export class CustomerController {
     return this.customerService.remove(id);
   }
 
-  @Patch(':id/assign-salesperson')
-  assignSalesperson(
-    @Param('id') id: string,
-    @Body('salespersonId') salespersonId: string,
-  ) {
-    return this.customerService.assignSalesperson(id, salespersonId);
-  }
 }
