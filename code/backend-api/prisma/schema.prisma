@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -26,54 +26,40 @@ model Admin {
 }
 
 // ========================================
-// 业务员表
+// 业务员表（内网版本）
 // ========================================
 model Salesperson {
   id           String   @id @default(uuid())
-  accountId    String   @unique @map("account_id")
-  chineseName  String   @map("chinese_name")
-  englishName  String   @map("english_name")
-  email        String?  @unique
-  phone        String?
-  hireDate     DateTime @map("hire_date")
-  avatar       String?
+  accountId    String   @unique @map("account_id") // 工号，用于登录
+  chineseName  String   @map("chinese_name")       // 中文名
+  password     String                              // 密码哈希
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  customers    Customer[]
   orders       Order[]
+  cartItems    CartItem[] // 业务员的购物车
 
   @@map("salespersons")
 }
 
 // ========================================
-// 客户表（外网版本 - 支持注册登录）
+// 客户表（内网版本 - 仅存储客户信息）
 // ========================================
 model Customer {
   id              String   @id @default(uuid())
-  email           String   @unique // 外网版：邮箱唯一，用于登录
-  password        String?  // 外网版：密码哈希（bcrypt）
+  email           String   @unique // 邮箱（联系方式）
   name            String   // 公司名称或客户名称
   contactPerson   String?  @map("contact_person")
   phone           String?
   address         String?
   country         String?  // 国家/地区
 
-  // 内网版字段（外网不使用，但保留兼容性）
-  salespersonId   String?  @map("salesperson_id")
   customerType    CustomerType @default(NEW) @map("customer_type")
-
-  // 客户等级（产品权限控制）
-  tier            CustomerTier @default(STANDARD) @map("customer_tier")
-
   status          String   @default("active") // active/disabled
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  salesperson     Salesperson? @relation(fields: [salespersonId], references: [id])
   orders          Order[]
-  orderForms      OrderForm[] // 外网版：订单表单关系
-  cartItems       CartItem[] // 外网版：购物车关系
 
   @@map("customers")
 }
@@ -81,12 +67,6 @@ model Customer {
 enum CustomerType {
   NEW @map("new")
   OLD @map("old")
-}
-
-enum CustomerTier {
-  STANDARD @map("standard") // 普通客户
-  VIP      @map("vip")      // VIP客户
-  SVIP     @map("svip")     // SVIP客户
 }
 
 // ========================================
@@ -264,9 +244,6 @@ model ProductGroup {
   isPublished     Boolean  @default(false) @map("is_published") // 是否上架
   sortOrder       Int      @default(0) @map("sort_order") // 排序权重
   status          String   @default("inactive") // active/inactive
-
-  // 产品可见性控制 (2025-11-09 新增)
-  visibilityTier  ProductVisibility @default(ALL) @map("visibility_tier") // 可见性等级
 
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -475,54 +452,6 @@ enum CertCategory {
 }
 
 // ========================================
-// 订单表单表（外网版本 - 仅收集订单咨询信息）
-// ========================================
-model OrderForm {
-  id              String   @id @default(uuid())
-  formNumber      String   @unique @map("form_number") // 表单编号，如: OF2025-001
-  customerId      String   @map("customer_id")
-
-  // 联系信息
-  contactName     String   @map("contact_name")
-  phone           String
-  email           String
-  address         String
-  notes           String?  // 备注
-
-  // 商品信息（JSON格式存储）
-  items           Json     // 购物车内容：产品+配置+数量
-  /*
-  items 格式:
-  [
-    {
-      "product_id": "123",
-      "product_code": "MP007-BLU-WHT",
-      "product_name": "Rotating Mop Set",
-      "quantity": 2,
-      "unit_price": 299.00,
-      "configuration": {
-        "base": { "color": "Blue" },
-        "handle": { "color": "White" }
-      }
-    }
-  ]
-  */
-
-  totalAmount     String   @map("total_amount") // 总金额（仅参考）
-
-  // 状态（固定为submitted）
-  status          String   @default("submitted")
-
-  // 时间戳
-  submittedAt     DateTime @map("submitted_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  customer        Customer @relation(fields: [customerId], references: [id])
-
-  @@map("order_forms")
-}
-
 // ========================================
 // 组件管理表 (2025-11-10 新增)
 // ========================================
@@ -542,33 +471,23 @@ model Component {
 }
 
 // ========================================
-// 枚举：产品可见性等级 (2025-11-09 新增)
-// ========================================
-enum ProductVisibility {
-  ALL      @map("all")      // 所有人可见（未登录、普通、VIP、SVIP）
-  STANDARD @map("standard") // 普通及以上可见（普通、VIP、SVIP）
-  VIP      @map("vip")      // VIP及以上可见（VIP、SVIP）
-  SVIP     @map("svip")     // 仅SVIP可见
-}
-
-// ========================================
-// 购物车表 (2025-11-10 新增)
+// 购物车表（内网版本 - 业务员使用）
 // ========================================
 model CartItem {
   id              String   @id @default(uuid())
-  customerId      String   @map("customer_id")
+  salespersonId   String   @map("salesperson_id") // 关联业务员
   skuId           String   @map("sku_id")
   productCode     String   @map("product_code") // 产品代码，如: C04.01.0021
   productName     String   @map("product_name") // 产品名称
   colorScheme     Json?    @map("color_scheme") // 配色方案 JSON
   quantity        Int      @default(1)
-  price           Decimal  @db.Decimal(10, 2) // 单价
+  price           Decimal // 单价
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  salesperson     Salesperson @relation(fields: [salespersonId], references: [id], onDelete: Cascade)
 
-  @@unique([customerId, skuId, colorScheme])
-  @@index([customerId])
+  @@unique([salespersonId, skuId, colorScheme])
+  @@index([salespersonId])
   @@map("cart_items")
 }
