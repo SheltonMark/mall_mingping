@@ -129,7 +129,7 @@ export class OrderService {
             id: true,
             accountId: true,
             chineseName: true,
-            englishName: true,
+            
           },
         },
         items: {
@@ -223,9 +223,10 @@ export class OrderService {
               id: true,
               accountId: true,
               chineseName: true,
-              englishName: true,
+              
             },
           },
+          items: true,
           _count: {
             select: {
               items: true,
@@ -260,7 +261,7 @@ export class OrderService {
             id: true,
             accountId: true,
             chineseName: true,
-            englishName: true,
+            
             email: true,
             phone: true,
           },
@@ -371,7 +372,7 @@ export class OrderService {
             id: true,
             accountId: true,
             chineseName: true,
-            englishName: true,
+            
           },
         },
         items: {
@@ -610,7 +611,7 @@ export class OrderService {
         salesperson: {
           select: {
             chineseName: true,
-            englishName: true,
+            
           },
         },
         items: {

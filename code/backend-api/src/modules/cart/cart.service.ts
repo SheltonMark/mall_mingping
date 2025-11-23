@@ -7,9 +7,9 @@ export class CartService {
   constructor(private prisma: PrismaService) {}
 
   // Get user's cart items
-  async getCartItems(customerId: string) {
+  async getCartItems(salespersonId: string) {
     const cartItems = await this.prisma.cartItem.findMany({
-      where: { customerId },
+      where: { salespersonId },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -39,7 +39,7 @@ export class CartService {
   }
 
   // Add item to cart
-  async addItem(customerId: string, dto: AddToCartDto) {
+  async addItem(salespersonId: string, dto: AddToCartDto) {
     // Parse colorScheme if it's a string
     let colorSchemeToUse = dto.colorScheme || {}
     if (typeof colorSchemeToUse === 'string') {
@@ -54,7 +54,7 @@ export class CartService {
     // Check if item with same SKU and color scheme already exists
     const existingItem = await this.prisma.cartItem.findFirst({
       where: {
-        customerId,
+        salespersonId,
         skuId: dto.skuId,
         colorScheme: {
           equals: colorSchemeToUse
@@ -76,7 +76,7 @@ export class CartService {
     // Create new cart item
     return this.prisma.cartItem.create({
       data: {
-        customerId,
+        salespersonId,
         skuId: dto.skuId,
         productCode: dto.productCode,
         productName: dto.productName,
@@ -88,10 +88,10 @@ export class CartService {
   }
 
   // Update cart item quantity
-  async updateItem(customerId: string, itemId: string, dto: UpdateCartItemDto) {
+  async updateItem(salespersonId: string, itemId: string, dto: UpdateCartItemDto) {
     // Verify the item belongs to the customer
     const item = await this.prisma.cartItem.findFirst({
-      where: { id: itemId, customerId },
+      where: { id: itemId, salespersonId },
     })
 
     if (!item) {
@@ -105,10 +105,10 @@ export class CartService {
   }
 
   // Remove item from cart
-  async removeItem(customerId: string, itemId: string) {
+  async removeItem(salespersonId: string, itemId: string) {
     // Verify the item belongs to the customer
     const item = await this.prisma.cartItem.findFirst({
-      where: { id: itemId, customerId },
+      where: { id: itemId, salespersonId },
     })
 
     if (!item) {
@@ -121,21 +121,21 @@ export class CartService {
   }
 
   // Clear all cart items for a customer
-  async clearCart(customerId: string) {
+  async clearCart(salespersonId: string) {
     return this.prisma.cartItem.deleteMany({
-      where: { customerId },
+      where: { salespersonId },
     })
   }
 
   // Sync cart from localStorage (when user logs in)
-  async syncCart(customerId: string, dto: SyncCartDto) {
+  async syncCart(salespersonId: string, dto: SyncCartDto) {
     // Clear existing cart
-    await this.clearCart(customerId)
+    await this.clearCart(salespersonId)
 
     // Add all items from localStorage
     if (dto.items && dto.items.length > 0) {
       const cartItems = dto.items.map((item) => ({
-        customerId,
+        salespersonId,
         skuId: item.skuId,
         productCode: item.productCode,
         productName: item.productName,
@@ -150,6 +150,6 @@ export class CartService {
     }
 
     // Return the updated cart
-    return this.getCartItems(customerId)
+    return this.getCartItems(salespersonId)
   }
 }

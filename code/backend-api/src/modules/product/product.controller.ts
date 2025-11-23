@@ -26,7 +26,6 @@ import {
   BatchImportSkuDto,
 } from './dto/product.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { JwtCustomerOptionalGuard } from '../customer-auth/jwt-customer-optional.guard';
 import { CurrentCustomer } from '../../common/decorators/current-customer.decorator';
 
 @Controller('products')
@@ -95,7 +94,6 @@ export class ProductController {
 
   // 公开接口：获取产品组列表（前台商城使用，根据客户等级进行权限过滤）
   @Get('groups')
-  @UseGuards(JwtCustomerOptionalGuard)
   findAllProductGroups(
     @CurrentCustomer() customer: any,
     @Query('search') search?: string,

@@ -8,38 +8,37 @@ import {
   CreateSalespersonDto,
   UpdateSalespersonDto,
 } from './dto/salesperson.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class SalespersonService {
   constructor(private prisma: PrismaService) {}
 
   async create(createSalespersonDto: CreateSalespersonDto) {
-    const { accountId, email, ...rest } = createSalespersonDto;
+    const { accountId, chineseName, password } = createSalespersonDto;
 
-    // Check if accountId already exists
     const existing = await this.prisma.salesperson.findUnique({
       where: { accountId },
     });
 
     if (existing) {
-      throw new ConflictException('Account ID already exists');
+      throw new ConflictException('工号已存在');
     }
 
-    // Check if email already exists
-    if (email) {
-      const existingEmail = await this.prisma.salesperson.findUnique({
-        where: { email },
-      });
-      if (existingEmail) {
-        throw new ConflictException('Email already exists');
-      }
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     return this.prisma.salesperson.create({
       data: {
         accountId,
-        email,
-        ...rest,
+        chineseName,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+        accountId: true,
+        chineseName: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
@@ -52,9 +51,7 @@ export class SalespersonService {
       ? {
           OR: [
             { chineseName: { contains: search } },
-            { englishName: { contains: search } },
             { accountId: { contains: search } },
-            { email: { contains: search } },
           ],
         }
       : {};
@@ -67,8 +64,8 @@ export class SalespersonService {
         include: {
           _count: {
             select: {
-              customers: true,
               orders: true,
+              cartItems: true,
             },
           },
         },
@@ -80,7 +77,14 @@ export class SalespersonService {
     ]);
 
     return {
-      data: salespersons,
+      data: salespersons.map((sp) => ({
+        id: sp.id,
+        accountId: sp.accountId,
+        chineseName: sp.chineseName,
+        createdAt: sp.createdAt,
+        updatedAt: sp.updatedAt,
+        _count: sp._count,
+      })),
       meta: {
         total,
         page,
@@ -94,10 +98,6 @@ export class SalespersonService {
     const salesperson = await this.prisma.salesperson.findUnique({
       where: { id },
       include: {
-        customers: {
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-        },
         orders: {
           take: 10,
           orderBy: { createdAt: 'desc' },
@@ -107,18 +107,17 @@ export class SalespersonService {
         },
         _count: {
           select: {
-            customers: true,
             orders: true,
+            cartItems: true,
           },
         },
       },
     });
 
     if (!salesperson) {
-      throw new NotFoundException('Salesperson not found');
+      throw new NotFoundException('业务员不存在');
     }
 
-    // Calculate total sales amount
     const salesStats = await this.prisma.order.aggregate({
       where: {
         salespersonId: id,
@@ -130,7 +129,13 @@ export class SalespersonService {
     });
 
     return {
-      ...salesperson,
+      id: salesperson.id,
+      accountId: salesperson.accountId,
+      chineseName: salesperson.chineseName,
+      createdAt: salesperson.createdAt,
+      updatedAt: salesperson.updatedAt,
+      orders: salesperson.orders,
+      _count: salesperson._count,
       stats: {
         totalSales: salesStats._sum.totalAmount || 0,
       },
@@ -143,25 +148,43 @@ export class SalespersonService {
     });
 
     if (!salesperson) {
-      throw new NotFoundException('Salesperson not found');
+      throw new NotFoundException('业务员不存在');
     }
 
-    // Check email uniqueness if updating
-    if (updateSalespersonDto.email) {
-      const existingEmail = await this.prisma.salesperson.findFirst({
+    if (
+      updateSalespersonDto.accountId &&
+      updateSalespersonDto.accountId !== salesperson.accountId
+    ) {
+      const existingAccountId = await this.prisma.salesperson.findFirst({
         where: {
-          email: updateSalespersonDto.email,
+          accountId: updateSalespersonDto.accountId,
           id: { not: id },
         },
       });
-      if (existingEmail) {
-        throw new ConflictException('Email already exists');
+      if (existingAccountId) {
+        throw new ConflictException('工号已存在');
       }
+    }
+
+    const dataToUpdate: any = {
+      accountId: updateSalespersonDto.accountId,
+      chineseName: updateSalespersonDto.chineseName,
+    };
+
+    if (updateSalespersonDto.password) {
+      dataToUpdate.password = await bcrypt.hash(updateSalespersonDto.password, 10);
     }
 
     return this.prisma.salesperson.update({
       where: { id },
-      data: updateSalespersonDto,
+      data: dataToUpdate,
+      select: {
+        id: true,
+        accountId: true,
+        chineseName: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
@@ -171,24 +194,23 @@ export class SalespersonService {
       include: {
         _count: {
           select: {
-            customers: true,
             orders: true,
+            cartItems: true,
           },
         },
       },
     });
 
     if (!salesperson) {
-      throw new NotFoundException('Salesperson not found');
+      throw new NotFoundException('业务员不存在');
     }
 
-    // Check if salesperson has customers or orders
     if (
-      salesperson._count.customers > 0 ||
-      salesperson._count.orders > 0
+      salesperson._count.orders > 0 ||
+      salesperson._count.cartItems > 0
     ) {
       throw new ConflictException(
-        'Cannot delete salesperson with existing customers or orders',
+        '无法删除有订单或购物车记录的业务员',
       );
     }
 
