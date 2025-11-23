@@ -2,7 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { SalespersonAuthService } from './salesperson-auth.service';
 import { SalespersonLoginDto } from './dto/salesperson-auth.dto';
 
-@Controller('api/salesperson-auth')
+@Controller('salesperson-auth')
 export class SalespersonAuthController {
   constructor(private salespersonAuthService: SalespersonAuthService) {}
 

@@ -13,7 +13,7 @@ import { CartService } from './cart.service'
 import { AddToCartDto, UpdateCartItemDto, SyncCartDto } from './dto/cart.dto'
 import { JwtSalespersonGuard } from '../salesperson-auth/jwt-salesperson.guard'
 
-@Controller('api/cart')
+@Controller('cart')
 @UseGuards(JwtSalespersonGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
