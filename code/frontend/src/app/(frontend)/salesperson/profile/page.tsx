@@ -22,6 +22,7 @@ interface Customer {
 interface OrderItem {
   id: string
   itemNumber: number
+  productSkuId?: string
   productImage?: string
   productSpec?: string
   customerProductCode?: string
@@ -50,6 +51,7 @@ interface OrderItem {
   supplierNote?: string
   summary?: string
   productSku?: {
+    id: string
     productCode: string
     productName?: string
     productNameEn?: string
@@ -151,10 +153,85 @@ export default function SalespersonProfilePage() {
     if (!editingItemId) return
 
     try {
-      // 这里需要实现订单项更新的API调用
+      // 找到包含该item的订单
+      const order = orders.find(o => o.items.some(item => item.id === editingItemId))
+      if (!order) {
+        toast.error('未找到订单')
+        return
+      }
+
+      // 更新订单中的item
+      const updatedItems = order.items.map(item => {
+        if (item.id === editingItemId) {
+          return {
+            productSkuId: item.productSkuId || item.productSku?.id,
+            itemNumber: item.itemNumber,
+            customerProductCode: item.customerProductCode,
+            productImage: item.productImage,
+            productSpec: item.productSpec,
+            additionalAttributes: item.additionalAttributes,
+            quantity: item.quantity,
+            price: item.price,
+            expectedDeliveryDate: item.expectedDeliveryDate,
+            // 更新包装信息
+            packagingConversion: editingData.packagingConversion,
+            packagingUnit: editingData.packagingUnit,
+            weightUnit: editingData.weightUnit,
+            netWeight: editingData.netWeight,
+            grossWeight: editingData.grossWeight,
+            packagingType: editingData.packagingType,
+            packagingSize: editingData.packagingSize,
+            packingQuantity: editingData.packingQuantity,
+            cartonQuantity: editingData.cartonQuantity,
+            packagingMethod: editingData.packagingMethod,
+            paperCardCode: editingData.paperCardCode,
+            washLabelCode: editingData.washLabelCode,
+            outerCartonCode: editingData.outerCartonCode,
+            cartonSpecification: editingData.cartonSpecification,
+            volume: editingData.volume,
+            supplierNote: editingData.supplierNote,
+            summary: editingData.summary,
+          }
+        }
+        return {
+          productSkuId: item.productSkuId || item.productSku?.id,
+          itemNumber: item.itemNumber,
+          customerProductCode: item.customerProductCode,
+          productImage: item.productImage,
+          productSpec: item.productSpec,
+          additionalAttributes: item.additionalAttributes,
+          quantity: item.quantity,
+          price: item.price,
+          expectedDeliveryDate: item.expectedDeliveryDate,
+          packagingConversion: item.packagingConversion,
+          packagingUnit: item.packagingUnit,
+          weightUnit: item.weightUnit,
+          netWeight: item.netWeight,
+          grossWeight: item.grossWeight,
+          packagingType: item.packagingType,
+          packagingSize: item.packagingSize,
+          packingQuantity: item.packingQuantity,
+          cartonQuantity: item.cartonQuantity,
+          packagingMethod: item.packagingMethod,
+          paperCardCode: item.paperCardCode,
+          washLabelCode: item.washLabelCode,
+          outerCartonCode: item.outerCartonCode,
+          cartonSpecification: item.cartonSpecification,
+          volume: item.volume,
+          supplierNote: item.supplierNote,
+          summary: item.summary,
+        }
+      })
+
+      // 调用API更新订单
+      await orderApi.update(order.id, { items: updatedItems })
+
       toast.success('保存成功')
       setEditingItemId(null)
-      loadOrders()
+      setEditingData({})
+
+      // 重新加载订单列表
+      await loadOrders()
     } catch (error: any) {
       toast.error(error.message || '保存失败')
     }
