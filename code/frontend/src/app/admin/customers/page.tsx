@@ -13,14 +13,15 @@ interface Customer {
   name: string;
   customerType: 'NEW' | 'OLD';
   contactPerson?: string;
-  contactPhone?: string;
-  contactEmail?: string;
+  phone?: string;
+  email?: string;
   address?: string;
+  country?: string;
   remarks?: string;
   salespersonId?: string;
   salesperson?: {
     id: string;
-    name: string;
+    chineseName?: string;
     accountId: string;
   };
   createdAt: string;
@@ -30,7 +31,7 @@ interface Customer {
 interface Salesperson {
   id: string;
   accountId: string;
-  name: string;
+  chineseName?: string;
 }
 
 export default function CustomersPage() {
@@ -45,9 +46,10 @@ export default function CustomersPage() {
     name: '',
     customerType: 'NEW' as 'NEW' | 'OLD',
     contactPerson: '',
-    contactPhone: '',
-    contactEmail: '',
+    phone: '',
+    email: '',
     address: '',
+    country: '',
     remarks: '',
     salespersonId: '',
   });
@@ -91,10 +93,11 @@ export default function CustomersPage() {
       name: '',
       customerType: 'NEW',
       contactPerson: '',
-      contactPhone: '',
-      contactEmail: '',
+      phone: '',
+      email: '',
       address: '',
-    remarks: '',
+      country: '',
+      remarks: '',
       salespersonId: '',
     });
     setIsModalOpen(true);
@@ -106,9 +109,10 @@ export default function CustomersPage() {
       name: customer.name,
       customerType: customer.customerType,
       contactPerson: customer.contactPerson || '',
-      contactPhone: customer.contactPhone || '',
-      contactEmail: customer.contactEmail || '',
+      phone: customer.phone || '',
+      email: customer.email || '',
       address: customer.address || '',
+      country: customer.country || '',
       remarks: customer.remarks || '',
       salespersonId: customer.salespersonId || '',
     });
@@ -244,14 +248,14 @@ export default function CustomersPage() {
                       {customer.contactPerson || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {customer.contactPhone || '-'}
+                      {customer.phone || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
                       {customer.remarks || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {customer.salesperson ? (
-                        <span className="text-blue-600">{customer.salesperson.name}</span>
+                        <span className="text-blue-600">{customer.salesperson.chineseName || customer.salesperson.accountId}</span>
                       ) : (
                         <span className="text-gray-400">未分配</span>
                       )}
@@ -340,8 +344,8 @@ export default function CustomersPage() {
                   </label>
                   <input
                     type="tel"
-                    value={formData.contactPhone}
-                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     placeholder="请输入联系电话"
                   />
@@ -349,12 +353,13 @@ export default function CustomersPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    联系邮箱
+                    联系邮箱 <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
-                    value={formData.contactEmail}
-                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     placeholder="请输入联系邮箱"
                   />
@@ -362,16 +367,13 @@ export default function CustomersPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    分配业务员
+                    分配业务员 <span className="text-red-500">*</span>
                   </label>
                   <CustomSelect
-                    options={[
-                      { value: '', label: '未分配' },
-                      ...salespersons.map((sp) => ({
-                        value: sp.id,
-                        label: `${sp.name} (${sp.accountId})`
-                      }))
-                    ]}
+                    options={salespersons.map((sp) => ({
+                      value: sp.id,
+                      label: `${sp.chineseName || sp.accountId} (${sp.accountId})`
+                    }))}
                     value={formData.salespersonId}
                     onChange={(value) => setFormData({ ...formData, salespersonId: value })}
                     placeholder="选择业务员"
