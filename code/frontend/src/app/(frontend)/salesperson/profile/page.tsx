@@ -320,17 +320,9 @@ export default function SalespersonProfilePage() {
                           {order.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <div className="text-sm text-gray-600">订单日期</div>
-                          <div className="font-semibold">{formatDate(order.orderDate)}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm text-gray-600">订单金额</div>
-                          <div className="text-xl font-bold text-primary">
-                            ¥{formatAmount(order.totalAmount)}
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-sm text-gray-600">{formatDate(order.orderDate)}</div>
+                        <div className="text-xl font-bold text-primary">¥{formatAmount(order.totalAmount)}</div>
                         <button
                           onClick={() => viewOrderDetail(order.id)}
                           className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
