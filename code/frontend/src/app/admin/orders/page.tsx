@@ -6,7 +6,7 @@ import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
 import {
   Package, Calendar, DollarSign, Hash, Eye, X, Filter,
-  Download, ChevronDown, ChevronUp,
+  Download, ChevronDown, ChevronUp, Edit2, Save,
   User, Building, UserCircle
 } from 'lucide-react';
 import PageHeader from '@/components/admin/PageHeader';
@@ -17,11 +17,11 @@ interface Order {
   id: string;
   orderNumber: string;
   orderDate: string;
-  orderType: 'formal' | 'intention';
-  totalAmount: number;
+  orderType: 'FORMAL' | 'INTENTION';
+  totalAmount: number | string;
   salesperson: {
     id: string;
-    name: string;
+    chineseName?: string;
     accountId: string;
   };
   customer: {
@@ -37,34 +37,38 @@ interface Order {
 
 interface OrderItem {
   id: string;
-  productGroup: {
+  itemNumber: number;
+  productSkuId: string;
+  productImage?: string;
+  productSpec?: string;
+  additionalAttributes?: any;
+  price: number | string;
+  quantity: number;
+  subtotal: number | string;
+  productSku?: {
     id: string;
     productCode: string;
-    nameZh: string;
-    nameEn: string;
-    specification: string;
-    mainImage?: string;
+    productName?: string;
+    productNameEn?: string;
+    specification?: string;
   };
-  price: number;
-  quantity: number;
-
   // 可选字段
   customerProductCode?: string;
   packagingConversion?: string;
   packagingUnit?: string;
   weightUnit?: string;
-  netWeight?: string;
-  grossWeight?: string;
+  netWeight?: number;
+  grossWeight?: number;
   packagingType?: string;
   packagingSize?: string;
-  packingQuantity?: string;
-  cartonQuantity?: string;
+  packingQuantity?: number;
+  cartonQuantity?: number;
   packagingMethod?: string;
   paperCardCode?: string;
   washLabelCode?: string;
   outerCartonCode?: string;
   cartonSpecification?: string;
-  volume?: string;
+  volume?: number;
   expectedDeliveryDate?: string;
   supplierNote?: string;
   summary?: string;
@@ -72,7 +76,7 @@ interface OrderItem {
 
 interface Salesperson {
   id: string;
-  name: string;
+  chineseName?: string;
   accountId: string;
 }
 
@@ -81,6 +85,12 @@ interface Customer {
   name: string;
   email?: string;
 }
+
+// 格式化金额
+const formatAmount = (amount: any) => {
+  const num = typeof amount === 'number' ? amount : Number(amount || 0);
+  return num.toFixed(2);
+};
 
 export default function AdminOrdersPage() {
   const toast = useToast();
@@ -98,6 +108,10 @@ export default function AdminOrdersPage() {
   // 详情模态框
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // 编辑功能
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingData, setEditingData] = useState<Partial<OrderItem>>({});
 
   useEffect(() => {
     loadData();
@@ -127,6 +141,8 @@ export default function AdminOrdersPage() {
     try {
       const order = await orderApi.getOne(orderId);
       setSelectedOrder(order);
+      // 自动展开所有商品的包装信息
+      setExpandedItems(new Set(order.items.map((item: OrderItem) => item.id)));
     } catch (error: any) {
       console.error('Failed to load order detail:', error);
       toast.error(error.message || '加载订单详情失败');
@@ -136,6 +152,8 @@ export default function AdminOrdersPage() {
   const closeModal = () => {
     setSelectedOrder(null);
     setExpandedItems(new Set());
+    setEditingItemId(null);
+    setEditingData({});
   };
 
   const toggleItemExpand = (itemId: string) => {
@@ -155,6 +173,119 @@ export default function AdminOrdersPage() {
     toast.success('订单导出成功');
   };
 
+  // 开始编辑商品项
+  const handleEditItem = (item: OrderItem) => {
+    setEditingItemId(item.id);
+    setEditingData({
+      packagingConversion: item.packagingConversion,
+      packagingUnit: item.packagingUnit,
+      weightUnit: item.weightUnit,
+      netWeight: item.netWeight,
+      grossWeight: item.grossWeight,
+      packagingType: item.packagingType,
+      packagingSize: item.packagingSize,
+      packingQuantity: item.packingQuantity,
+      cartonQuantity: item.cartonQuantity,
+      packagingMethod: item.packagingMethod,
+      paperCardCode: item.paperCardCode,
+      washLabelCode: item.washLabelCode,
+      outerCartonCode: item.outerCartonCode,
+      cartonSpecification: item.cartonSpecification,
+      volume: item.volume,
+      supplierNote: item.supplierNote,
+      summary: item.summary,
+    });
+  };
+
+  // 保存编辑的商品项
+  const handleSaveItem = async () => {
+    if (!editingItemId || !selectedOrder) return;
+
+    try {
+      // 更新订单中的item
+      const updatedItems = selectedOrder.items.map(item => {
+        if (item.id === editingItemId) {
+          return {
+            productSkuId: item.productSkuId || item.productSku?.id,
+            itemNumber: item.itemNumber,
+            customerProductCode: item.customerProductCode,
+            productImage: item.productImage,
+            productSpec: item.productSpec,
+            additionalAttributes: item.additionalAttributes,
+            quantity: item.quantity,
+            price: item.price,
+            expectedDeliveryDate: item.expectedDeliveryDate,
+            // 更新包装信息
+            packagingConversion: editingData.packagingConversion,
+            packagingUnit: editingData.packagingUnit,
+            weightUnit: editingData.weightUnit,
+            netWeight: editingData.netWeight,
+            grossWeight: editingData.grossWeight,
+            packagingType: editingData.packagingType,
+            packagingSize: editingData.packagingSize,
+            packingQuantity: editingData.packingQuantity,
+            cartonQuantity: editingData.cartonQuantity,
+            packagingMethod: editingData.packagingMethod,
+            paperCardCode: editingData.paperCardCode,
+            washLabelCode: editingData.washLabelCode,
+            outerCartonCode: editingData.outerCartonCode,
+            cartonSpecification: editingData.cartonSpecification,
+            volume: editingData.volume,
+            supplierNote: editingData.supplierNote,
+            summary: editingData.summary,
+          };
+        }
+        return {
+          productSkuId: item.productSkuId || item.productSku?.id,
+          itemNumber: item.itemNumber,
+          customerProductCode: item.customerProductCode,
+          productImage: item.productImage,
+          productSpec: item.productSpec,
+          additionalAttributes: item.additionalAttributes,
+          quantity: item.quantity,
+          price: item.price,
+          expectedDeliveryDate: item.expectedDeliveryDate,
+          packagingConversion: item.packagingConversion,
+          packagingUnit: item.packagingUnit,
+          weightUnit: item.weightUnit,
+          netWeight: item.netWeight,
+          grossWeight: item.grossWeight,
+          packagingType: item.packagingType,
+          packagingSize: item.packagingSize,
+          packingQuantity: item.packingQuantity,
+          cartonQuantity: item.cartonQuantity,
+          packagingMethod: item.packagingMethod,
+          paperCardCode: item.paperCardCode,
+          washLabelCode: item.washLabelCode,
+          outerCartonCode: item.outerCartonCode,
+          cartonSpecification: item.cartonSpecification,
+          volume: item.volume,
+          supplierNote: item.supplierNote,
+          summary: item.summary,
+        };
+      });
+
+      // 调用API更新订单
+      await orderApi.update(selectedOrder.id, { items: updatedItems });
+
+      toast.success('保存成功');
+      setEditingItemId(null);
+      setEditingData({});
+
+      // 重新加载订单详情和列表
+      await viewOrderDetail(selectedOrder.id);
+      await loadData();
+    } catch (error: any) {
+      toast.error(error.message || '保存失败');
+    }
+  };
+
+  // 取消编辑
+  const handleCancelEdit = () => {
+    setEditingItemId(null);
+    setEditingData({});
+  };
+
   const filteredOrders = orders.filter((order) => {
     // 搜索过滤
     if (searchTerm) {
@@ -165,12 +296,12 @@ export default function AdminOrdersPage() {
     }
 
     // 业务员过滤
-    if (filterSalesperson && order.salesperson.id !== filterSalesperson) {
+    if (filterSalesperson && order.salesperson?.id !== filterSalesperson) {
       return false;
     }
 
     // 客户过滤
-    if (filterCustomer && order.customer.id !== filterCustomer) {
+    if (filterCustomer && order.customer?.id !== filterCustomer) {
       return false;
     }
 
@@ -212,7 +343,7 @@ export default function AdminOrdersPage() {
                 { value: '', label: '全部业务员' },
                 ...salespersons.map((sp) => ({
                   value: sp.id,
-                  label: `${sp.name} (${sp.accountId})`
+                  label: `${sp.chineseName || sp.accountId} (${sp.accountId})`
                 }))
               ]}
               value={filterSalesperson}
@@ -306,15 +437,15 @@ export default function AdminOrdersPage() {
                       <div className="flex items-center gap-2">
                         <UserCircle className="w-4 h-4 text-gray-400" />
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{order.salesperson.name}</div>
-                          <div className="text-xs text-gray-500">{order.salesperson.accountId}</div>
+                          <div className="text-sm font-medium text-gray-900">{order.salesperson?.chineseName || order.salesperson?.accountId || '-'}</div>
+                          <div className="text-xs text-gray-500">{order.salesperson?.accountId}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <Building className="w-4 h-4 text-gray-400" />
-                        <div className="text-sm text-gray-900">{order.customer.name}</div>
+                        <div className="text-sm text-gray-900">{order.customer?.name || '-'}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -325,17 +456,17 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        order.orderType === 'formal'
+                        order.orderType === 'FORMAL'
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-purple-100 text-purple-800'
                       }`}>
-                        {order.orderType === 'formal' ? '正式' : '意向'}
+                        {order.orderType === 'FORMAL' ? '正式' : '意向'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-1 text-sm font-semibold text-gray-900">
                         <DollarSign className="w-4 h-4 text-gray-400" />
-                        ¥{order.totalAmount.toFixed(2)}
+                        ¥{formatAmount(order.totalAmount)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -406,11 +537,11 @@ export default function AdminOrdersPage() {
                   <div className="space-y-2 text-sm">
                     <div>
                       <span className="text-gray-600">姓名：</span>
-                      <span className="font-medium text-gray-900">{selectedOrder.salesperson.name}</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.salesperson?.chineseName || '-'}</span>
                     </div>
                     <div>
                       <span className="text-gray-600">工号：</span>
-                      <span className="font-medium text-gray-900">{selectedOrder.salesperson.accountId}</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.salesperson?.accountId || '-'}</span>
                     </div>
                   </div>
                 </div>
@@ -424,7 +555,7 @@ export default function AdminOrdersPage() {
                   <div className="space-y-2 text-sm">
                     <div>
                       <span className="text-gray-600">客户名称：</span>
-                      <span className="font-medium text-gray-900">{selectedOrder.customer.name}</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.customer?.name || '-'}</span>
                     </div>
                     {selectedOrder.customer.email && (
                       <div>
@@ -449,11 +580,11 @@ export default function AdminOrdersPage() {
                   <div>
                     <span className="text-gray-600">订单类型：</span>
                     <span className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full ${
-                      selectedOrder.orderType === 'formal'
+                      selectedOrder.orderType === 'FORMAL'
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-purple-100 text-purple-800'
                     }`}>
-                      {selectedOrder.orderType === 'formal' ? '正式订单' : '意向订单'}
+                      {selectedOrder.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
                     </span>
                   </div>
                   <div>
@@ -483,23 +614,25 @@ export default function AdminOrdersPage() {
                     <div key={item.id} className="border border-gray-200 rounded-lg p-4">
                       {/* 产品基本信息 */}
                       <div className="flex items-start gap-4 mb-4">
-                        {item.productGroup.mainImage && (
+                        {item.productImage && (
                           <img
-                            src={item.productGroup.mainImage}
-                            alt={item.productGroup.nameZh}
+                            src={item.productImage}
+                            alt="产品图片"
                             className="w-20 h-20 object-cover rounded-lg border border-gray-200"
                           />
                         )}
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900 mb-1">
-                            {index + 1}. {item.productGroup.nameZh} / {item.productGroup.nameEn}
-                          </div>
                           <div className="text-sm text-gray-600 mb-1">
-                            品号: <span className="font-mono font-semibold">{item.productGroup.productCode}</span>
+                            品号: <span className="font-mono font-semibold text-primary">{item.productSku?.productCode || '-'}</span>
                           </div>
-                          <div className="text-sm text-gray-600">
-                            规格: {item.productGroup.specification}
+                          <div className="font-medium text-gray-900 mb-1">
+                            品名: {item.productSku?.productName || item.productSku?.productNameEn || '-'}
                           </div>
+                          {item.productSpec && (
+                            <div className="text-sm text-gray-600 mt-2 p-2 bg-gray-50 rounded">
+                              规格: {item.productSpec}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -507,7 +640,7 @@ export default function AdminOrdersPage() {
                       <div className="grid grid-cols-3 gap-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div>
                           <label className="block text-sm font-semibold text-gray-900 mb-1">单价</label>
-                          <div className="text-sm font-semibold text-gray-900">¥{item.price.toFixed(2)}</div>
+                          <div className="text-sm font-semibold text-gray-900">¥{formatAmount(item.price)}</div>
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-900 mb-1">数量</label>
@@ -516,80 +649,262 @@ export default function AdminOrdersPage() {
                         <div>
                           <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
                           <div className="text-sm font-bold text-blue-600">
-                            ¥{(item.price * item.quantity).toFixed(2)}
+                            ¥{formatAmount(item.subtotal)}
                           </div>
                         </div>
                       </div>
 
-                      {/* 可选字段 - 可展开/收起 */}
+                      {/* 包装信息 - 始终展开 */}
                       <div>
-                        <button
-                          onClick={() => toggleItemExpand(item.id)}
-                          className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 mb-3"
-                        >
-                          {expandedItems.has(item.id) ? (
-                            <>
-                              <ChevronUp size={16} />
-                              <span>收起包装信息</span>
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown size={16} />
-                              <span>展开包装信息</span>
-                            </>
+                        <div className="flex items-center justify-between mb-3">
+                          <button
+                            onClick={() => toggleItemExpand(item.id)}
+                            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                          >
+                            {expandedItems.has(item.id) ? (
+                              <>
+                                <ChevronUp size={16} />
+                                <span>收起包装信息</span>
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown size={16} />
+                                <span>展开包装信息</span>
+                              </>
+                            )}
+                          </button>
+                          {expandedItems.has(item.id) && editingItemId !== item.id && (
+                            <button
+                              onClick={() => handleEditItem(item)}
+                              className="flex items-center gap-1 px-3 py-1 text-sm text-primary border border-primary rounded hover:bg-primary/5"
+                            >
+                              <Edit2 size={14} />
+                              编辑
+                            </button>
                           )}
-                        </button>
+                        </div>
 
                         {expandedItems.has(item.id) && (
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-                            {/* 所有可选字段 */}
-                            {[
-                              { key: 'customerProductCode', label: '客户料号' },
-                              { key: 'packagingConversion', label: '包装换算' },
-                              { key: 'packagingUnit', label: '包装单位' },
-                              { key: 'weightUnit', label: '重量单位' },
-                              { key: 'netWeight', label: '包装净重' },
-                              { key: 'grossWeight', label: '包装毛重' },
-                              { key: 'packagingType', label: '包装类型' },
-                              { key: 'packagingSize', label: '包装大小' },
-                              { key: 'packingQuantity', label: '装箱数' },
-                              { key: 'cartonQuantity', label: '箱数' },
-                              { key: 'packagingMethod', label: '包装方式' },
-                              { key: 'paperCardCode', label: '纸卡编码' },
-                              { key: 'washLabelCode', label: '水洗标编码' },
-                              { key: 'outerCartonCode', label: '外箱编码' },
-                              { key: 'cartonSpecification', label: '箱规' },
-                              { key: 'volume', label: '体积' },
-                            ].map(({ key, label }) => (
-                              <div key={key}>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-                                <div className="text-sm text-gray-900">{(item as any)[key] || '-'}</div>
+                          editingItemId === item.id ? (
+                            // 编辑模式
+                            <div className="pt-4 border-t border-gray-200">
+                              <div className="grid grid-cols-4 gap-3 mb-4">
+                                <div>
+                                  <label className="text-xs text-gray-600">包装换算</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.packagingConversion || ''}
+                                    onChange={(e) => setEditingData({...editingData, packagingConversion: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">包装单位</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.packagingUnit || ''}
+                                    onChange={(e) => setEditingData({...editingData, packagingUnit: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">重量单位</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.weightUnit || ''}
+                                    onChange={(e) => setEditingData({...editingData, weightUnit: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">净重</label>
+                                  <input
+                                    type="number"
+                                    value={editingData.netWeight || ''}
+                                    onChange={(e) => setEditingData({...editingData, netWeight: parseFloat(e.target.value) || undefined})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">毛重</label>
+                                  <input
+                                    type="number"
+                                    value={editingData.grossWeight || ''}
+                                    onChange={(e) => setEditingData({...editingData, grossWeight: parseFloat(e.target.value) || undefined})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">包装类型</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.packagingType || ''}
+                                    onChange={(e) => setEditingData({...editingData, packagingType: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">包装尺寸</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.packagingSize || ''}
+                                    onChange={(e) => setEditingData({...editingData, packagingSize: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">装箱数量</label>
+                                  <input
+                                    type="number"
+                                    value={editingData.packingQuantity || ''}
+                                    onChange={(e) => setEditingData({...editingData, packingQuantity: parseInt(e.target.value) || undefined})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">外箱数量</label>
+                                  <input
+                                    type="number"
+                                    value={editingData.cartonQuantity || ''}
+                                    onChange={(e) => setEditingData({...editingData, cartonQuantity: parseInt(e.target.value) || undefined})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">包装方式</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.packagingMethod || ''}
+                                    onChange={(e) => setEditingData({...editingData, packagingMethod: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">纸卡编码</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.paperCardCode || ''}
+                                    onChange={(e) => setEditingData({...editingData, paperCardCode: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">水洗标编码</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.washLabelCode || ''}
+                                    onChange={(e) => setEditingData({...editingData, washLabelCode: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">外箱编码</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.outerCartonCode || ''}
+                                    onChange={(e) => setEditingData({...editingData, outerCartonCode: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">外箱规格</label>
+                                  <input
+                                    type="text"
+                                    value={editingData.cartonSpecification || ''}
+                                    onChange={(e) => setEditingData({...editingData, cartonSpecification: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-600">体积</label>
+                                  <input
+                                    type="number"
+                                    value={editingData.volume || ''}
+                                    onChange={(e) => setEditingData({...editingData, volume: parseFloat(e.target.value) || undefined})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                  />
+                                </div>
+                                <div className="col-span-4">
+                                  <label className="text-xs text-gray-600">厂商备注</label>
+                                  <textarea
+                                    value={editingData.supplierNote || ''}
+                                    onChange={(e) => setEditingData({...editingData, supplierNote: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                    rows={2}
+                                  />
+                                </div>
+                                <div className="col-span-4">
+                                  <label className="text-xs text-gray-600">摘要</label>
+                                  <textarea
+                                    value={editingData.summary || ''}
+                                    onChange={(e) => setEditingData({...editingData, summary: e.target.value})}
+                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                    rows={2}
+                                  />
+                                </div>
                               </div>
-                            ))}
-
-                            {/* 预交日 */}
-                            <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">预交日</label>
-                              <div className="text-sm text-gray-900">
-                                {item.expectedDeliveryDate
-                                  ? new Date(item.expectedDeliveryDate).toLocaleDateString('zh-CN')
-                                  : '-'
-                                }
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="px-3 py-1 border border-gray-300 rounded text-sm flex items-center gap-1"
+                                >
+                                  <X size={14} />
+                                  取消
+                                </button>
+                                <button
+                                  onClick={handleSaveItem}
+                                  className="px-3 py-1 bg-primary text-white rounded text-sm flex items-center gap-1"
+                                >
+                                  <Save size={14} />
+                                  保存
+                                </button>
                               </div>
                             </div>
-
-                            {/* 厂商备注 */}
-                            <div className="md:col-span-2">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">厂商备注</label>
-                              <div className="text-sm text-gray-900">{item.supplierNote || '-'}</div>
+                          ) : (
+                            // 查看模式
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+                              {[
+                                { key: 'customerProductCode', label: '客户料号' },
+                                { key: 'packagingConversion', label: '包装换算' },
+                                { key: 'packagingUnit', label: '包装单位' },
+                                { key: 'weightUnit', label: '重量单位' },
+                                { key: 'netWeight', label: '包装净重' },
+                                { key: 'grossWeight', label: '包装毛重' },
+                                { key: 'packagingType', label: '包装类型' },
+                                { key: 'packagingSize', label: '包装大小' },
+                                { key: 'packingQuantity', label: '装箱数' },
+                                { key: 'cartonQuantity', label: '箱数' },
+                                { key: 'packagingMethod', label: '包装方式' },
+                                { key: 'paperCardCode', label: '纸卡编码' },
+                                { key: 'washLabelCode', label: '水洗标编码' },
+                                { key: 'outerCartonCode', label: '外箱编码' },
+                                { key: 'cartonSpecification', label: '箱规' },
+                                { key: 'volume', label: '体积' },
+                              ].map(({ key, label }) => (
+                                <div key={key}>
+                                  <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+                                  <div className="text-sm text-gray-900">{(item as any)[key] ?? '-'}</div>
+                                </div>
+                              ))}
+                              <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">预交日</label>
+                                <div className="text-sm text-gray-900">
+                                  {item.expectedDeliveryDate
+                                    ? new Date(item.expectedDeliveryDate).toLocaleDateString('zh-CN')
+                                    : '-'
+                                  }
+                                </div>
+                              </div>
+                              <div className="md:col-span-2">
+                                <label className="block text-xs font-medium text-gray-500 mb-1">厂商备注</label>
+                                <div className="text-sm text-gray-900">{item.supplierNote || '-'}</div>
+                              </div>
+                              <div className="md:col-span-4">
+                                <label className="block text-xs font-medium text-gray-500 mb-1">摘要</label>
+                                <div className="text-sm text-gray-900">{item.summary || '-'}</div>
+                              </div>
                             </div>
-
-                            {/* 摘要 */}
-                            <div className="md:col-span-3">
-                              <label className="block text-xs font-medium text-gray-700 mb-1">摘要</label>
-                              <div className="text-sm text-gray-900">{item.summary || '-'}</div>
-                            </div>
-                          </div>
+                          )
                         )}
                       </div>
                     </div>
@@ -601,7 +916,7 @@ export default function AdminOrdersPage() {
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center justify-between text-lg font-bold">
                   <span className="text-gray-700">订单总额：</span>
-                  <span className="text-blue-600">¥{selectedOrder.totalAmount.toFixed(2)}</span>
+                  <span className="text-blue-600">¥{formatAmount(selectedOrder.totalAmount)}</span>
                 </div>
               </div>
             </div>
