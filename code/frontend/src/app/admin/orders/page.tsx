@@ -221,6 +221,8 @@ export default function AdminOrdersPage() {
   const handleEditItem = (item: OrderItem) => {
     setEditingItemId(item.id);
     setEditingData({
+      price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+      quantity: item.quantity,
       packagingConversion: item.packagingConversion,
       packagingUnit: item.packagingUnit,
       weightUnit: item.weightUnit,
@@ -246,6 +248,16 @@ export default function AdminOrdersPage() {
     if (!editingItemId || !selectedOrder) return;
 
     try {
+      // 验证数字字段
+      if (editingData.price !== undefined && (isNaN(Number(editingData.price)) || Number(editingData.price) < 0)) {
+        toast.error('请输入有效的单价（必须是非负数字）');
+        return;
+      }
+      if (editingData.quantity !== undefined && (isNaN(Number(editingData.quantity)) || Number(editingData.quantity) < 1)) {
+        toast.error('请输入有效的数量（必须是大于0的整数）');
+        return;
+      }
+
       // 更新订单中的item
       const updatedItems = selectedOrder.items.map(item => {
         if (item.id === editingItemId) {
@@ -259,8 +271,8 @@ export default function AdminOrdersPage() {
             productImage: item.productImage,
             productSpec: item.productSpec,
             additionalAttributes: item.additionalAttributes,
-            quantity: item.quantity,
-            price: item.price,
+            quantity: cleanedEditingData.quantity !== undefined ? Number(cleanedEditingData.quantity) : Number(item.quantity),
+            price: cleanedEditingData.price !== undefined ? Number(cleanedEditingData.price) : Number(item.price),
             expectedDeliveryDate: item.expectedDeliveryDate,
             // 更新包装信息 - 使用清理后的数据
             ...cleanedEditingData,
@@ -273,8 +285,8 @@ export default function AdminOrdersPage() {
           productImage: item.productImage,
           productSpec: item.productSpec,
           additionalAttributes: item.additionalAttributes,
-          quantity: item.quantity,
-          price: item.price,
+          quantity: Number(item.quantity),
+          price: Number(item.price),
           expectedDeliveryDate: item.expectedDeliveryDate,
           packagingConversion: item.packagingConversion,
           packagingUnit: item.packagingUnit,
@@ -666,7 +678,20 @@ export default function AdminOrdersPage() {
                           )}
                           {item.additionalAttributes && (
                             <div className="text-sm text-gray-600 mt-2 p-2 bg-blue-50 rounded border border-blue-200">
-                              附加属性: {extractChineseText(item.additionalAttributes)}
+                              附加属性: {(() => {
+                                try {
+                                  const attr = item.additionalAttributes;
+                                  if (typeof attr === 'string') {
+                                    const parsed = JSON.parse(attr);
+                                    return parsed.nameZh || parsed.nameEn || '';
+                                  } else if (typeof attr === 'object' && attr !== null && 'nameZh' in attr) {
+                                    return (attr as any).nameZh;
+                                  }
+                                  return extractChineseText(attr as string);
+                                } catch (e) {
+                                  return extractChineseText(item.additionalAttributes as string);
+                                }
+                              })()}
                             </div>
                           )}
                         </div>
@@ -674,20 +699,64 @@ export default function AdminOrdersPage() {
 
                       {/* 价格和数量 */}
                       <div className="grid grid-cols-3 gap-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-900 mb-1">单价</label>
-                          <div className="text-sm font-semibold text-gray-900">¥{formatAmount(item.price)}</div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-900 mb-1">数量</label>
-                          <div className="text-sm font-semibold text-gray-900">{item.quantity}</div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
-                          <div className="text-sm font-bold text-blue-600">
-                            ¥{formatAmount(item.subtotal)}
-                          </div>
-                        </div>
+                        {editingItemId === item.id && expandedItems.has(item.id) ? (
+                          // 编辑模式 - 可编辑输入框
+                          <>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">单价 *</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={editingData.price ?? ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setEditingData({...editingData, price: val ? parseFloat(val) : 0});
+                                }}
+                                className="w-full px-3 py-2 border rounded text-sm font-semibold"
+                                placeholder="请输入单价"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">数量 *</label>
+                              <input
+                                type="number"
+                                step="1"
+                                min="1"
+                                value={editingData.quantity ?? ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setEditingData({...editingData, quantity: val ? parseInt(val) : 1});
+                                }}
+                                className="w-full px-3 py-2 border rounded text-sm font-semibold"
+                                placeholder="请输入数量"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
+                              <div className="text-lg font-bold text-primary bg-white px-3 py-2 border rounded">
+                                ¥{formatAmount((Number(editingData.price) || 0) * (Number(editingData.quantity) || 0))}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          // 查看模式 - 只读显示
+                          <>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">单价</label>
+                              <div className="text-sm font-semibold text-gray-900">¥{formatAmount(item.price)}</div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">数量</label>
+                              <div className="text-sm font-semibold text-gray-900">{item.quantity}</div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
+                              <div className="text-sm font-bold text-blue-600">
+                                ¥{formatAmount(item.subtotal)}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       {/* 包装信息 - 始终展开 */}

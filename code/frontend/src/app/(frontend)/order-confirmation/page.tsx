@@ -122,7 +122,13 @@ export default function OrderConfirmationPage() {
       const token = localStorage.getItem('salesperson_token')
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
-      const response = await fetch(`${API_URL}/customers`, {
+       // 只加载当前业务员的客户
+      const salespersonId = salesperson?.id
+      const url = salespersonId
+        ? `${API_URL}/customers?salespersonId=${salespersonId}`
+        : `${API_URL}/customers`
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -360,55 +366,6 @@ export default function OrderConfirmationPage() {
             </div>
           </div>
 
-          {/* 订单基本信息 */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <FileText className="text-primary" size={24} />
-              <h2 className="text-xl font-bold text-gray-900">订单信息</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  订单日期 <span className="text-red-500">*</span>
-                </label>
-                <DatePicker
-                  value={orderDate}
-                  onChange={setOrderDate}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  订单类型 <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setOrderType('FORMAL')}
-                    className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
-                      orderType === 'FORMAL'
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
-                    }`}
-                  >
-                    正式订单
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOrderType('INTENTION')}
-                    className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
-                      orderType === 'INTENTION'
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
-                    }`}
-                  >
-                    意向订单
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* 客户信息 */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="flex items-center justify-between mb-6">
@@ -463,6 +420,55 @@ export default function OrderConfirmationPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* 订单基本信息 */}
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="text-primary" size={24} />
+              <h2 className="text-xl font-bold text-gray-900">订单信息</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  订单日期 <span className="text-red-500">*</span>
+                </label>
+                <DatePicker
+                  value={orderDate}
+                  onChange={setOrderDate}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  订单类型 <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setOrderType('FORMAL')}
+                    className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
+                      orderType === 'FORMAL'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
+                    }`}
+                  >
+                    正式订单
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOrderType('INTENTION')}
+                    className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-medium transition-all ${
+                      orderType === 'INTENTION'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
+                    }`}
+                  >
+                    意向订单
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 订单明细 */}

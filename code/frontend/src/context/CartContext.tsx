@@ -66,6 +66,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setIsLoaded(true)
   }, [])
 
+  // Monitor salesperson login and auto-load cart from database
+  useEffect(() => {
+    const checkSalespersonLogin = async () => {
+      const token = localStorage.getItem('salesperson_token')
+      if (token && !isAuthenticated) {
+        // Salesperson logged in, load cart from database
+        await syncCartOnLogin(token)
+      }
+    }
+    if (isLoaded) {
+      checkSalespersonLogin()
+    }
+  }, [isLoaded])
+
   // Save guest cart to localStorage whenever it changes
   useEffect(() => {
     if (isLoaded && !isAuthenticated) {
@@ -150,6 +164,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 console.error('Failed to parse images:', e)
               }
             }
+          }
+
+          // Add API URL prefix if mainImage is relative path
+          if (mainImage && !mainImage.startsWith('http')) {
+            const baseURL = API_URL.replace('/api', '')
+            mainImage = `${baseURL}${mainImage}`
           }
 
           // Parse optionalAttributes from colorScheme if it contains attribute data
@@ -312,12 +332,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setSelectedItems([])
   }
 
-  // Logout - clear local cart state but keep database cart
+  // Logout - clear cart display state and guest cart from localStorage
+  // Database cart is preserved for the user and will be reloaded on next login
   const logoutCart = () => {
+    // Clear displayed cart items (will reload from DB on next login)
     setItems([])
     setSelectedItems([])
     setIsAuthenticated(false)
     setAuthToken(null)
+    // Clear guest cart from localStorage to prevent data leakage between users
+    localStorage.removeItem('lemopx_cart_guest')
   }
 
   // Remove selected items (delete from backend if authenticated)

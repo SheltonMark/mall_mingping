@@ -523,7 +523,6 @@ export class OrderService {
     worksheet.getCell('A6').value = `业务员: ${order.salesperson.chineseName} (${order.salesperson.accountId})`;
     worksheet.getCell('H6').value = `订单号: ${order.orderNumber}`;
     worksheet.getCell('O6').value = `订单日期: ${order.orderDate.toISOString().split('T')[0]}`;
-    worksheet.getCell('U6').value = `订单状态: ${order.status}`;
 
     // Row 7: Empty
     worksheet.getRow(7).height = 5;
@@ -579,7 +578,20 @@ export class OrderService {
         item.productImage || '',                                // D: [货品图片]
         item.productSku.group.groupNameZh,                      // E: 品名
         item.productSpec || '',                                 // F: 货品规格
-        extractChineseText(item.additionalAttributes),                        // G: 附加属性
+        (() => {
+          try {
+            if (!item.additionalAttributes) return '';
+            if (typeof item.additionalAttributes === 'string') {
+              const parsed = JSON.parse(item.additionalAttributes);
+              return parsed.nameZh || parsed.nameEn || '';
+            } else if (typeof item.additionalAttributes === 'object' && 'nameZh' in item.additionalAttributes) {
+              return (item.additionalAttributes as any).nameZh || '';
+            }
+            return '';
+          } catch (e) {
+            return '';
+          }
+        })(),                        // G: 附加属性
         item.quantity,                                          // H: 数量
         item.packagingConversion?.toNumber() || '',             // I: 包装换算
         item.packagingUnit || '',                               // J: 包装单位

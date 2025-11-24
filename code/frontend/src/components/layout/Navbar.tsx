@@ -15,7 +15,7 @@ export default function Navbar() {
   const toast = useToast()
   const { language, t } = useLanguage()
   const { salesperson, isAuthenticated, logout } = useSalespersonAuth()
-  const { totalItems } = useCart()
+  const { totalItems, logoutCart } = useCart()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -31,6 +31,7 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path
 
   const handleLogout = () => {
+    logoutCart()
     logout()
     setIsUserMenuOpen(false)
     toast.success('已退出登录')

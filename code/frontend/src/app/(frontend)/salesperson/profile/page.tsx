@@ -129,6 +129,8 @@ export default function SalespersonProfilePage() {
   const handleEditItem = (item: OrderItem) => {
     setEditingItemId(item.id)
     setEditingData({
+      price: item.price,
+      quantity: item.quantity,
       packagingConversion: item.packagingConversion,
       packagingUnit: item.packagingUnit,
       weightUnit: item.weightUnit,
@@ -188,6 +190,14 @@ export default function SalespersonProfilePage() {
       // 更新订单中的item
       const updatedItems = order.items.map(item => {
         if (item.id === editingItemId) {
+          // 验证数字字段
+          if (editingData.price !== undefined && (isNaN(Number(editingData.price)) || Number(editingData.price) < 0)) {
+            throw new Error('请输入有效的单价（必须是非负数字）')
+          }
+          if (editingData.quantity !== undefined && (isNaN(Number(editingData.quantity)) || Number(editingData.quantity) < 1)) {
+            throw new Error('请输入有效的数量（必须是大于0的整数）')
+          }
+
           // 清理编辑的数据
           const cleanedEditingData = cleanItemData(editingData)
 
@@ -198,8 +208,8 @@ export default function SalespersonProfilePage() {
             productImage: item.productImage,
             productSpec: item.productSpec,
             additionalAttributes: item.additionalAttributes,
-            quantity: item.quantity,
-            price: item.price,
+            quantity: cleanedEditingData.quantity !== undefined ? Number(cleanedEditingData.quantity) : Number(item.quantity),
+            price: cleanedEditingData.price !== undefined ? Number(cleanedEditingData.price) : Number(item.price),
             expectedDeliveryDate: item.expectedDeliveryDate,
             // 更新包装信息 - 使用清理后的数据
             ...cleanedEditingData,
@@ -212,8 +222,8 @@ export default function SalespersonProfilePage() {
           productImage: item.productImage,
           productSpec: item.productSpec,
           additionalAttributes: item.additionalAttributes,
-          quantity: item.quantity,
-          price: item.price,
+          quantity: Number(item.quantity),
+          price: Number(item.price),
           expectedDeliveryDate: item.expectedDeliveryDate,
           packagingConversion: item.packagingConversion,
           packagingUnit: item.packagingUnit,
@@ -365,6 +375,9 @@ export default function SalespersonProfilePage() {
                                 <p className="text-sm text-gray-700 mb-2">
                                   品名: {item.productSku?.productName || item.productSku?.productNameEn || '-'}
                                 </p>
+                                <p className="text-sm text-gray-600 mb-1">
+                                  单价: <span className="font-bold text-primary">¥{formatAmount(item.price)}</span>
+                                </p>
                                 {item.customerProductCode && (
                                   <p className="text-sm text-gray-600 font-mono mb-1">
                                     客户料号: {item.customerProductCode}
@@ -423,7 +436,7 @@ export default function SalespersonProfilePage() {
                           {editingItemId === item.id ? (
                             <div className="mt-4 pt-4 border-t border-gray-200">
                               <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-semibold text-gray-700">编辑包装信息</h4>
+                                <h4 className="font-semibold text-gray-700">编辑订单项</h4>
                                 <div className="flex gap-2">
                                   <button
                                     onClick={handleSaveItem}
@@ -441,6 +454,55 @@ export default function SalespersonProfilePage() {
                                   </button>
                                 </div>
                               </div>
+
+                              {/* 单价和数量 - 高亮显示 */}
+                              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-900 mb-1">单价 *</label>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      value={editingData.price || ''}
+                                      onChange={(e) => {
+                                        const price = e.target.value
+                                        if (price && isNaN(parseFloat(price))) {
+                                          return // 不更新无效数字
+                                        }
+                                        setEditingData({...editingData, price: price ? parseFloat(price) : 0})
+                                      }}
+                                      className="w-full px-3 py-2 border rounded text-sm font-semibold"
+                                      placeholder="请输入单价"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-900 mb-1">数量 *</label>
+                                    <input
+                                      type="number"
+                                      step="1"
+                                      min="1"
+                                      value={editingData.quantity || ''}
+                                      onChange={(e) => {
+                                        const quantity = e.target.value
+                                        if (quantity && isNaN(parseInt(quantity))) {
+                                          return // 不更新无效数字
+                                        }
+                                        setEditingData({...editingData, quantity: quantity ? parseInt(quantity) : 1})
+                                      }}
+                                      className="w-full px-3 py-2 border rounded text-sm font-semibold"
+                                      placeholder="请输入数量"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
+                                    <div className="text-lg font-bold text-primary bg-white px-3 py-2 border rounded">
+                                      ¥{formatAmount((editingData.price || 0) * (editingData.quantity || 0))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <h5 className="text-sm font-semibold text-gray-700 mb-2">包装信息</h5>
                               <div className="grid grid-cols-4 gap-3">
                                 <div>
                                   <label className="text-xs text-gray-600">包装换算</label>
