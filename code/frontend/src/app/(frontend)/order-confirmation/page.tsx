@@ -495,7 +495,7 @@ export default function OrderConfirmationPage() {
                         </p>
                         {/* 品名 */}
                         <p className="text-sm text-gray-700 mt-2">
-                          <span className="font-semibold">品名:</span> {item.groupName || item.productName || '-'}
+                          <span className="font-semibold">品名:</span> {item.productName || item.groupName || '-'}
                         </p>
                       </div>
                     </div>
