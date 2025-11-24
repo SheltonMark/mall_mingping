@@ -490,24 +490,23 @@ export default function OrderConfirmationPage() {
                       />
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-900 mb-2">产品 #{index + 1}</h3>
-                        <p className="text-sm text-gray-600 mb-1">序号: {index + 1}</p>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700">产品名称(英):</span>
-                            <span className="text-sm text-gray-900">{item.productName || '-'}</span>
+                            <span className="text-sm font-medium text-gray-700">品名:</span>
+                            <span className="text-sm text-gray-900">{item.groupName || item.productName || '-'}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700">产品名称(中):</span>
-                            <span className="text-sm text-gray-900">{item.groupName}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700">产品编码:</span>
+                            <span className="text-sm font-medium text-gray-700">品号:</span>
                             <span className="text-sm font-mono font-semibold text-primary">{item.sku}</span>
                           </div>
                           {item.specification && (
                             <div className="flex items-start gap-2">
-                              <span className="text-sm font-medium text-gray-700">产品规格:</span>
-                              <span className="text-sm text-gray-900 whitespace-pre-line">{item.specification}</span>
+                              <span className="text-sm font-medium text-gray-700 shrink-0">货品规格:</span>
+                              <div className="text-sm text-gray-900">
+                                {item.specification.split('\n').map((line, i) => (
+                                  <div key={i}>{line}</div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>

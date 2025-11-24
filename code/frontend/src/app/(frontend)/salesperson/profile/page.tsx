@@ -113,7 +113,7 @@ export default function SalespersonProfilePage() {
   }
 
   const viewOrderDetail = (orderId: string) => {
-    router.push(`/salesperson/orders/${orderId}`)
+    router.push(`/salesperson/orders/${orderId}?from=profile`)
   }
 
   const formatDate = (dateString: string) => {
@@ -278,22 +278,27 @@ export default function SalespersonProfilePage() {
                                 />
                               )}
                               <div className="flex-1">
-                                <div className="font-semibold text-gray-900 mb-1">
-                                  {item.productSku?.productNameZh || item.productSku?.productNameEn || '产品'}
+                                <div className="text-sm text-gray-700 mb-1">
+                                  <span className="font-medium">品名:</span> {item.productSku?.productNameZh || item.productSku?.productNameEn || '产品'}
                                 </div>
                                 {item.productSku?.productCode && (
-                                  <div className="text-sm text-gray-600 font-mono">
-                                    产品编码: {item.productSku.productCode}
+                                  <div className="text-sm text-gray-600 font-mono mb-1">
+                                    <span className="font-medium text-gray-700">品号:</span> {item.productSku.productCode}
                                   </div>
                                 )}
                                 {item.customerProductCode && (
-                                  <div className="text-sm text-gray-600 font-mono">
-                                    客户料号: {item.customerProductCode}
+                                  <div className="text-sm text-gray-600 font-mono mb-1">
+                                    <span className="font-medium text-gray-700">客户料号:</span> {item.customerProductCode}
                                   </div>
                                 )}
                                 {item.productSpec && (
-                                  <div className="text-sm text-gray-600 mt-1 whitespace-pre-line">
-                                    规格: {item.productSpec}
+                                  <div className="text-sm text-gray-600 mt-1">
+                                    <span className="font-medium text-gray-700">货品规格:</span>
+                                    <div className="ml-4">
+                                      {item.productSpec.split('\n').map((line, i) => (
+                                        <div key={i}>{line}</div>
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
                                 {item.additionalAttributes && Object.keys(item.additionalAttributes).length > 0 && (
@@ -519,39 +524,35 @@ export default function SalespersonProfilePage() {
                           ) : (
                             <div className="mt-3">
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 mb-3">
-                                {item.packagingConversion && <div>包装换算: {item.packagingConversion}</div>}
-                                {item.packagingUnit && <div>包装单位: {item.packagingUnit}</div>}
-                                {item.weightUnit && <div>重量单位: {item.weightUnit}</div>}
-                                {item.netWeight !== null && item.netWeight !== undefined && <div>净重: {item.netWeight}</div>}
-                                {item.grossWeight !== null && item.grossWeight !== undefined && <div>毛重: {item.grossWeight}</div>}
-                                {item.packagingType && <div>包装类型: {item.packagingType}</div>}
-                                {item.packagingSize && <div>包装尺寸: {item.packagingSize}</div>}
-                                {item.packingQuantity !== null && item.packingQuantity !== undefined && <div>装箱数量: {item.packingQuantity}</div>}
-                                {item.cartonQuantity !== null && item.cartonQuantity !== undefined && <div>外箱数量: {item.cartonQuantity}</div>}
-                                {item.packagingMethod && <div>包装方式: {item.packagingMethod}</div>}
-                                {item.paperCardCode && <div>纸卡: {item.paperCardCode}</div>}
-                                {item.washLabelCode && <div>水洗标: {item.washLabelCode}</div>}
-                                {item.outerCartonCode && <div>外箱: {item.outerCartonCode}</div>}
-                                {item.cartonSpecification && <div>外箱规格: {item.cartonSpecification}</div>}
-                                {item.volume !== null && item.volume !== undefined && <div>体积: {item.volume}</div>}
+                                <div>包装换算: {item.packagingConversion || '-'}</div>
+                                <div>包装单位: {item.packagingUnit || '-'}</div>
+                                <div>重量单位: {item.weightUnit || '-'}</div>
+                                <div>净重: {item.netWeight ?? '-'}</div>
+                                <div>毛重: {item.grossWeight ?? '-'}</div>
+                                <div>包装类型: {item.packagingType || '-'}</div>
+                                <div>包装尺寸: {item.packagingSize || '-'}</div>
+                                <div>装箱数量: {item.packingQuantity ?? '-'}</div>
+                                <div>外箱数量: {item.cartonQuantity ?? '-'}</div>
+                                <div>包装方式: {item.packagingMethod || '-'}</div>
+                                <div>纸卡: {item.paperCardCode || '-'}</div>
+                                <div>水洗标: {item.washLabelCode || '-'}</div>
+                                <div>外箱: {item.outerCartonCode || '-'}</div>
+                                <div>外箱规格: {item.cartonSpecification || '-'}</div>
+                                <div>体积: {item.volume ?? '-'}</div>
                               </div>
-                              {item.supplierNote && (
-                                <div className="text-xs text-gray-600 mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                                  <span className="font-semibold">厂商备注:</span> {item.supplierNote}
-                                </div>
-                              )}
-                              {item.summary && (
-                                <div className="text-xs text-gray-600 mb-2">
-                                  <span className="font-semibold">摘要:</span> {item.summary}
-                                </div>
-                              )}
+                              <div className="text-xs text-gray-600 mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                                <span className="font-semibold">厂商备注:</span> {item.supplierNote || '-'}
+                              </div>
+                              <div className="text-xs text-gray-600 mb-2">
+                                <span className="font-semibold">摘要:</span> {item.summary || '-'}
+                              </div>
                               <div className="flex justify-end">
                                 <button
                                   onClick={() => handleEditItem(item)}
                                   className="px-3 py-1 border border-primary text-primary rounded text-sm flex items-center gap-1 hover:bg-primary/5"
                                 >
                                   <Edit2 size={14} />
-                                  编辑包装信息
+                                  编辑
                                 </button>
                               </div>
                             </div>

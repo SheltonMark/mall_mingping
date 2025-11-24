@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { orderApi } from '@/lib/salespersonApi'
@@ -73,7 +73,9 @@ interface Order {
 export default function OrderDetailPage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const orderId = params.id as string
+  const fromProfile = searchParams.get('from') === 'profile'
   const toast = useToast()
   const { salesperson, isAuthenticated, isLoading: authLoading } = useSalespersonAuth()
   const [order, setOrder] = useState<Order | null>(null)
@@ -357,25 +359,15 @@ export default function OrderDetailPage() {
                     {/* 产品信息 */}
                     {item.productSku && (
                       <>
-                        {item.productSku.productNameZh && (
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-500 mb-2">产品名称(中)</label>
-                            <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
-                              {item.productSku.productNameZh}
-                            </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-semibold text-gray-500 mb-2">品名</label>
+                          <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
+                            {item.productSku.productNameZh || item.productSku.productNameEn || '-'}
                           </div>
-                        )}
-                        {item.productSku.productNameEn && (
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-500 mb-2">产品名称(英)</label>
-                            <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
-                              {item.productSku.productNameEn}
-                            </div>
-                          </div>
-                        )}
+                        </div>
                         {item.productSku.productCode && (
                           <div>
-                            <label className="block text-sm font-semibold text-gray-500 mb-2">产品编码</label>
+                            <label className="block text-sm font-semibold text-gray-500 mb-2">品号</label>
                             <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-mono">
                               {item.productSku.productCode}
                             </div>
@@ -395,9 +387,11 @@ export default function OrderDetailPage() {
 
                     {item.productSpec && (
                       <div className="md:col-span-3">
-                        <label className="block text-sm font-semibold text-gray-500 mb-2">产品规格</label>
-                        <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm whitespace-pre-line">
-                          {item.productSpec}
+                        <label className="block text-sm font-semibold text-gray-500 mb-2">货品规格</label>
+                        <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
+                          {item.productSpec.split('\n').map((line, i) => (
+                            <div key={i}>{line}</div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -630,17 +624,26 @@ export default function OrderDetailPage() {
           <div className="no-print mt-8 flex items-center justify-center gap-4">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-2 px-8 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-lg font-semibold"
+              className="flex items-center justify-center gap-2 w-48 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-lg font-semibold"
             >
               <Printer size={24} />
               <span>打印订单</span>
             </button>
-            <button
-              onClick={handleSubmitOrder}
-              className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
-            >
-              <span>提交订单</span>
-            </button>
+            {fromProfile ? (
+              <button
+                onClick={() => router.push('/salesperson/profile#my-orders')}
+                className="flex items-center justify-center gap-2 w-48 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
+              >
+                <span>返回个人中心</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmitOrder}
+                className="flex items-center justify-center gap-2 w-48 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
+              >
+                <span>提交订单</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
