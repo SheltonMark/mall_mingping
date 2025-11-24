@@ -39,8 +39,8 @@ interface OrderItem {
   subtotal: number
   productSku?: {
     productCode: string
+    productName?: string
     productNameEn?: string
-    productNameZh?: string
     specification?: string
   }
 }
@@ -367,7 +367,7 @@ export default function OrderDetailPage() {
                     <div className="md:col-span-3">
                       <label className="block text-sm font-semibold text-gray-500 mb-2">品名</label>
                       <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
-                        {item.productSku?.productNameZh || item.productSku?.productNameEn || '-'}
+                        {item.productSku?.productName || item.productSku?.productNameEn || '-'}
                       </div>
                     </div>
 

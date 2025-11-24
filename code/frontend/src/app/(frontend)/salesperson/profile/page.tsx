@@ -51,7 +51,7 @@ interface OrderItem {
   summary?: string
   productSku?: {
     productCode: string
-    productNameZh?: string
+    productName?: string
     productNameEn?: string
   }
 }
@@ -248,12 +248,6 @@ export default function SalespersonProfilePage() {
                           <div className="text-sm text-gray-600">订单日期</div>
                           <div className="font-semibold">{formatDate(order.orderDate)}</div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm text-gray-600">订单金额</div>
-                          <div className="text-xl font-bold text-primary">
-                            ¥{formatAmount(order.totalAmount)}
-                          </div>
-                        </div>
                         <button
                           onClick={() => viewOrderDetail(order.id)}
                           className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
@@ -282,27 +276,23 @@ export default function SalespersonProfilePage() {
                                   品号: <span className="font-mono font-semibold text-primary">{item.productSku?.productCode || '-'}</span>
                                 </p>
                                 <p className="text-sm text-gray-700 mb-2">
-                                  <span className="font-semibold">品名:</span> {item.productSku?.productNameZh || item.productSku?.productNameEn || '-'}
+                                  品名: {item.productSku?.productName || item.productSku?.productNameEn || '-'}
                                 </p>
                                 {item.customerProductCode && (
                                   <p className="text-sm text-gray-600 font-mono mb-1">
                                     客户料号: {item.customerProductCode}
                                   </p>
                                 )}
+                                {item.expectedDeliveryDate && (
+                                  <div className="text-xs text-orange-600 mt-1">
+                                    期望交期: {formatDate(item.expectedDeliveryDate)}
+                                  </div>
+                                )}
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="text-sm text-gray-600">数量: {item.quantity}</div>
-                              <div className="text-sm text-gray-600">单价: ¥{formatAmount(item.price)}</div>
-                              {item.untaxedLocalCurrency !== null && item.untaxedLocalCurrency !== undefined && (
-                                <div className="text-sm text-gray-600">未税: ¥{formatAmount(item.untaxedLocalCurrency)}</div>
-                              )}
-                              <div className="font-bold text-primary mt-1">¥{formatAmount(item.subtotal)}</div>
-                              {item.expectedDeliveryDate && (
-                                <div className="text-xs text-orange-600 mt-1">
-                                  期望交期: {formatDate(item.expectedDeliveryDate)}
-                                </div>
-                              )}
+                            <div className="text-right flex flex-col items-end">
+                              <div className="text-lg font-bold text-primary mb-2">¥{formatAmount(item.subtotal)}</div>
+                              <div className="text-sm text-gray-500">x{item.quantity}</div>
                             </div>
                           </div>
 
