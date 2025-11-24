@@ -279,13 +279,11 @@ export default function SalespersonProfilePage() {
                               )}
                               <div className="flex-1">
                                 <div className="text-sm text-gray-700 mb-1">
-                                  <span className="font-medium">品名:</span> {item.productSku?.productNameZh || item.productSku?.productNameEn || '产品'}
+                                  <span className="font-medium">品名:</span> {item.productSku?.productNameZh || item.productSku?.productNameEn || '-'}
                                 </div>
-                                {item.productSku?.productCode && (
-                                  <div className="text-sm text-gray-600 font-mono mb-1">
-                                    <span className="font-medium text-gray-700">品号:</span> {item.productSku.productCode}
-                                  </div>
-                                )}
+                                <div className="text-sm text-gray-600 font-mono mb-1">
+                                  <span className="font-medium text-gray-700">品号:</span> {item.productSku?.productCode || '-'}
+                                </div>
                                 {item.customerProductCode && (
                                   <div className="text-sm text-gray-600 font-mono mb-1">
                                     <span className="font-medium text-gray-700">客户料号:</span> {item.customerProductCode}
