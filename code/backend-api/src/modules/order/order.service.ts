@@ -226,7 +226,11 @@ export class OrderService {
               
             },
           },
-          items: true,
+          items: {
+            include: {
+              productSku: true,
+            },
+          },
           _count: {
             select: {
               items: true,

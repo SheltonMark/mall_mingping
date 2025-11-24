@@ -248,6 +248,12 @@ export default function SalespersonProfilePage() {
                           <div className="text-sm text-gray-600">订单日期</div>
                           <div className="font-semibold">{formatDate(order.orderDate)}</div>
                         </div>
+                        <div className="text-right">
+                          <div className="text-sm text-gray-600">订单金额</div>
+                          <div className="text-xl font-bold text-primary">
+                            ¥{formatAmount(order.totalAmount)}
+                          </div>
+                        </div>
                         <button
                           onClick={() => viewOrderDetail(order.id)}
                           className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
