@@ -357,27 +357,22 @@ export default function OrderDetailPage() {
                     )}
 
                     {/* 产品信息 */}
-                    {item.productSku && (
-                      <>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-semibold text-gray-500 mb-2">品名</label>
-                          <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
-                            {item.productSku.productNameZh || item.productSku.productNameEn || '-'}
-                          </div>
-                        </div>
-                        {item.productSku.productCode && (
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-500 mb-2">品号</label>
-                            <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-mono">
-                              {item.productSku.productCode}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
+                    <div className="md:col-span-3">
+                      <label className="block text-sm font-semibold text-gray-500 mb-2">品号</label>
+                      <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-mono font-semibold text-primary">
+                        {item.productSku?.productCode || '-'}
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-3">
+                      <label className="block text-sm font-semibold text-gray-500 mb-2">品名</label>
+                      <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
+                        {item.productSku?.productNameZh || item.productSku?.productNameEn || '-'}
+                      </div>
+                    </div>
 
                     {item.customerProductCode && (
-                      <div>
+                      <div className="md:col-span-3">
                         <label className="block text-sm font-semibold text-gray-500 mb-2">客户料号</label>
                         <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-mono">
                           {item.customerProductCode}
@@ -388,10 +383,10 @@ export default function OrderDetailPage() {
                     {item.productSpec && (
                       <div className="md:col-span-3">
                         <label className="block text-sm font-semibold text-gray-500 mb-2">货品规格</label>
-                        <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
-                          {item.productSpec.split('\n').map((line, i) => (
-                            <div key={i}>{line}</div>
-                          ))}
+                        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="text-sm text-gray-700 whitespace-pre-line">
+                            {item.productSpec}
+                          </div>
                         </div>
                       </div>
                     )}

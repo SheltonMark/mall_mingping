@@ -490,28 +490,25 @@ export default function OrderConfirmationPage() {
                       />
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-900 mb-2">产品 #{index + 1}</h3>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700">品名:</span>
-                            <span className="text-sm text-gray-900">{item.groupName || item.productName || '-'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700">品号:</span>
-                            <span className="text-sm font-mono font-semibold text-primary">{item.sku}</span>
-                          </div>
-                          {item.specification && (
-                            <div className="flex items-start gap-2">
-                              <span className="text-sm font-medium text-gray-700 shrink-0">货品规格:</span>
-                              <div className="text-sm text-gray-900">
-                                {item.specification.split('\n').map((line, i) => (
-                                  <div key={i}>{line}</div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        <p className="text-sm text-gray-500 mt-1">
+                          品号: <span className="font-mono font-semibold text-primary">{item.sku}</span>
+                        </p>
+                        {/* 品名 */}
+                        <p className="text-sm text-gray-700 mt-2">
+                          <span className="font-semibold">品名:</span> {item.groupName || item.productName || '-'}
+                        </p>
                       </div>
                     </div>
+
+                    {/* 货品规格 */}
+                    {item.specification && (
+                      <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1 font-semibold">货品规格:</p>
+                        <div className="text-sm text-gray-700 whitespace-pre-line">
+                          {item.specification}
+                        </div>
+                      </div>
+                    )}
 
                     {/* 附加属性 */}
                     {item.optionalAttributes && Object.keys(item.optionalAttributes).length > 0 && (

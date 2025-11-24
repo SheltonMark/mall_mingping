@@ -278,55 +278,58 @@ export default function SalespersonProfilePage() {
                                 />
                               )}
                               <div className="flex-1">
-                                <div className="text-sm text-gray-700 mb-1">
-                                  <span className="font-medium">品名:</span> {item.productSku?.productNameZh || item.productSku?.productNameEn || '-'}
-                                </div>
-                                <div className="text-sm text-gray-600 font-mono mb-1">
-                                  <span className="font-medium text-gray-700">品号:</span> {item.productSku?.productCode || '-'}
-                                </div>
+                                <p className="text-sm text-gray-500 mb-1">
+                                  品号: <span className="font-mono font-semibold text-primary">{item.productSku?.productCode || '-'}</span>
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-semibold">品名:</span> {item.productSku?.productNameZh || item.productSku?.productNameEn || '-'}
+                                </p>
                                 {item.customerProductCode && (
-                                  <div className="text-sm text-gray-600 font-mono mb-1">
+                                  <p className="text-sm text-gray-600 font-mono mt-1">
                                     <span className="font-medium text-gray-700">客户料号:</span> {item.customerProductCode}
-                                  </div>
-                                )}
-                                {item.productSpec && (
-                                  <div className="text-sm text-gray-600 mt-1">
-                                    <span className="font-medium text-gray-700">货品规格:</span>
-                                    <div className="ml-4">
-                                      {item.productSpec.split('\n').map((line, i) => (
-                                        <div key={i}>{line}</div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {item.additionalAttributes && Object.keys(item.additionalAttributes).length > 0 && (
-                                  <div className="text-xs text-gray-500 mt-2 p-2 bg-blue-50 rounded border border-blue-200">
-                                    <div className="font-semibold mb-1">附加属性:</div>
-                                    <div className="text-gray-900">
-                                      {(() => {
-                                        try {
-                                          const attrs = typeof item.additionalAttributes === 'string'
-                                            ? JSON.parse(item.additionalAttributes)
-                                            : item.additionalAttributes;
-
-                                          // 只显示nameZh的值，如果不存在则用nameEn
-                                          if (attrs.nameZh) {
-                                            return attrs.nameZh;
-                                          } else if (attrs.nameEn) {
-                                            return attrs.nameEn;
-                                          } else {
-                                            return JSON.stringify(attrs);
-                                          }
-                                        } catch (e) {
-                                          return String(item.additionalAttributes);
-                                        }
-                                      })()}
-                                    </div>
-                                  </div>
+                                  </p>
                                 )}
                               </div>
                             </div>
-                            <div className="text-right">
+
+                            {/* 货品规格 */}
+                            {item.productSpec && (
+                              <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <p className="text-xs text-gray-500 mb-1 font-semibold">货品规格:</p>
+                                <div className="text-sm text-gray-700 whitespace-pre-line">
+                                  {item.productSpec}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 附加属性 */}
+                            {item.additionalAttributes && Object.keys(item.additionalAttributes).length > 0 && (
+                              <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <p className="text-xs text-gray-500 mb-1 font-semibold">附加属性:</p>
+                                <div className="text-sm text-gray-900">
+                                  {(() => {
+                                    try {
+                                      const attrs = typeof item.additionalAttributes === 'string'
+                                        ? JSON.parse(item.additionalAttributes)
+                                        : item.additionalAttributes;
+
+                                      // 只显示nameZh的值，如果不存在则用nameEn
+                                      if (attrs.nameZh) {
+                                        return attrs.nameZh;
+                                      } else if (attrs.nameEn) {
+                                        return attrs.nameEn;
+                                      } else {
+                                        return JSON.stringify(attrs);
+                                      }
+                                    } catch (e) {
+                                      return String(item.additionalAttributes);
+                                    }
+                                  })()}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between mb-3">
                               <div className="text-sm text-gray-600">数量: {item.quantity}</div>
                               <div className="text-sm text-gray-600">单价: ¥{formatAmount(item.price)}</div>
                               {item.untaxedLocalCurrency !== null && item.untaxedLocalCurrency !== undefined && (
@@ -537,12 +540,8 @@ export default function SalespersonProfilePage() {
                                 <div>外箱: {item.outerCartonCode || '-'}</div>
                                 <div>外箱规格: {item.cartonSpecification || '-'}</div>
                                 <div>体积: {item.volume ?? '-'}</div>
-                              </div>
-                              <div className="text-xs text-gray-600 mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                                <span className="font-semibold">厂商备注:</span> {item.supplierNote || '-'}
-                              </div>
-                              <div className="text-xs text-gray-600 mb-2">
-                                <span className="font-semibold">摘要:</span> {item.summary || '-'}
+                                <div className="col-span-2">厂商备注: {item.supplierNote || '-'}</div>
+                                <div className="col-span-2">摘要: {item.summary || '-'}</div>
                               </div>
                               <div className="flex justify-end">
                                 <button
