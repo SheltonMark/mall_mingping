@@ -64,6 +64,7 @@ export class SalespersonService {
         include: {
           _count: {
             select: {
+              customers: true,
               orders: true,
               cartItems: true,
             },
@@ -107,6 +108,7 @@ export class SalespersonService {
         },
         _count: {
           select: {
+            customers: true,
             orders: true,
             cartItems: true,
           },
@@ -151,25 +153,11 @@ export class SalespersonService {
       throw new NotFoundException('业务员不存在');
     }
 
-    if (
-      updateSalespersonDto.accountId &&
-      updateSalespersonDto.accountId !== salesperson.accountId
-    ) {
-      const existingAccountId = await this.prisma.salesperson.findFirst({
-        where: {
-          accountId: updateSalespersonDto.accountId,
-          id: { not: id },
-        },
-      });
-      if (existingAccountId) {
-        throw new ConflictException('工号已存在');
-      }
-    }
+    const dataToUpdate: any = {};
 
-    const dataToUpdate: any = {
-      accountId: updateSalespersonDto.accountId,
-      chineseName: updateSalespersonDto.chineseName,
-    };
+    if (updateSalespersonDto.chineseName) {
+      dataToUpdate.chineseName = updateSalespersonDto.chineseName;
+    }
 
     if (updateSalespersonDto.password) {
       dataToUpdate.password = await bcrypt.hash(updateSalespersonDto.password, 10);
@@ -194,6 +182,7 @@ export class SalespersonService {
       include: {
         _count: {
           select: {
+            customers: true,
             orders: true,
             cartItems: true,
           },
@@ -206,11 +195,12 @@ export class SalespersonService {
     }
 
     if (
+      salesperson._count.customers > 0 ||
       salesperson._count.orders > 0 ||
       salesperson._count.cartItems > 0
     ) {
       throw new ConflictException(
-        '无法删除有订单或购物车记录的业务员',
+        '无法删除有客户、订单或购物车记录的业务员',
       );
     }
 

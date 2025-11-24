@@ -469,27 +469,49 @@ export class OrderService {
     const order = await this.findOne(orderId);
     const ExcelJS = require('exceljs');
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Sheet1');
+    const worksheet = workbook.addWorksheet('销售订单');
 
-    // Company name and title (rows 1-2)
+    // Row 1: Company name
     const companyName = order.companyName || '东阳市铭品日用品有限公司';
-    worksheet.mergeCells('C1:F1');
-    worksheet.getCell('C1').value = companyName;
-    worksheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
-    worksheet.getCell('C1').font = { size: 14, bold: true };
+    worksheet.mergeCells('A1:AB1');
+    worksheet.getCell('A1').value = companyName;
+    worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('A1').font = { size: 16, bold: true };
+    worksheet.getRow(1).height = 25;
 
-    worksheet.mergeCells('C2:F2');
-    worksheet.getCell('C2').value = '销售订单';
-    worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
-    worksheet.getCell('C2').font = { size: 12, bold: true };
+    // Row 2: Title "销售订单"
+    worksheet.mergeCells('A2:AB2');
+    worksheet.getCell('A2').value = '销售订单';
+    worksheet.getCell('A2').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('A2').font = { size: 14, bold: true };
+    worksheet.getRow(2).height = 22;
 
-    // Category labels (row 5)
-    worksheet.getCell('A5').value = '系统自带';
-    worksheet.getCell('R5').value = '销售填写';
-    worksheet.getCell('A5').font = { bold: true };
-    worksheet.getCell('R5').font = { bold: true };
+    // Row 3: Empty
+    worksheet.getRow(3).height = 5;
 
-    // Headers (row 6) - 28 columns matching template
+    // Row 4-5: Customer and Salesperson Information
+    worksheet.getCell('A4').value = '客户信息';
+    worksheet.getCell('A4').font = { bold: true, size: 11 };
+    worksheet.getCell('A5').value = `公司名称: ${order.customer.name}`;
+    worksheet.getCell('H5').value = `联系人: ${order.customer.contactPerson || ''}`;
+    worksheet.getCell('O5').value = `电话: ${order.customer.phone || ''}`;
+    worksheet.getCell('U5').value = `地址: ${order.customer.address || ''}`;
+
+    worksheet.getCell('A6').value = `业务员: ${order.salesperson.chineseName} (${order.salesperson.accountId})`;
+    worksheet.getCell('H6').value = `订单号: ${order.orderNumber}`;
+    worksheet.getCell('O6').value = `订单日期: ${order.orderDate.toISOString().split('T')[0]}`;
+    worksheet.getCell('U6').value = `订单状态: ${order.status}`;
+
+    // Row 7: Empty
+    worksheet.getRow(7).height = 5;
+
+    // Row 8: Category labels
+    worksheet.getCell('A8').value = '系统自带';
+    worksheet.getCell('R8').value = '销售填写';
+    worksheet.getCell('A8').font = { bold: true };
+    worksheet.getCell('R8').font = { bold: true };
+
+    // Row 9: Headers - 28 columns matching template
     const headers = [
       '项', '品号', '客户料号', '[货品图片]', '品名', '货品规格', '附加属性',
       '数量', '包装换算', '包装单位', '重量单位', '包装净重', '包装毛重',
@@ -499,9 +521,9 @@ export class OrderService {
     ];
 
     headers.forEach((header, index) => {
-      const cell = worksheet.getCell(6, index + 1);
+      const cell = worksheet.getCell(9, index + 1);
       cell.value = header;
-      cell.font = { bold: true };
+      cell.font = { bold: true, size: 10 };
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -513,6 +535,7 @@ export class OrderService {
         bottom: { style: 'thin' },
         right: { style: 'thin' },
       };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
     });
 
     // Set column widths
@@ -521,9 +544,9 @@ export class OrderService {
       worksheet.getColumn(index + 1).width = width;
     });
 
-    // Data rows (starting from row 7)
+    // Data rows (starting from row 10)
     order.items.forEach((item, index) => {
-      const rowNumber = 7 + index;
+      const rowNumber = 10 + index;
       const row = worksheet.getRow(rowNumber);
 
       row.values = [
@@ -565,11 +588,12 @@ export class OrderService {
           bottom: { style: 'thin' },
           right: { style: 'thin' },
         };
+        cell.alignment = { vertical: 'middle' };
       });
     });
 
-    // Total row (after all items)
-    const totalRow = 7 + order.items.length + 22; // Leave space for 20 empty rows like template
+    // Total row (after all items + 20 empty rows)
+    const totalRow = 10 + order.items.length + 20;
     worksheet.getCell(totalRow, 19).value = '自动合计总额'; // Column S
     worksheet.getCell(totalRow, 27).value = '自动合计总额'; // Column AA
     worksheet.getCell(totalRow, 19).font = { bold: true };

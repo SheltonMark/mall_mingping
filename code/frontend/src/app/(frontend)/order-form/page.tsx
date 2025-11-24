@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -11,7 +11,7 @@ import { parseBilingualText } from '@/lib/i18nHelper'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 function OrderFormContent() {
-  const { customer, isAuthenticated, isLoading } = useAuth()
+  const { salesperson, isAuthenticated, isLoading } = useSalespersonAuth()
   const { items: cart, clearCart, selectedItems, removeSelectedItems } = useCart()
   const { t, language } = useLanguage()
   const router = useRouter()
@@ -77,18 +77,18 @@ function OrderFormContent() {
     }
   }, [isAuthenticated, isLoading, router, searchParams])
 
-  // Pre-fill form with customer data
+  // Pre-fill form with salesperson data
   useEffect(() => {
-    if (customer) {
+    if (salesperson) {
       setFormData({
-        contactName: customer.contactPerson || customer.name || '',
-        phone: customer.phone || '',
-        email: customer.email || '',
-        address: customer.address || '',
+        contactName: salesperson.name || '',
+        phone: '',
+        email: salesperson.email || '',
+        address: '',
         notes: '',
       })
     }
-  }, [customer])
+  }, [salesperson])
 
   // Scroll to top when success screen is shown
   useEffect(() => {
@@ -121,7 +121,7 @@ function OrderFormContent() {
     setLoading(true)
 
     try {
-      const token = localStorage.getItem('customer_token')
+      const token = localStorage.getItem('salesperson_token')
       if (!token) {
         throw new Error('Not authenticated')
       }

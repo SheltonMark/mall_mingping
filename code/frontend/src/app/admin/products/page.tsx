@@ -400,29 +400,6 @@ export default function ProductsPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        {/* 可见性选择器 */}
-                        <CustomSelect
-                          options={[
-                            { value: 'ALL', label: '👁️ 所有人可见' },
-                            { value: 'STANDARD', label: '📝 普通及以上' },
-                            { value: 'VIP', label: '⭐ VIP及以上' },
-                            { value: 'SVIP', label: '💎 仅SVIP' }
-                          ]}
-                          value={group.visibilityTier || 'ALL'}
-                          onChange={async (value) => {
-                            try {
-                              await productApi.updateGroup(group.id, {
-                                visibilityTier: value as any
-                              });
-                              toast.success('可见性已更新');
-                              loadData();
-                            } catch (error: any) {
-                              toast.error('更新失败: ' + error.message);
-                            }
-                          }}
-                          className="w-48"
-                        />
-
                         <div className="text-sm font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg shadow-sm">
                           {groupSkus.length} 个规格
                         </div>

@@ -185,7 +185,16 @@
       "Bash(npx prisma migrate:*)",
       "Bash(npx prisma db push:*)",
       "Bash(set PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=现在是测试阶段 数据库的数据都是mock的数据 不重要 我只是懒得上传那么多产品图片和描述 所以 结论是 yes)",
-      "Bash(cmd.exe /c db-reset.bat)"
+      "Bash(cmd.exe /c db-reset.bat)",
+      "Bash(git -C code/backend-api ls-tree:*)",
+      "Bash(ADMIN_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYjU4NjJiNy0wMWRkLTQxZjQtYWRkOC1mZjY1MzI4ZTg0ZTIiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6ImFkbWluIiwiaWF0IjoxNzYzODk1MDkwLCJleHAiOjE3NjQ0OTk4OTB9.gk7ZdI-hH0sKtmneGs2IC_hhGDw1hlTfS5HQ1V6JQQw\")",
+      "Bash(SP_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OGRlYjA3My1hYWJlLTQxYjYtODk3MS1kNDBiZGZlMzM0YzEiLCJhY2NvdW50SWQiOiJTUDAwMSIsInR5cGUiOiJzYWxlc3BlcnNvbiIsImlhdCI6MTc2Mzg5NTE0MCwiZXhwIjoxNzY0NDk5OTQwfQ.CvUcJ11vxJTUhKzaCYAiMDTGZANZqEz5GVqnxR0eZuE\")",
+      "Bash(ADMIN_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYjU4NjJiNy0wMWRkLTQxZjQtYWRkOC1mZjY1MzI4ZTg0ZTIiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6ImFkbWluIiwiaWF0IjoxNzYzOTAwNjQ5LCJleHAiOjE3NjQ1MDU0NDl9.y3LkSLIosjxKRgBEFoZwZn6TFQsSgJIAvPxKM8vXOmc\")",
+      "Bash(if [ -f Navbar.tsx.backup ])",
+      "Bash(then cp Navbar.tsx.backup Navbar.tsx)",
+      "Bash(else echo \"❌ 没有备份文件\")",
+      "Bash(fi)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

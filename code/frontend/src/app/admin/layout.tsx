@@ -85,7 +85,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   const menuItems = [
     { icon: '📊', label: '仪表盘', path: '/admin' },
-    { icon: '👤', label: '用户管理', path: '/admin/customers' },
+    { icon: '👔', label: '业务员管理', path: '/admin/salespersons' },
+    { icon: '🏢', label: '客户管理', path: '/admin/customers' },
     { icon: '📦', label: '订单管理', path: '/admin/orders' },
     { icon: '🏷️', label: '产品管理', path: '/admin/products' },
     { icon: '🏪', label: '分类管理', path: '/admin/categories' },

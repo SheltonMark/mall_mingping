@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function SalespersonLoginPage() {
+export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -31,7 +31,8 @@ export default function SalespersonLoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/salesperson-auth/login', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${API_URL}/salesperson-auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,13 +46,20 @@ export default function SalespersonLoginPage() {
         throw new Error(data.message || '登录失败')
       }
 
-      // 保存token和用户信息
+      // 保存token和用户信息 - 统一数据格式
+      const salespersonData = {
+        id: data.salesperson.id,
+        name: data.salesperson.name || data.salesperson.chineseName || '',
+        accountId: data.salesperson.accountId,
+        email: data.salesperson.email || ''
+      }
+
       localStorage.setItem('salesperson_token', data.access_token)
       localStorage.setItem('salesperson_id', data.salesperson.id)
-      localStorage.setItem('salesperson_name', data.salesperson.chineseName)
+      localStorage.setItem('salesperson_data', JSON.stringify(salespersonData))
 
-      // 跳转到首页
-      router.push('/')
+      // 直接跳转到个人中心（使用 window.location 确保页面完全刷新）
+      window.location.href = '/salesperson/profile'
     } catch (err: any) {
       setError(err.message || '登录失败，请检查工号和密码')
     } finally {
@@ -60,7 +68,7 @@ export default function SalespersonLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-40 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
@@ -121,13 +129,6 @@ export default function SalespersonLoginPage() {
               {loading ? '登录中...' : '登录'}
             </button>
           </form>
-
-          {/* Test Account Info */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              测试账号: SP001 / 123456
-            </p>
-          </div>
         </div>
       </div>
     </div>

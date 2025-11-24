@@ -11,7 +11,7 @@ export class CustomerService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCustomerDto: CreateCustomerDto) {
-    const { name, contactPerson, email, phone, address, customerType } = createCustomerDto;
+    const { name, contactPerson, email, phone, address, customerType, salespersonId } = createCustomerDto;
 
     const existingCustomer = await this.prisma.customer.findUnique({
       where: { email },
@@ -24,10 +24,20 @@ export class CustomerService {
       data: {
         name,
         email,
+        salespersonId,
         ...(contactPerson && { contactPerson }),
         ...(phone && { phone }),
         ...(address && { address }),
         ...(customerType && { customerType }),
+      },
+      include: {
+        salesperson: {
+          select: {
+            id: true,
+            accountId: true,
+            chineseName: true,
+          },
+        },
       },
     });
   }
@@ -35,12 +45,14 @@ export class CustomerService {
   async findAll(query?: {
     search?: string;
     customerType?: string;
+    salespersonId?: string;
     page?: number;
     limit?: number;
   }) {
     const {
       search,
       customerType,
+      salespersonId,
       page = 1,
       limit = 10,
     } = query || {};
@@ -61,6 +73,10 @@ export class CustomerService {
       where.customerType = customerType;
     }
 
+    if (salespersonId) {
+      where.salespersonId = salespersonId;
+    }
+
     const [customers, total] = await Promise.all([
       this.prisma.customer.findMany({
         where,
@@ -70,6 +86,13 @@ export class CustomerService {
           createdAt: 'desc',
         },
         include: {
+          salesperson: {
+            select: {
+              id: true,
+              accountId: true,
+              chineseName: true,
+            },
+          },
           _count: {
             select: {
               orders: true,
@@ -95,6 +118,13 @@ export class CustomerService {
     const customer = await this.prisma.customer.findUnique({
       where: { id },
       include: {
+        salesperson: {
+          select: {
+            id: true,
+            accountId: true,
+            chineseName: true,
+          },
+        },
         orders: {
           take: 10,
           orderBy: { createdAt: 'desc' },

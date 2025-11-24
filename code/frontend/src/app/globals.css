@@ -353,3 +353,53 @@ body {
 .animation-delay-600 {
   animation-delay: 600ms;
 }
+
+/* ====================
+   📅 日期选择器样式 - Date Picker Styling
+   ==================== */
+
+/* 日期输入框样式 */
+input[type="date"] {
+  position: relative;
+  cursor: pointer;
+}
+
+/* 日期选择器弹出框样式 */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* 日历弹出框的整体样式 - 使用品牌色 */
+input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+  padding: 0 0.25rem;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  padding: 0 0.25rem;
+}
+
+/* Firefox 日期选择器样式 */
+input[type="date"]::-moz-focus-inner {
+  border: 0;
+}
+
+/* 自定义日历样式（适用于支持的浏览器） */
+input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(74%) sepia(48%) saturate(2045%) hue-rotate(122deg) brightness(95%) contrast(97%);
+}

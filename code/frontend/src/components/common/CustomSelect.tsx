@@ -57,7 +57,7 @@ export default function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full appearance-none rounded-full bg-white border-2 transition-all duration-200 py-2.5 pl-5 pr-12 text-sm font-medium text-gray-700 cursor-pointer shadow-sm ${
+        className={`w-full appearance-none rounded-lg bg-white border-2 transition-all duration-200 py-2.5 pl-4 pr-12 text-sm font-medium text-gray-700 cursor-pointer shadow-sm ${
           isOpen
             ? 'border-primary shadow-md'
             : 'border-gray-200 hover:border-primary hover:shadow'
@@ -76,7 +76,7 @@ export default function CustomSelect({
 
       {/* 下拉选项 - 圆角设计，带动画 */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border-2 border-primary rounded-2xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute z-50 w-full mt-2 bg-white border-2 border-primary rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="py-1">
             {options.map((option) => {
               const isSelected = option.value === value
@@ -85,7 +85,7 @@ export default function CustomSelect({
                   key={option.value}
                   type="button"
                   onClick={() => handleSelect(option.value)}
-                  className={`w-full text-left px-5 py-2.5 text-sm font-medium transition-colors duration-150 flex items-center justify-between ${
+                  className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors duration-150 flex items-center justify-between ${
                     isSelected
                       ? 'bg-primary/10 text-primary'
                       : 'text-gray-700 hover:bg-gray-50'

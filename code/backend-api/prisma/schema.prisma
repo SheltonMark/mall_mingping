@@ -26,7 +26,7 @@ model Admin {
 }
 
 // ========================================
-// 业务员表（内网版本）
+// 业务员表（内网版本 - 简化字段）
 // ========================================
 model Salesperson {
   id           String   @id @default(uuid())
@@ -36,6 +36,7 @@ model Salesperson {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  customers    Customer[] // 业务员的客户
   orders       Order[]
   cartItems    CartItem[] // 业务员的购物车
 
@@ -43,7 +44,7 @@ model Salesperson {
 }
 
 // ========================================
-// 客户表（内网版本 - 仅存储客户信息）
+// 客户表（内网版本 - 业务员创建并维护）
 // ========================================
 model Customer {
   id              String   @id @default(uuid())
@@ -54,11 +55,15 @@ model Customer {
   address         String?
   country         String?  // 国家/地区
 
+  salespersonId   String   @map("salesperson_id") // 关联的业务员（创建者）
+
   customerType    CustomerType @default(NEW) @map("customer_type")
+  remarks         String?  // 备注
   status          String   @default("active") // active/disabled
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  salesperson     Salesperson @relation(fields: [salespersonId], references: [id])
   orders          Order[]
 
   @@map("customers")

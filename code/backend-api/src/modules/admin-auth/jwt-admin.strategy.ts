@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { SalespersonAuthService } from './salesperson-auth.service';
+import { AdminAuthService } from './admin-auth.service';
 
 @Injectable()
-export class JwtSalespersonStrategy extends PassportStrategy(Strategy, 'jwt-salesperson') {
-  constructor(private salespersonAuthService: SalespersonAuthService) {
+export class JwtAdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
+  constructor(private adminAuthService: AdminAuthService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -15,12 +15,12 @@ export class JwtSalespersonStrategy extends PassportStrategy(Strategy, 'jwt-sale
   }
 
   async validate(payload: any) {
-    // Only validate if this is a salesperson token
-    if (payload.type !== 'salesperson') {
+    // Only validate if this is an admin token
+    if (payload.type !== 'admin') {
       return null; // Return null to let other strategies try
     }
 
-    const salesperson = await this.salespersonAuthService.validateSalesperson(payload.sub);
-    return salesperson;
+    const admin = await this.adminAuthService.validateAdmin(payload.sub);
+    return admin;
   }
 }

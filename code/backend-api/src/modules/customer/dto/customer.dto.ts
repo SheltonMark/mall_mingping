@@ -12,12 +12,6 @@ enum CustomerType {
   OLD = 'OLD',
 }
 
-enum CustomerTier {
-  STANDARD = 'STANDARD',
-  VIP = 'VIP',
-  SVIP = 'SVIP',
-}
-
 export class CreateCustomerDto {
   @IsString()
   @MinLength(2)
@@ -31,11 +25,6 @@ export class CreateCustomerDto {
   email: string;
 
   @IsString()
-  @MinLength(8)
-  @IsOptional()
-  password?: string; // 新增：密码字段
-
-  @IsString()
   @IsOptional()
   phone?: string;
 
@@ -43,17 +32,20 @@ export class CreateCustomerDto {
   @IsOptional()
   address?: string;
 
-  @IsUUID()
+  @IsString()
   @IsOptional()
-  salespersonId?: string;
+  country?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+
+  @IsUUID()
+  salespersonId: string;
 
   @IsEnum(CustomerType)
   @IsOptional()
   customerType?: CustomerType;
-
-  @IsEnum(CustomerTier)
-  @IsOptional()
-  tier?: CustomerTier; // 新增：客户等级
 }
 
 export class UpdateCustomerDto {
@@ -78,6 +70,14 @@ export class UpdateCustomerDto {
   @IsOptional()
   address?: string;
 
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+
   @IsUUID()
   @IsOptional()
   salespersonId?: string;
@@ -85,8 +85,4 @@ export class UpdateCustomerDto {
   @IsEnum(CustomerType)
   @IsOptional()
   customerType?: CustomerType;
-
-  @IsEnum(CustomerTier)
-  @IsOptional()
-  tier?: CustomerTier; // 新增：客户等级
 }

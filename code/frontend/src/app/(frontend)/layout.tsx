@@ -3,6 +3,7 @@ import Footer from '@/components/layout/Footer'
 import BackToTop from '@/components/BackToTop'
 import { CartProvider } from '@/context/CartContext'
 import { AuthProvider } from '@/context/AuthContext'
+import { SalespersonAuthProvider } from '@/context/SalespersonAuthContext'
 
 export default function FrontendLayout({
   children,
@@ -11,16 +12,18 @@ export default function FrontendLayout({
 }) {
   return (
     <AuthProvider>
-      <CartProvider>
-        <div className="relative flex h-auto min-h-screen w-full flex-col">
-          <div className="layout-container flex h-full grow flex-col">
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-          <BackToTop />
+      <SalespersonAuthProvider>
+        <CartProvider>
+          <div className="relative flex h-auto min-h-screen w-full flex-col">
+            <div className="layout-container flex h-full grow flex-col">
+              <Navbar />
+              <main>{children}</main>
+              <Footer />
+            <BackToTop />
+            </div>
           </div>
-        </div>
-      </CartProvider>
+        </CartProvider>
+      </SalespersonAuthProvider>
     </AuthProvider>
   )
 }

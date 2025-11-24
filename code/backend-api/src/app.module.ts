@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { AdminAuthModule } from './modules/admin-auth/admin-auth.module';
 import { SalespersonAuthModule } from './modules/salesperson-auth/salesperson-auth.module';
 import { SalespersonModule } from './modules/salesperson/salesperson.module';
 import { CustomerModule } from './modules/customer/customer.module';
@@ -22,6 +23,7 @@ import { CartModule } from './modules/cart/cart.module';
       envFilePath: '.env',
     }),
     AuthModule,
+    AdminAuthModule, // Internal sales: Admin authentication
     SalespersonAuthModule, // Internal sales: Salesperson authentication
     SalespersonModule,
     CustomerModule,

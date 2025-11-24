@@ -20,11 +20,6 @@ export class CreateSalespersonDto {
 
 export class UpdateSalespersonDto {
   @IsString()
-  @MinLength(2, { message: '工号至少2位' })
-  @IsOptional()
-  accountId?: string;
-
-  @IsString()
   @MinLength(2, { message: '中文名至少2个字符' })
   @IsOptional()
   chineseName?: string;

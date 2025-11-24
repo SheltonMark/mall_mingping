@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
-import { useAuth } from '@/context/AuthContext'
+import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { parseBilingualText } from '@/lib/i18nHelper'
@@ -13,14 +13,14 @@ export default function CartPage() {
   const router = useRouter()
   const toast = useToast()
   const { items, removeItem, updateQuantity, selectedItems, setSelectedItems } = useCart()
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useSalespersonAuth()
   const { t, language } = useLanguage()
 
   const handleCheckout = () => {
     // Check if user is authenticated
     if (!isAuthenticated) {
-      toast.warning(t('auth.login'))
-      router.push('/login?redirect=/order-form')
+      toast.warning('请先登录')
+      router.push('/login')
       return
     }
 
@@ -36,8 +36,8 @@ export default function CartPage() {
       return
     }
 
-    // Redirect to order form page (not checkout, as we don't have payment)
-    router.push('/order-form')
+    // Redirect to order confirmation page
+    router.push('/order-confirmation')
   }
 
   const toggleSelectAll = () => {

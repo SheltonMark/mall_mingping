@@ -11,10 +11,10 @@ import {
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { InternalAuthGuard } from '../../common/guards/internal-auth.guard';
 
 @Controller('customers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(InternalAuthGuard)
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
@@ -27,12 +27,14 @@ export class CustomerController {
   findAll(
     @Query('search') search?: string,
     @Query('customerType') customerType?: string,
+    @Query('salespersonId') salespersonId?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     return this.customerService.findAll({
       search,
       customerType,
+      salespersonId,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     });

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { ShoppingCart, ChevronDown } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
-import { useAuth } from '@/context/AuthContext'
+import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { productApi, type ProductGroup, type Category } from '@/lib/publicApi'
 import { useToast } from '@/components/common/ToastContainer'
 import CustomSelect from '@/components/common/CustomSelect'
@@ -16,7 +16,7 @@ const PRODUCTS_PER_PAGE = 9
 
 export default function ProductsPage() {
   const { t, language } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useSalespersonAuth()
   const router = useRouter()
   const toast = useToast()
   const [view, setView] = useState<'grid' | 'list'>('grid')
@@ -73,8 +73,8 @@ export default function ProductsPage() {
 
     // 检查登录状态
     if (!isAuthenticated) {
-      toast.warning(t('auth.please_login_first') || '请先登录')
-      router.push(`/login?redirect=/products`)
+      toast.warning('请先登录')
+      router.push('/login')
       return
     }
 

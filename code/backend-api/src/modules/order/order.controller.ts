@@ -18,7 +18,7 @@ import {
   CreateOrderParamConfigDto,
   UpdateOrderParamConfigDto,
 } from './dto/order.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { InternalAuthGuard } from '../../common/guards/internal-auth.guard';
 
 @Controller('orders')
 export class OrderController {
@@ -32,7 +32,7 @@ export class OrderController {
 
   // 管理接口：需要认证
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   findAll(
     @Query('search') search?: string,
     @Query('customerId') customerId?: string,
@@ -59,46 +59,46 @@ export class OrderController {
 
   // 管理接口：需要认证
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(id);
   }
 
   // 管理接口：需要认证
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.orderService.update(id, updateOrderDto);
   }
 
   // 管理接口：需要认证
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   remove(@Param('id') id: string) {
     return this.orderService.remove(id);
   }
 
   // Order Param Config endpoints - 管理接口：需要认证
   @Post('param-configs')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   createParamConfig(@Body() dto: CreateOrderParamConfigDto) {
     return this.orderService.createParamConfig(dto);
   }
 
   @Get('param-configs')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   findAllParamConfigs(@Query('activeOnly') activeOnly?: string) {
     return this.orderService.findAllParamConfigs(activeOnly === 'true');
   }
 
   @Get('param-configs/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   findOneParamConfig(@Param('id') id: string) {
     return this.orderService.findOneParamConfig(id);
   }
 
   @Patch('param-configs/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   updateParamConfig(
     @Param('id') id: string,
     @Body() dto: UpdateOrderParamConfigDto,
@@ -107,20 +107,20 @@ export class OrderController {
   }
 
   @Delete('param-configs/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   removeParamConfig(@Param('id') id: string) {
     return this.orderService.removeParamConfig(id);
   }
 
   // Export endpoints - 管理接口：需要认证
   @Get(':id/export')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   async exportOrder(@Param('id') id: string, @Res() res: Response) {
     return this.orderService.exportOrderToExcel(id, res);
   }
 
   @Post('export-batch')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(InternalAuthGuard)
   async exportBatch(@Body('orderIds') orderIds: string[], @Res() res: Response) {
     return this.orderService.exportOrdersToExcel(orderIds, res);
   }
