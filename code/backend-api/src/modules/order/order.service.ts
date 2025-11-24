@@ -15,6 +15,25 @@ import {
 } from './dto/order.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 
+// 提取双语文本的中文部分
+function extractChineseText(text: string | null | undefined): string {
+  if (!text) return '';
+
+  // 支持 | 和 / 两种分隔符
+  if (text.includes('|')) {
+    const [zh] = text.split('|').map(s => s.trim());
+    return zh || text;
+  }
+
+  if (text.includes('/')) {
+    const [zh] = text.split('/').map(s => s.trim());
+    return zh || text;
+  }
+
+  // 否则直接返回原文本
+  return text;
+}
+
 @Injectable()
 export class OrderService {
   constructor(
@@ -560,7 +579,7 @@ export class OrderService {
         item.productImage || '',                                // D: [货品图片]
         item.productSku.group.groupNameZh,                      // E: 品名
         item.productSpec || '',                                 // F: 货品规格
-        item.additionalAttributes || '',                        // G: 附加属性
+        extractChineseText(item.additionalAttributes),                        // G: 附加属性
         item.quantity,                                          // H: 数量
         item.packagingConversion?.toNumber() || '',             // I: 包装换算
         item.packagingUnit || '',                               // J: 包装单位

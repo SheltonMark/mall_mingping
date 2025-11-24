@@ -8,7 +8,7 @@ import {
   IsNumber,
   ValidateNested,
   IsObject,
-  Min,
+
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -27,7 +27,6 @@ class OrderItemDto {
   productSkuId: string;
 
   @IsNumber()
-  @Min(1)
   @IsOptional()
   itemNumber?: number;
 
@@ -48,11 +47,9 @@ class OrderItemDto {
   additionalAttributes?: string;
 
   @IsNumber()
-  @Min(1)
   quantity: number;
 
   @IsNumber()
-  @Min(0)
   @IsOptional()
   packagingConversion?: number;
 
@@ -89,7 +86,6 @@ class OrderItemDto {
   expectedDeliveryDate?: string;
 
   @IsNumber()
-  @Min(0)
   price: number;
 
   @IsNumber()

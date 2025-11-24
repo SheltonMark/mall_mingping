@@ -5,7 +5,7 @@ import { orderApi, salespersonApi, customerApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
 import {
-  Package, Calendar, DollarSign, Hash, Eye, X, Filter,
+  Package, Calendar, Hash, Eye, X, Filter,
   Download, ChevronDown, ChevronUp, Edit2, Save,
   User, Building, UserCircle
 } from 'lucide-react';
@@ -92,6 +92,25 @@ const formatAmount = (amount: any) => {
   return num.toFixed(2);
 };
 
+// 提取双语文本的中文部分
+const extractChineseText = (text: string | undefined | null): string => {
+  if (!text) return '';
+
+  // 支持 | 和 / 两种分隔符
+  if (text.includes('|')) {
+    const [zh] = text.split('|').map(s => s.trim());
+    return zh || text;
+  }
+
+  if (text.includes('/')) {
+    const [zh] = text.split('/').map(s => s.trim());
+    return zh || text;
+  }
+
+  // 否则直接返回原文本
+  return text;
+};
+
 export default function AdminOrdersPage() {
   const toast = useToast();
 
@@ -173,6 +192,31 @@ export default function AdminOrdersPage() {
     toast.success('订单导出成功');
   };
 
+  // 清理数据：将空字符串转换为undefined，将字符串数字转换为数字
+  const cleanItemData = (data: any) => {
+    const cleaned: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      // 跳过undefined
+      if (value === undefined) continue;
+
+      // 空字符串转为undefined
+      if (value === '') {
+        cleaned[key] = undefined;
+        continue;
+      }
+
+      // 数字字段：尝试转换
+      const numberFields = ['packagingConversion', 'netWeight', 'grossWeight', 'packingQuantity', 'cartonQuantity', 'volume', 'quantity', 'price'];
+      if (numberFields.includes(key) && typeof value === 'string') {
+        const num = parseFloat(value);
+        cleaned[key] = isNaN(num) ? undefined : num;
+      } else {
+        cleaned[key] = value;
+      }
+    }
+    return cleaned;
+  };
+
   // 开始编辑商品项
   const handleEditItem = (item: OrderItem) => {
     setEditingItemId(item.id);
@@ -205,6 +249,9 @@ export default function AdminOrdersPage() {
       // 更新订单中的item
       const updatedItems = selectedOrder.items.map(item => {
         if (item.id === editingItemId) {
+          // 清理编辑的数据
+          const cleanedEditingData = cleanItemData(editingData);
+
           return {
             productSkuId: item.productSkuId || item.productSku?.id,
             itemNumber: item.itemNumber,
@@ -215,24 +262,8 @@ export default function AdminOrdersPage() {
             quantity: item.quantity,
             price: item.price,
             expectedDeliveryDate: item.expectedDeliveryDate,
-            // 更新包装信息
-            packagingConversion: editingData.packagingConversion,
-            packagingUnit: editingData.packagingUnit,
-            weightUnit: editingData.weightUnit,
-            netWeight: editingData.netWeight,
-            grossWeight: editingData.grossWeight,
-            packagingType: editingData.packagingType,
-            packagingSize: editingData.packagingSize,
-            packingQuantity: editingData.packingQuantity,
-            cartonQuantity: editingData.cartonQuantity,
-            packagingMethod: editingData.packagingMethod,
-            paperCardCode: editingData.paperCardCode,
-            washLabelCode: editingData.washLabelCode,
-            outerCartonCode: editingData.outerCartonCode,
-            cartonSpecification: editingData.cartonSpecification,
-            volume: editingData.volume,
-            supplierNote: editingData.supplierNote,
-            summary: editingData.summary,
+            // 更新包装信息 - 使用清理后的数据
+            ...cleanedEditingData,
           };
         }
         return {
@@ -465,7 +496,7 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-1 text-sm font-semibold text-gray-900">
-                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        
                         ¥{formatAmount(order.totalAmount)}
                       </div>
                     </td>
@@ -631,6 +662,11 @@ export default function AdminOrdersPage() {
                           {item.productSpec && (
                             <div className="text-sm text-gray-600 mt-2 p-2 bg-gray-50 rounded">
                               规格: {item.productSpec}
+                            </div>
+                          )}
+                          {item.additionalAttributes && (
+                            <div className="text-sm text-gray-600 mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                              附加属性: {extractChineseText(item.additionalAttributes)}
                             </div>
                           )}
                         </div>

@@ -149,6 +149,31 @@ export default function SalespersonProfilePage() {
     })
   }
 
+  // 清理数据：将空字符串转换为undefined，将字符串数字转换为数字
+  const cleanItemData = (data: any) => {
+    const cleaned: any = {}
+    for (const [key, value] of Object.entries(data)) {
+      // 跳过undefined
+      if (value === undefined) continue
+
+      // 空字符串转为undefined
+      if (value === '') {
+        cleaned[key] = undefined
+        continue
+      }
+
+      // 数字字段：尝试转换
+      const numberFields = ['packagingConversion', 'netWeight', 'grossWeight', 'packingQuantity', 'cartonQuantity', 'volume', 'quantity', 'price']
+      if (numberFields.includes(key) && typeof value === 'string') {
+        const num = parseFloat(value)
+        cleaned[key] = isNaN(num) ? undefined : num
+      } else {
+        cleaned[key] = value
+      }
+    }
+    return cleaned
+  }
+
   const handleSaveItem = async () => {
     if (!editingItemId) return
 
@@ -163,6 +188,9 @@ export default function SalespersonProfilePage() {
       // 更新订单中的item
       const updatedItems = order.items.map(item => {
         if (item.id === editingItemId) {
+          // 清理编辑的数据
+          const cleanedEditingData = cleanItemData(editingData)
+
           return {
             productSkuId: item.productSkuId || item.productSku?.id,
             itemNumber: item.itemNumber,
@@ -173,24 +201,8 @@ export default function SalespersonProfilePage() {
             quantity: item.quantity,
             price: item.price,
             expectedDeliveryDate: item.expectedDeliveryDate,
-            // 更新包装信息
-            packagingConversion: editingData.packagingConversion,
-            packagingUnit: editingData.packagingUnit,
-            weightUnit: editingData.weightUnit,
-            netWeight: editingData.netWeight,
-            grossWeight: editingData.grossWeight,
-            packagingType: editingData.packagingType,
-            packagingSize: editingData.packagingSize,
-            packingQuantity: editingData.packingQuantity,
-            cartonQuantity: editingData.cartonQuantity,
-            packagingMethod: editingData.packagingMethod,
-            paperCardCode: editingData.paperCardCode,
-            washLabelCode: editingData.washLabelCode,
-            outerCartonCode: editingData.outerCartonCode,
-            cartonSpecification: editingData.cartonSpecification,
-            volume: editingData.volume,
-            supplierNote: editingData.supplierNote,
-            summary: editingData.summary,
+            // 更新包装信息 - 使用清理后的数据
+            ...cleanedEditingData,
           }
         }
         return {
