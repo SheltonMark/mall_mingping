@@ -33,8 +33,6 @@ export default function CategoriesPage() {
     code: '',
     nameZh: '',
     nameEn: '',
-    icon: '',
-    sortOrder: 0,
   });
 
   useEffect(() => {
@@ -59,8 +57,6 @@ export default function CategoriesPage() {
       code: '',
       nameZh: '',
       nameEn: '',
-      icon: '',
-      sortOrder: categories.length,
     });
     setIsModalOpen(true);
   };
@@ -71,8 +67,6 @@ export default function CategoriesPage() {
       code: category.code,
       nameZh: category.nameZh,
       nameEn: category.nameEn,
-      icon: category.icon || '',
-      sortOrder: category.sortOrder,
     });
     setIsModalOpen(true);
   };
@@ -99,8 +93,8 @@ export default function CategoriesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.code.trim() || !formData.nameZh.trim() || !formData.nameEn.trim()) {
-      toast.warning('请填写分类代码、中文名称和英文名称');
+    if (!formData.code.trim() || !formData.nameZh.trim()) {
+      toast.warning('请填写分类代码和中文名称');
       return;
     }
 
@@ -119,8 +113,6 @@ export default function CategoriesPage() {
         code: '',
         nameZh: '',
         nameEn: '',
-        icon: '',
-        sortOrder: 0,
       });
       loadCategories();
     } catch (error: any) {
@@ -292,7 +284,7 @@ export default function CategoriesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  英文名称 <span className="text-red-500">*</span>
+                  英文名称
                 </label>
                 <input
                   type="text"
@@ -300,35 +292,6 @@ export default function CategoriesPage() {
                   onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="如: Combo Sets"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  图标URL（可选）
-                </label>
-                <input
-                  type="text"
-                  value={formData.icon}
-                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  排序
-                </label>
-                <input
-                  type="number"
-                  value={formData.sortOrder}
-                  onChange={(e) =>
-                    setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  min="0"
                 />
               </div>
 

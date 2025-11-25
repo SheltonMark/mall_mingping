@@ -103,10 +103,6 @@ export default function CreateGroupPage() {
       toast.error('请输入中文名称');
       return;
     }
-    if (!currentAttribute.nameEn.trim()) {
-      toast.error('请输入英文名称');
-      return;
-    }
 
     setOptionalAttributes([...optionalAttributes, currentAttribute]);
     setCurrentAttribute({ nameZh: '', nameEn: '' });
@@ -129,11 +125,6 @@ export default function CreateGroupPage() {
 
     if (!formData.groupNameZh.trim()) {
       toast.error('请输入系列中文名称');
-      return;
-    }
-
-    if (!formData.groupNameEn.trim()) {
-      toast.error('请输入系列英文名称');
       return;
     }
 
@@ -261,15 +252,14 @@ export default function CreateGroupPage() {
               {/* 英文名称 */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  系列英文名称 <span className="text-red-500">*</span>
+                  系列英文名称
                 </label>
                 <input
                   type="text"
                   value={formData.groupNameEn}
                   onChange={(e) => setFormData({ ...formData, groupNameEn: e.target.value })}
-                  placeholder="输入系列英文名称"
+                  placeholder="输入系列英文名称（可选）"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                  required
                 />
               </div>
 
@@ -349,7 +339,7 @@ export default function CreateGroupPage() {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">
-                        英文名称 <span className="text-red-500">*</span>
+                        英文名称
                       </label>
                       <input
                         type="text"
@@ -362,7 +352,7 @@ export default function CreateGroupPage() {
                           }
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                        placeholder="例如：All 3C Cool Gray"
+                        placeholder="例如：All 3C Cool Gray（可选）"
                       />
                     </div>
                   </div>

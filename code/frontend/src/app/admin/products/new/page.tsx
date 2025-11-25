@@ -532,18 +532,8 @@ export default function NewSkuPage() {
       return;
     }
 
-    if (!sku.productNameEn || !sku.productNameEn.trim()) {
-      toast.error('请输入品名英文');
-      return;
-    }
-
     if (!sku.specification || !sku.specification.trim()) {
       toast.error('请输入货品规格');
-      return;
-    }
-
-    if (!sku.specificationEn || !sku.specificationEn.trim()) {
-      toast.error('请输入货品规格英文');
       return;
     }
 
@@ -819,15 +809,14 @@ export default function NewSkuPage() {
               {/* 品名英文 */}
               <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">
-                  品名英文 <span className="text-red-500">*</span>
+                  品名英文
                 </label>
                 <input
                   type="text"
                   value={sku.productNameEn || ''}
                   onChange={(e) => setSku({ ...sku, productNameEn: e.target.value })}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="例如: Premium Cleaning Tool"
-                  required
+                  placeholder="例如: Premium Cleaning Tool（可选）"
                 />
               </div>
 
@@ -849,15 +838,14 @@ export default function NewSkuPage() {
               {/* 货品规格英文 */}
               <div className="mb-5">
                 <label className="block text-sm font-bold text-gray-800 mb-2">
-                  货品规格英文 <span className="text-red-500">*</span>
+                  货品规格英文
                 </label>
                 <input
                   type="text"
                   value={sku.specificationEn || ''}
                   onChange={(e) => setSku({ ...sku, specificationEn: e.target.value })}
                   className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="例如: Household Type"
-                  required
+                  placeholder="例如: Household Type（可选）"
                 />
               </div>
 
