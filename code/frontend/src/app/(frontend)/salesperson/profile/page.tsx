@@ -640,7 +640,7 @@ export default function SalespersonProfilePage() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="text-xs text-gray-600">外箱规格</label>
+                                  <label className="text-xs text-gray-600">箱规 (cm)</label>
                                   <input
                                     type="text"
                                     value={editingData.cartonSpecification || ''}
@@ -654,11 +654,11 @@ export default function SalespersonProfilePage() {
                                       })
                                     }}
                                     className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                    placeholder="例如: 74*44*20cm (自动计算m³)"
+                                    placeholder="例如: 74*44*20"
                                   />
                                 </div>
                                 <div>
-                                  <label className="text-xs text-gray-600">体积</label>
+                                  <label className="text-xs text-gray-600">体积 (m³)</label>
                                   <input
                                     type="number"
                                     value={editingData.volume || ''}
