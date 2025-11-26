@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ConflictException,
@@ -7,6 +8,7 @@ import {
 import { Response } from 'express';
 import { PrismaService } from '../../prisma.service';
 import { ExcelService } from '../../common/services/excel.service';
+import { ErpOrderSyncService } from '../../erp/erp-order-sync.service';
 import {
   CreateOrderDto,
   UpdateOrderDto,
@@ -36,9 +38,12 @@ function extractChineseText(text: string | null | undefined): string {
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name);
+
   constructor(
     private prisma: PrismaService,
     private excelService: ExcelService,
+    private erpOrderSyncService: ErpOrderSyncService,
   ) {}
 
   async create(createOrderDto: CreateOrderDto) {
@@ -121,7 +126,7 @@ export class OrderService {
     });
 
     // Create order with items and custom params
-    return this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         orderNumber,
         customerId,
@@ -129,6 +134,7 @@ export class OrderService {
         companyName,
         ...orderData,
         totalAmount,
+        erpSyncStatus: 'pending', // 初始化 ERP 同步状态
         items: {
           create: orderItems,
         },
@@ -148,7 +154,7 @@ export class OrderService {
             id: true,
             accountId: true,
             chineseName: true,
-            
+
           },
         },
         items: {
@@ -163,6 +169,30 @@ export class OrderService {
         customParams: true,
       },
     });
+
+    // 异步同步到 ERP（不阻塞订单创建）
+    this.syncOrderToErpAsync(order.id);
+
+    return order;
+  }
+
+  /**
+   * 异步同步订单到 ERP
+   * 不阻塞订单创建，同步失败会记录到数据库
+   */
+  private async syncOrderToErpAsync(orderId: string): Promise<void> {
+    try {
+      const result = await this.erpOrderSyncService.syncOrderToErp(orderId);
+      if (result.success) {
+        this.logger.log(`订单 ${orderId} 同步到 ERP 成功: ${result.erpOrderNo}`);
+      } else {
+        this.logger.warn(`订单 ${orderId} 同步到 ERP 失败: ${result.error}`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `订单 ${orderId} 同步到 ERP 异常: ${error instanceof Error ? error.message : error}`,
+      );
+    }
   }
 
   async findAll(query?: {

@@ -15,6 +15,7 @@ import { SystemModule } from './modules/system/system.module';
 import { PartnershipModule } from './modules/partnership/partnership.module';
 import { ComponentModule } from './modules/component/component.module';
 import { CartModule } from './modules/cart/cart.module';
+import { ErpModule } from './erp/erp.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CartModule } from './modules/cart/cart.module';
     PartnershipModule,
     ComponentModule,
     CartModule, // External site: Shopping cart
+    ErpModule, // ERP 订单同步模块
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
