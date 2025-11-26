@@ -460,3 +460,78 @@ export const componentApi = {
       method: 'DELETE',
     }),
 };
+
+// ============ ERP 同步管理 ============
+export const erpApi = {
+  // 产品同步
+  syncProducts: (data?: { incremental?: boolean; days?: number }) =>
+    request<{
+      success: boolean;
+      groupsCreated: number;
+      groupsUpdated: number;
+      skusCreated: number;
+      skusUpdated: number;
+      duration: number;
+      error?: string;
+    }>('/erp/products/sync', {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    }),
+
+  syncProductsFull: () =>
+    request<{
+      success: boolean;
+      groupsCreated: number;
+      groupsUpdated: number;
+      skusCreated: number;
+      skusUpdated: number;
+      duration: number;
+      error?: string;
+    }>('/erp/products/sync-full', {
+      method: 'POST',
+    }),
+
+  getProductLastSyncTime: () =>
+    request<{
+      lastSyncTime: string | null;
+      lastSyncTimeFormatted: string;
+    }>('/erp/products/last-sync'),
+
+  // 订单同步
+  syncOrder: (orderId: string) =>
+    request<{ success: boolean; erpOrderNo?: string; error?: string }>(`/erp/orders/${orderId}/sync`, {
+      method: 'POST',
+    }),
+
+  retryOrderSync: (orderId: string) =>
+    request<{ success: boolean; erpOrderNo?: string; error?: string }>(`/erp/orders/${orderId}/retry`, {
+      method: 'POST',
+    }),
+
+  getFailedOrders: () => request<any[]>('/erp/orders/failed'),
+
+  getPendingOrders: () => request<any[]>('/erp/orders/pending'),
+
+  // 映射管理
+  getCustomerMappings: () => request<any[]>('/erp/mappings/customers'),
+  createCustomerMapping: (websiteId: string, erpNo: string) =>
+    request<any>('/erp/mappings/customers', {
+      method: 'POST',
+      body: JSON.stringify({ websiteId, erpNo }),
+    }),
+  deleteCustomerMapping: (id: string) =>
+    request<any>(`/erp/mappings/customers/${id}`, {
+      method: 'DELETE',
+    }),
+
+  getSalespersonMappings: () => request<any[]>('/erp/mappings/salespersons'),
+  createSalespersonMapping: (websiteId: string, erpNo: string) =>
+    request<any>('/erp/mappings/salespersons', {
+      method: 'POST',
+      body: JSON.stringify({ websiteId, erpNo }),
+    }),
+  deleteSalespersonMapping: (id: string) =>
+    request<any>(`/erp/mappings/salespersons/${id}`, {
+      method: 'DELETE',
+    }),
+};

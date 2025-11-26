@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { productApi } from '@/lib/adminApi';
+import { erpApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
-import { Upload, Edit2, Trash2, Search, Image as ImageIcon, Plus, X } from 'lucide-react';
+import { Upload, Edit2, Trash2, Search, Image as ImageIcon, Plus, X, RefreshCw } from 'lucide-react';
 import PageHeader from '@/components/admin/PageHeader';
 import CustomSelect from '@/components/common/CustomSelect';
 
@@ -78,6 +79,20 @@ export default function ProductsPage() {
     price: '',
   });
 
+  // ERP 同步状态
+  const [syncing, setSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [showSyncResult, setShowSyncResult] = useState(false);
+  const [syncResult, setSyncResult] = useState<{
+    success: boolean;
+    groupsCreated: number;
+    groupsUpdated: number;
+    skusCreated: number;
+    skusUpdated: number;
+    duration: number;
+    error?: string;
+  } | null>(null);
+
   // 确认对话框状态
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
@@ -89,6 +104,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     loadData();
+    loadLastSyncTime();
   }, []);
 
   const loadData = async () => {
@@ -106,6 +122,36 @@ export default function ProductsPage() {
       toast.error('加载数据失败');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadLastSyncTime = async () => {
+    try {
+      const result = await erpApi.getProductLastSyncTime();
+      setLastSyncTime(result.lastSyncTimeFormatted);
+    } catch (error) {
+      console.error('Failed to load last sync time:', error);
+    }
+  };
+
+  const handleSyncProducts = async () => {
+    setSyncing(true);
+    try {
+      const result = await erpApi.syncProducts({ incremental: false }); // 全量同步
+      setSyncResult(result);
+      setShowSyncResult(true);
+
+      if (result.success) {
+        toast.success(`同步成功！新增 ${result.groupsCreated} 个产品组，${result.skusCreated} 个SKU`);
+        await loadData();
+        await loadLastSyncTime();
+      } else {
+        toast.error(`同步失败: ${result.error}`);
+      }
+    } catch (error: any) {
+      toast.error(`同步失败: ${error.message || '未知错误'}`);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -324,7 +370,7 @@ export default function ProductsPage() {
         subtitle={`共 ${groups.length} 个产品系列，${skus.length} 个规格`}
       />
 
-      {/* 搜索栏和新增SKU按钮 */}
+      {/* 搜索栏和操作按钮 */}
       <div className="flex items-center justify-between gap-4">
         <div className="relative max-w-md flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -336,13 +382,32 @@ export default function ProductsPage() {
             className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
         </div>
-        <button
-          onClick={() => router.push('/admin/products/create-group')}
-          className="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-gold-600 transition-all flex items-center gap-2"
-        >
-          <Plus size={18} />
-          新增SKU
-        </button>
+        <div className="flex items-center gap-3">
+          {/* ERP 同步按钮 */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSyncProducts}
+              disabled={syncing}
+              className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={lastSyncTime ? `上次同步: ${lastSyncTime}` : '从未同步'}
+            >
+              <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+              {syncing ? '同步中...' : '同步ERP产品'}
+            </button>
+            {lastSyncTime && (
+              <span className="text-xs text-gray-500 hidden lg:block">
+                上次: {lastSyncTime}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => router.push('/admin/products/create-group')}
+            className="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-gold-600 transition-all flex items-center gap-2"
+          >
+            <Plus size={18} />
+            新增SKU
+          </button>
+        </div>
       </div>
 
       {/* 主内容 */}
@@ -593,6 +658,65 @@ export default function ProductsPage() {
               <button
                 onClick={() => setShowImportResult(false)}
                 className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-semibold"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ERP 同步结果弹窗 */}
+      {showSyncResult && syncResult && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className={`px-6 py-5 border-b ${
+              syncResult.success
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600'
+                : 'bg-gradient-to-r from-red-600 to-rose-600'
+            }`}>
+              <h2 className="text-2xl font-bold text-white">
+                {syncResult.success ? '✓ 同步成功' : '✕ 同步失败'}
+              </h2>
+            </div>
+
+            <div className="px-6 py-6">
+              {syncResult.success ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 text-center">
+                      <div className="text-sm text-blue-700 font-semibold mb-1">产品组</div>
+                      <div className="text-2xl font-bold text-blue-700">
+                        +{syncResult.groupsCreated} / ↻{syncResult.groupsUpdated}
+                      </div>
+                      <div className="text-xs text-blue-600 mt-1">新增 / 更新</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border border-purple-200 text-center">
+                      <div className="text-sm text-purple-700 font-semibold mb-1">SKU</div>
+                      <div className="text-2xl font-bold text-purple-700">
+                        +{syncResult.skusCreated} / ↻{syncResult.skusUpdated}
+                      </div>
+                      <div className="text-xs text-purple-600 mt-1">新增 / 更新</div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4 text-center">
+                    <span className="text-gray-600">耗时: </span>
+                    <span className="font-semibold text-gray-900">
+                      {(syncResult.duration / 1000).toFixed(2)} 秒
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div className="text-red-700">{syncResult.error}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setShowSyncResult(false)}
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold"
               >
                 关闭
               </button>

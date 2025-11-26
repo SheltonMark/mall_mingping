@@ -6,9 +6,11 @@ import {
   Put,
   Param,
   Body,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ErpOrderSyncService } from './erp-order-sync.service';
+import { ErpProductSyncService } from './erp-product-sync.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 // DTO 定义
@@ -25,10 +27,18 @@ class BatchSyncDto {
   orderIds: string[];
 }
 
+class ProductSyncDto {
+  incremental?: boolean; // 是否增量同步，默认 true
+  days?: number;         // 增量同步天数，默认 1
+}
+
 @Controller('erp')
 @UseGuards(JwtAuthGuard)
 export class ErpController {
-  constructor(private readonly erpOrderSyncService: ErpOrderSyncService) {}
+  constructor(
+    private readonly erpOrderSyncService: ErpOrderSyncService,
+    private readonly erpProductSyncService: ErpProductSyncService,
+  ) {}
 
   // ============ 订单同步接口 ============
 
@@ -150,5 +160,47 @@ export class ErpController {
   @Delete('mappings/salespersons/:id')
   async deleteSalespersonMapping(@Param('id') id: string) {
     return this.erpOrderSyncService.deleteSalespersonMapping(id);
+  }
+
+  // ============ 产品同步接口 ============
+
+  /**
+   * 手动触发产品同步
+   * POST /erp/products/sync
+   * Body: { incremental?: boolean, days?: number }
+   */
+  @Post('products/sync')
+  async syncProducts(@Body() dto: ProductSyncDto) {
+    const incremental = dto.incremental !== false; // 默认增量同步
+    const days = dto.days || 1;
+    return this.erpProductSyncService.syncAndRecord(incremental, days);
+  }
+
+  /**
+   * 全量同步产品
+   * POST /erp/products/sync-full
+   */
+  @Post('products/sync-full')
+  async syncProductsFull() {
+    return this.erpProductSyncService.syncAndRecord(false);
+  }
+
+  /**
+   * 获取上次同步时间和基准时间
+   * GET /erp/products/last-sync
+   */
+  @Get('products/last-sync')
+  async getLastSyncTime() {
+    const lastSync = await this.erpProductSyncService.getLastSyncTime();
+    const baseline = await this.erpProductSyncService.getSyncBaselineTime();
+
+    return {
+      lastSyncTime: lastSync?.toISOString() || null,
+      lastSyncTimeFormatted: lastSync
+        ? lastSync.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+        : '从未同步',
+      baselineTime: baseline.toISOString(),
+      baselineTimeFormatted: baseline.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }),
+    };
   }
 }
