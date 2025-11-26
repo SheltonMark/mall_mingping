@@ -181,17 +181,22 @@ export default function OrderConfirmationPage() {
     setSelectedCustomer(customer || null)
   }
 
-  // 解析箱规并计算体积 (格式: number*number*number)
+  // 解析箱规并计算体积 (格式: number*number*number 或 number*number*numbercm)
+  // 自动转换为立方米 (cm³ → m³)
   const calculateVolumeFromCartonSpec = (cartonSpec: string): number | undefined => {
     if (!cartonSpec) return undefined
 
-    // 匹配格式: number*number*number (支持小数)
-    const match = cartonSpec.match(/^(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)$/)
+    // 匹配格式: number*number*number[cm] (支持小数，可选cm单位)
+    const match = cartonSpec.match(/^(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*(?:cm)?$/i)
     if (!match) return undefined
 
     const [, length, width, height] = match
-    const volume = parseFloat(length) * parseFloat(width) * parseFloat(height)
-    return volume
+    // 计算立方厘米
+    const volumeCm3 = parseFloat(length) * parseFloat(width) * parseFloat(height)
+    // 转换为立方米 (1 m³ = 1,000,000 cm³)
+    const volumeM3 = volumeCm3 / 1000000
+    // 保留6位小数
+    return Math.round(volumeM3 * 1000000) / 1000000
   }
 
   // 更新订单明细字段
