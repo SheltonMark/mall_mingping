@@ -181,10 +181,32 @@ export default function OrderConfirmationPage() {
     setSelectedCustomer(customer || null)
   }
 
+  // 解析箱规并计算体积 (格式: number*number*number)
+  const calculateVolumeFromCartonSpec = (cartonSpec: string): number | undefined => {
+    if (!cartonSpec) return undefined
+
+    // 匹配格式: number*number*number (支持小数)
+    const match = cartonSpec.match(/^(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)$/)
+    if (!match) return undefined
+
+    const [, length, width, height] = match
+    const volume = parseFloat(length) * parseFloat(width) * parseFloat(height)
+    return volume
+  }
+
   // 更新订单明细字段
   const updateOrderItem = (index: number, field: keyof OrderItem, value: any) => {
     const newItems = [...orderItems]
     newItems[index] = { ...newItems[index], [field]: value }
+
+    // 如果修改的是箱规，自动计算体积
+    if (field === 'cartonSpecification' && typeof value === 'string') {
+      const calculatedVolume = calculateVolumeFromCartonSpec(value)
+      if (calculatedVolume !== undefined) {
+        newItems[index].volume = calculatedVolume
+      }
+    }
+
     setOrderItems(newItems)
   }
 

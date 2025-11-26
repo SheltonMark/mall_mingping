@@ -111,6 +111,19 @@ const extractChineseText = (text: string | undefined | null): string => {
   return text;
 };
 
+// 解析箱规并计算体积 (格式: number*number*number)
+const calculateVolumeFromCartonSpec = (cartonSpec: string): number | undefined => {
+  if (!cartonSpec) return undefined;
+
+  // 匹配格式: number*number*number (支持小数)
+  const match = cartonSpec.match(/^(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)$/);
+  if (!match) return undefined;
+
+  const [, length, width, height] = match;
+  const volume = parseFloat(length) * parseFloat(width) * parseFloat(height);
+  return volume;
+};
+
 export default function AdminOrdersPage() {
   const toast = useToast();
 
@@ -916,8 +929,17 @@ export default function AdminOrdersPage() {
                                   <input
                                     type="text"
                                     value={editingData.cartonSpecification || ''}
-                                    onChange={(e) => setEditingData({...editingData, cartonSpecification: e.target.value})}
+                                    onChange={(e) => {
+                                      const newCartonSpec = e.target.value;
+                                      const calculatedVolume = calculateVolumeFromCartonSpec(newCartonSpec);
+                                      setEditingData({
+                                        ...editingData,
+                                        cartonSpecification: newCartonSpec,
+                                        volume: calculatedVolume !== undefined ? calculatedVolume : editingData.volume
+                                      });
+                                    }}
                                     className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                                    placeholder="例如: 60*40*30"
                                   />
                                 </div>
                                 <div>

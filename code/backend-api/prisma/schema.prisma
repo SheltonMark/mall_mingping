@@ -88,6 +88,13 @@ model Order {
   status          String   @default("pending")
   companyName     String?  @map("company_name") // 公司名称 (如: 东阳市铭品日用品有限公司)
   totalAmount     Decimal? @map("total_amount")
+
+  // ERP 同步相关字段
+  erpOrderNo      String?  @map("erp_order_no") // ERP订单号（如 SO202511044）
+  erpSyncStatus   String?  @map("erp_sync_status") // synced | failed | pending
+  erpSyncAt       DateTime? @map("erp_sync_at")
+  erpSyncError    String?  @map("erp_sync_error")
+
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -495,4 +502,30 @@ model CartItem {
   @@unique([salespersonId, skuId, colorScheme])
   @@index([salespersonId])
   @@map("cart_items")
+}
+
+// ========================================
+// ERP 客户映射表
+// ========================================
+model ErpCustomerMapping {
+  id                    String   @id @default(uuid())
+  websiteCustomerId     String   @unique @map("website_customer_id")
+  erpCustomerNo         String   @map("erp_customer_no") // ERP CUST.CUS_NO
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("erp_customer_mapping")
+}
+
+// ========================================
+// ERP 业务员映射表
+// ========================================
+model ErpSalespersonMapping {
+  id                    String   @id @default(uuid())
+  websiteSalespersonId  String   @unique @map("website_salesperson_id")
+  erpSalespersonNo      String   @map("erp_salesperson_no") // ERP SAL_NO (如 MP0005)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("erp_salesperson_mapping")
 }
