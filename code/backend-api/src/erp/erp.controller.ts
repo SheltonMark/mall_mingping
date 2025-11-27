@@ -9,26 +9,38 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { IsString, IsOptional, IsBoolean, IsNumber, IsArray } from 'class-validator';
 import { ErpOrderSyncService } from './erp-order-sync.service';
 import { ErpProductSyncService } from './erp-product-sync.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 // DTO 定义
 class CreateMappingDto {
+  @IsString()
   websiteId: string;
+
+  @IsString()
   erpNo: string;
 }
 
 class UpdateMappingDto {
+  @IsString()
   erpNo: string;
 }
 
 class BatchSyncDto {
+  @IsArray()
+  @IsString({ each: true })
   orderIds: string[];
 }
 
 class ProductSyncDto {
+  @IsOptional()
+  @IsBoolean()
   incremental?: boolean; // 是否增量同步，默认 true
+
+  @IsOptional()
+  @IsNumber()
   days?: number;         // 增量同步天数，默认 1
 }
 
