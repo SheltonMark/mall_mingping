@@ -607,3 +607,194 @@ GO
 SELECT * FROM PRD_MARKS WHERE MARK_NO = '2-100';
 GO
 EOF
+
+
+mysql -u lemopx -p'1q!' internal_sales << 'EOF'
+-- 先查看要删除的数据
+SELECT id, product_code, product_name FROM product_skus WHERE product_code IN ('C04.01.1111', 'C04.01.2222',
+'C04.01.3333');
+
+-- 删除 SKU
+DELETE FROM product_skus WHERE product_code IN ('C04.01.1111', 'C04.01.2222', 'C04.01.3333');
+
+-- 删除产品组
+DELETE FROM product_groups WHERE prefix = 'TB100';
+
+-- 删除自动创建的分类
+DELETE FROM categories WHERE code = 'TB' AND is_auto_created = 1 AND id NOT IN (SELECT category_id FROM
+product_groups WHERE category_id IS NOT NULL);
+EOF
+
+mysql -u lemopx -p'1q!' internal_sales << 'EOF'
+-- 查看表结构
+DESCRIBE product_skus;
+
+-- 查看 TB100 相关数据
+SELECT * FROM product_skus WHERE product_code LIKE 'C04.01.%' LIMIT 10;
+EOF
+
+
+mysql -u lemopx -p'1q!' internal_sales << 'EOF'
+-- 删除 TB100 的 SKU
+DELETE FROM product_skus WHERE product_code IN ('C04.01.1111', 'C04.01.2222', 'C04.01.3333');
+
+-- 删除 TB100 产品组
+DELETE FROM product_groups WHERE prefix = 'TB100';
+EOF
+
+grep -n "COLLATE\|status.*ACTIVE" ~/internal_web/mall_mingping_internal/code/backend-api/src/erp/erp-product-sync.service.ts
+
+
+mysql -u lemopx -p'1q!' internal_sales -e "SELECT product_code, product_name, status FROM product_skus WHERE product_code LIKE 'C04.01.1%' OR product_code LIKE 'C04.01.2%' OR product_code LIKE 'C04.01.3%';"
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'TF_POS' AND DATA_TYPE IN ('varchar', 'nvarchar', 'char')
+ORDER BY ORDINAL_POSITION;
+GO
+EOF
+
+mysql -u lemopx -p'1q!' internal_sales -e "SELECT product_spec, LENGTH(product_spec), supplier_note, LENGTH(supplier_note) FROM order_items ORDER BY created_at DESC LIMIT 5;"
+
+mysql -u lemopx -p'1q!' internal_sales -e "SELECT additional_attributes, LENGTH(additional_attributes) FROM order_items ORDER BY created_at DESC LIMIT 5;"
+
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'TF_POS' AND COLUMN_NAME IN ('PRD_NAME', 'PRD_MARK', 'SPC', 'ATTR')
+ORDER BY COLUMN_NAME;
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT TOP 20 OS_ID, OS_NO, OS_DD, CUS_NO, SAL_NO
+FROM MF_POS
+ORDER BY RECORD_DD DESC;
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT * FROM MF_POS WHERE OS_NO = 'SO202511052';
+GO
+SELECT * FROM TF_POS WHERE OS_NO = 'SO202511052';
+GO
+SELECT * FROM TF_POS_Z WHERE OS_NO = 'SO202511052';
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT OS_NO, CLS_ID, CHK_MAN, CHK_DD, VALID_ID, PRE_ID
+FROM MF_POS
+WHERE OS_ID = 'SO'
+ORDER BY RECORD_DD DESC;
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT TOP 10 OS_NO, CLS_ID, CHK_MAN, CHK_DD, VALID_ID, PRE_ID
+FROM MF_POS
+WHERE OS_ID = 'SO'
+ORDER BY RECORD_DD DESC;
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT TOP 100 OS_NO, OS_DD, RECORD_DD
+FROM MF_POS
+WHERE OS_ID = 'SO'
+ORDER BY RECORD_DD DESC;
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+DELETE FROM TF_POS_Z WHERE OS_NO = 'SO20251152';
+DELETE FROM TF_POS WHERE OS_NO = 'SO20251152';
+DELETE FROM MF_POS WHERE OS_NO = 'SO20251152';
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT OS_NO, SUBSTRING(OS_NO, 9, 10) as seq_str, CAST(SUBSTRING(OS_NO, 9, 10) AS INT) as seq_num
+FROM MF_POS
+WHERE OS_ID = 'SO' AND OS_NO LIKE 'SO202511%'
+ORDER BY seq_num DESC;
+GO
+EOF
+
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT CUS_NO, NAME, BOSS, TEL, ADD1, EMAIL FROM CUST WHERE CUS_NO = 'C0178';
+GO
+SELECT SAL_NO, NAME FROM SALM WHERE SAL_NO = 'MP0035';
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'CUST';
+GO
+EOF
+
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT CUS_NO, NAME, CNT_MAN1, TEL1, ADR1, E_MAIL, COUNTRY FROM CUST WHERE CUS_NO = 'C0178';
+GO
+EOF
+
+
+> 1> 2> 1> 2> OS_ID       OS_NO   BAT_NO  OS_DD   QT_NO   VOH_ID  VOH_NO  TRAD_MTH        PAY_MTH PAY_DAYS        CHK_DAYS        PAY_REM SEND_MTH        SEND_WH EST_DD  CUS_NO  SAL_NO  USE_DEP CUR_ID
+EXC_RTO AMTN_INT        AMT_INT DIS_CNT CLS_ID  BACK_ID HIS_PRICE      ADR     REM     PO_DEP  PO_SO_NO        SO_BY_MM        SO_OT_DD        SO_BY_DD        SO_LNG_CAS      SO_END_DD       SO_LST_DD
+  INV_DIS_ID      INV_NO  TAX_ID  RP_NO   OLD_INV_NO      AMTN_NET        TAX     PAY_DD  CHK_DD  INT_DAYS        USR   CHK_MAN  CONTRACT        PRT_SW  CPY_SW  BIL_NO  LC_NO   AMTN_DIS        CLS_MP_ID
+    CLS_REM BIL_ID  RK_CLS_ID       PRE_ID  IS_POS  POS_NO  CLS_DATE        PCL_ID  CUS_OS_NO       BZ_NO   HS_ID   RK_ID   BIL_TYPE        LOCK_MAN        FIN_DD  EFF_DD  CLEAR_ID       CO_NO   RECORD_DD
+      DEF_NO  YX_NO   CHK_MAN1        VALID_ID        MAN_CLS MAN_RK_CLS      IS_TRANS        FORCAST ZHANG_ID        OBJ_NO  OBJ_CLASS       SHOP_NO TRADE_ID        EMAIL_ID        TB_NO   AMTN_FY PCLS
+ AFFECT_SQ       COPY_NO BUYERNOSALERNO INVOICETYPE     INVOICEKIND
+SO      SO202511052     NULL    Nov 27 2025 08:00AM     NULL    NULL    NULL    NULL    1       NULL    NULL    NULL    1       W1000   Nov 30 2025 08:00AM     C0178   MP0035  NULL    NULL    NULL
+888.00000000    NULL    NULL    F       NULL    NULL    NULL  {}       NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL
+  NULL    MP0035  NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL  NULL     NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL
+    NULL    NULL    Nov 28 2025 01:21AM     NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL  NULL     NULL    NULL
+NULL    NULL    NULL
+(1 row affected)
+1> 2> OS_ID     OS_NO   ITM     QT_NO   PRD_NO  PRD_NAME        PRD_MARK        WH      UNIT    OS_DD   QTY     UP      DIS_CNT AMT     AMTN    TAX     QTY1    QTY_PS  QTY1_PS EST_DD  PAK_UNIT
+PAK_EXC PAK_NW  PAK_WEIGHT_UNIT PAK_GW  PAK_MEAST       PAK_MEAST_UNIT VALID_DD        REM     AMTN_COM        CLS_MP_ID       CST_STD UP_QTY1 EST_ITM SEND_WH UT      CODE_NO ATTR    QTY_RK  BAT_NO
+PRE_EST_DD      QTY_PO  QTY_PRE PRE_ITM ID_NO   QTY_YS  FREE_ID BIL_ID  BZ_KND  PRICE_ID        OTH_ITM TAX_RTO CHK_TAX QTY_JHQTY_FH   JH_NO   PRD_LOC SEQ_ITM MRP_NO_SO       AMT_FP  QTY_FP  QTY_BAD UP_END
+  QTY_WAY QTY_NOSH        QTY_NOSH_PRE    QTY_NOSH_PS     QTY_NOSH_WAY    QTY_NOSH_RK     QTY_NOSH_FH     CO_NO   SO_NO   SEFF_DATE       TD_NUM  QTY_FP_NOSH     AMT_FP_NOSH     UP_DJ FORMULA_CSV      SPC
+    QTY_TH  QTY_NOSH_TH     FREEINDEX       ORDER_ID        UPR     TB_NO   BCLS_ID OBJ_NO  BCLS_DATE       TB_SUB_NO       COM_SJNO        OBJ_CLASS       PRICE_ITEM      PRD_NO_SUP      INVOICESPC
+INVOICENAME     PRD_NAME_SUP
+SO      SO202511052     1       NULL    C04.01.3333     TB100-清洁六件套        6C冷灰+305C蓝+13-5304TPG卡其+15-2216TCX粉色     W1000   1       Nov 27 2025 08:00AM     1.00000000      888.00000000    NULL
+   985.68000000    888.00000000    97.68000000     NULL  NULL     NULL    Nov 30 2025 08:00AM     11      11.00000000     11.00000000     11      11.00000000     0.01687200      m3      NULL    啥时间
+NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    6C冷灰+305C蓝+13-5304TPG卡其+1  NULL    NULL    NULL  NULL     NULL    NULL    NULL    NULL    NULL    NULL    11      NULL    NULL
+11.00000000     NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL  NULL     NULL    NULL
+  NULL    NULL    A:全涤珊瑚绒布头
+B:双面清洁刷头
+C:可拆卸水桶配件
+D:360°旋转拖把头
+E:备用超细纤维布头
+F:伸缩铁杆(意标)22&25×0.3×68-120/190g   NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL
+(1 row affected)
+1> 2> OS_NO     OS_ID   ITM     ZS      ZC      ZG      ZM1     BZ1     ZP      JHKH    PQTY2   SXBBM   DKBM    WXBM    XG      PQTY3   PQTY1   BZFS    CSHH    CSBZ    TJ
+SO202511052     SO      1       NULL    NULL    NULL    NULL    NULL    NULL    NULL    11      97349856        345346546       1145465456      74*19*12        NULL    11      53465   NULL    NULL
