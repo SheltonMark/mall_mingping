@@ -236,25 +236,25 @@ export class ErpOrderSyncService {
       );
 
       // 6. 写入主表 MF_POS
-      // 使用sql.VarChar类型配合ERP的GBK编码
+      // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
       const mfPosRequest = new sql.Request(transaction);
       await mfPosRequest
-        .input('OS_NO', sql.VarChar(20), erpOrderNo)
+        .input('OS_NO', sql.NVarChar(20), erpOrderNo)
         .input('OS_DD', sql.DateTime, order.orderDate)
-        .input('CUS_NO', sql.VarChar(12), erpCustomerNo)
-        .input('SAL_NO', sql.VarChar(12), erpSalespersonNo)
+        .input('CUS_NO', sql.NVarChar(12), erpCustomerNo)
+        .input('SAL_NO', sql.NVarChar(12), erpSalespersonNo)
         .input(
           'AMTN_INT',
           sql.Numeric(28, 8),
           order.totalAmount?.toNumber() || 0,
         )
-        .input('USR', sql.VarChar(8), erpSalespersonNo)
+        .input('USR', sql.NVarChar(8), erpSalespersonNo)
         .input(
           'EST_DD',
           sql.DateTime,
           order.items[0]?.expectedDeliveryDate || null,
         )
-        .input('REM', sql.VarChar(sql.MAX), JSON.stringify(customParamsJson)).query(`
+        .input('REM', sql.NVarChar(sql.MAX), JSON.stringify(customParamsJson)).query(`
           INSERT INTO MF_POS (
             OS_ID, OS_NO, OS_DD, CUS_NO, SAL_NO,
             AMTN_INT, USR, RECORD_DD, CLS_ID,
@@ -284,21 +284,21 @@ export class ErpOrderSyncService {
         const chineseAttribute = extractChineseAttribute(item.additionalAttributes);
 
         // 7.1 写入 TF_POS 主表
-        // 注意：ERP数据库使用GBK编码的varchar字段，必须使用sql.VarChar类型
-        // 中文字符在GBK中占2字节，需要按字节截取
+        // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
+        // 用truncateByBytes确保中文字符串不超过字段的字节限制
         const tfPosRequest = new sql.Request(transaction);
         await tfPosRequest
-          .input('OS_NO', sql.VarChar(20), erpOrderNo)
+          .input('OS_NO', sql.NVarChar(20), erpOrderNo)
           .input('ITM', sql.SmallInt, itemNumber)
-          .input('PRD_NO', sql.VarChar(50), truncateByBytes(item.productSku.productCode || '', 50))
+          .input('PRD_NO', sql.NVarChar(50), truncateByBytes(item.productSku.productCode || '', 50))
           .input(
             'PRD_NAME',
-            sql.VarChar(100),
+            sql.NVarChar(100),
             truncateByBytes(item.productSku.productName || '', 100),
           )
           .input(
             'PRD_MARK',
-            sql.VarChar(255),
+            sql.NVarChar(255),
             truncateByBytes(chineseAttribute, 255),
           )
           .input('QTY', sql.Numeric(28, 8), quantity)
@@ -306,13 +306,13 @@ export class ErpOrderSyncService {
           .input('AMT', sql.Numeric(28, 8), amt)
           .input('AMTN', sql.Numeric(28, 8), amtn)
           .input('TAX', sql.Numeric(28, 8), tax)
-          .input('SPC', sql.VarChar(2000), truncateByBytes(String(item.productSpec || ''), 2000))
+          .input('SPC', sql.NVarChar(2000), truncateByBytes(String(item.productSpec || ''), 2000))
           .input(
             'ATTR',
-            sql.VarChar(30),
+            sql.NVarChar(30),
             truncateByBytes(chineseAttribute, 30),
           )
-          .input('PAK_UNIT', sql.VarChar(24), truncateByBytes(item.packagingUnit || '', 24))
+          .input('PAK_UNIT', sql.NVarChar(24), truncateByBytes(item.packagingUnit || '', 24))
           .input(
             'PAK_EXC',
             sql.Numeric(28, 8),
@@ -328,15 +328,15 @@ export class ErpOrderSyncService {
             sql.Numeric(28, 8),
             item.grossWeight?.toNumber() || 0,
           )
-          .input('PAK_WEIGHT_UNIT', sql.VarChar(8), truncateByBytes(item.weightUnit || '', 8))
+          .input('PAK_WEIGHT_UNIT', sql.NVarChar(8), truncateByBytes(item.weightUnit || '', 8))
           .input(
             'PAK_MEAST',
             sql.Numeric(28, 8),
             item.volume?.toNumber() || 0,
           )
           .input('EST_DD', sql.DateTime, item.expectedDeliveryDate || null)
-          .input('REM', sql.VarChar(1000), truncateByBytes(item.supplierNote || '', 1000))
-          .input('BZ_KND', sql.VarChar(20), truncateByBytes(item.packagingType || '', 20))
+          .input('REM', sql.NVarChar(1000), truncateByBytes(item.supplierNote || '', 1000))
+          .input('BZ_KND', sql.NVarChar(20), truncateByBytes(item.packagingType || '', 20))
           .input('OS_DD', sql.DateTime, order.orderDate).query(`
             INSERT INTO TF_POS (
               OS_ID, OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK,
@@ -358,18 +358,17 @@ export class ErpOrderSyncService {
           `);
 
         // 7.2 写入 TF_POS_Z 扩展表（7个包装字段）
-        // 同样使用sql.VarChar类型配合GBK编码
         const tfPosZRequest = new sql.Request(transaction);
         await tfPosZRequest
-          .input('OS_NO', sql.VarChar(20), erpOrderNo)
+          .input('OS_NO', sql.NVarChar(20), erpOrderNo)
           .input('ITM', sql.SmallInt, itemNumber)
           .input('PQTY1', sql.Int, item.packingQuantity || null)
           .input('PQTY2', sql.Int, item.cartonQuantity || null)
-          .input('BZFS', sql.VarChar(255), truncateByBytes(item.packagingMethod || '', 255))
-          .input('DKBM', sql.VarChar(50), truncateByBytes(item.paperCardCode || '', 50))
-          .input('WXBM', sql.VarChar(50), truncateByBytes(item.washLabelCode || '', 50))
-          .input('SXBBM', sql.VarChar(255), truncateByBytes(item.outerCartonCode || '', 255))
-          .input('XG', sql.VarChar(50), truncateByBytes(item.cartonSpecification || '', 50)).query(`
+          .input('BZFS', sql.NVarChar(255), truncateByBytes(item.packagingMethod || '', 255))
+          .input('DKBM', sql.NVarChar(50), truncateByBytes(item.paperCardCode || '', 50))
+          .input('WXBM', sql.NVarChar(50), truncateByBytes(item.washLabelCode || '', 50))
+          .input('SXBBM', sql.NVarChar(255), truncateByBytes(item.outerCartonCode || '', 255))
+          .input('XG', sql.NVarChar(50), truncateByBytes(item.cartonSpecification || '', 50)).query(`
             INSERT INTO TF_POS_Z (
               OS_ID, OS_NO, ITM,
               PQTY1, PQTY2, BZFS,
