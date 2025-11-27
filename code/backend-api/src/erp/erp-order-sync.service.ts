@@ -16,6 +16,23 @@ export interface SyncResult {
   autoSyncedSalesperson?: boolean;
 }
 
+/**
+ * 从附加属性中提取中文名称
+ * 附加属性可能是 JSON 字符串 {"nameEn":"...","nameZh":"..."} 或纯文本
+ */
+function extractChineseAttribute(additionalAttributes: string | null): string {
+  if (!additionalAttributes) return '';
+
+  try {
+    const parsed = JSON.parse(additionalAttributes);
+    // 优先返回中文，如果没有则返回英文，都没有则返回空
+    return parsed.nameZh || parsed.nameEn || '';
+  } catch {
+    // 如果不是 JSON，直接返回原值
+    return additionalAttributes;
+  }
+}
+
 @Injectable()
 export class ErpOrderSyncService {
   private readonly logger = new Logger(ErpOrderSyncService.name);
@@ -241,6 +258,9 @@ export class ErpOrderSyncService {
         const tax = amtn * syncConfig.taxRate; // 税额
         const amt = amtn + tax; // 含税金额
 
+        // 提取中文附加属性
+        const chineseAttribute = extractChineseAttribute(item.additionalAttributes);
+
         // 7.1 写入 TF_POS 主表
         const tfPosRequest = new sql.Request(transaction);
         await tfPosRequest
@@ -255,7 +275,7 @@ export class ErpOrderSyncService {
           .input(
             'PRD_MARK',
             sql.NVarChar(255),
-            (item.additionalAttributes || '').substring(0, 255),
+            chineseAttribute.substring(0, 255),
           )
           .input('QTY', sql.Numeric(28, 8), quantity)
           .input('UP', sql.Numeric(28, 8), price)
@@ -266,7 +286,7 @@ export class ErpOrderSyncService {
           .input(
             'ATTR',
             sql.NVarChar(30),
-            (item.additionalAttributes || '').substring(0, 30),
+            chineseAttribute.substring(0, 30),
           )
           .input('PAK_UNIT', sql.NVarChar(24), item.packagingUnit || '')
           .input(
