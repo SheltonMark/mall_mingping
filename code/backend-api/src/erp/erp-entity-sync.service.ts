@@ -34,7 +34,10 @@ export class ErpEntitySyncService {
       user: config.user,
       password: config.password,
       database: config.database,
-      options: config.options,
+      options: {
+        ...config.options,
+        useUTC: false,
+      },
     }).connect();
 
     this.logger.log('ERP 数据库连接成功');
@@ -135,15 +138,15 @@ export class ErpEntitySyncService {
       // 6. 插入 ERP CUST 表
       const request = new sql.Request(pool);
       await request
-        .input('CUS_NO', sql.VarChar(12), erpCustomerNo)
-        .input('NAME', sql.VarChar(110), customer.name?.substring(0, 110) || '')
-        .input('OBJ_ID', sql.VarChar(1), '1') // 1=客户
-        .input('TEL1', sql.VarChar(30), customer.phone?.substring(0, 30) || '')
-        .input('E_MAIL', sql.VarChar(255), customer.email?.substring(0, 255) || '')
-        .input('COUNTRY', sql.VarChar(20), customer.country?.substring(0, 20) || '')
-        .input('CNT_MAN1', sql.VarChar(30), customer.contactPerson?.substring(0, 30) || '')
-        .input('SAL', sql.VarChar(12), erpSalespersonNo || '')
-        .input('REM', sql.Text, customer.remarks || `网站同步 - ${new Date().toISOString()}`)
+        .input('CUS_NO', sql.NVarChar(12), erpCustomerNo)
+        .input('NAME', sql.NVarChar(110), customer.name?.substring(0, 110) || '')
+        .input('OBJ_ID', sql.NVarChar(1), '1') // 1=客户
+        .input('TEL1', sql.NVarChar(30), customer.phone?.substring(0, 30) || '')
+        .input('E_MAIL', sql.NVarChar(255), customer.email?.substring(0, 255) || '')
+        .input('COUNTRY', sql.NVarChar(20), customer.country?.substring(0, 20) || '')
+        .input('CNT_MAN1', sql.NVarChar(30), customer.contactPerson?.substring(0, 30) || '')
+        .input('SAL', sql.NVarChar(12), erpSalespersonNo || '')
+        .input('REM', sql.NVarChar(sql.MAX), customer.remarks || `网站同步 - ${new Date().toISOString()}`)
         .query(`
           INSERT INTO CUST (
             CUS_NO, NAME, OBJ_ID, TEL1, E_MAIL,
@@ -227,8 +230,8 @@ export class ErpEntitySyncService {
       // 5. 插入 ERP SALM 表
       const request = new sql.Request(pool);
       await request
-        .input('SAL_NO', sql.VarChar(12), erpSalespersonNo)
-        .input('NAME', sql.VarChar(100), salesperson.chineseName?.substring(0, 100) || '')
+        .input('SAL_NO', sql.NVarChar(12), erpSalespersonNo)
+        .input('NAME', sql.NVarChar(100), salesperson.chineseName?.substring(0, 100) || '')
         .query(`
           INSERT INTO SALM (
             SAL_NO, NAME

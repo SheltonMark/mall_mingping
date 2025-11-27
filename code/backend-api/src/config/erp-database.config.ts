@@ -25,6 +25,7 @@ export const getErpDatabaseConfig = (): ErpDatabaseConfig => ({
     encrypt: false,
     trustServerCertificate: true,
     enableArithAbort: true,
+    useUTC: false,
   },
 });
 
