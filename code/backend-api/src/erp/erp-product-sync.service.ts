@@ -335,7 +335,7 @@ export class ErpProductSyncService {
                 specification: product.SPC || null,
                 groupId: productGroup.id,
                 importDate: product.RECORD_DD,
-                isActive: true,
+                status: 'ACTIVE',
               },
             });
             skusCreated++;
