@@ -273,19 +273,13 @@ export class ErpOrderSyncService {
         const item = order.items[i];
         const itemNumber = item.itemNumber || i + 1;
 
-        // 计算金额
-        const price = item.price.toNumber();
-        const quantity = item.quantity;
-        const amtn = price * quantity; // 未税金额
-        const tax = amtn * syncConfig.taxRate; // 税额
-        const amt = amtn + tax; // 含税金额
-
         // 提取中文附加属性
         const chineseAttribute = extractChineseAttribute(item.additionalAttributes);
 
         // 7.1 写入 TF_POS 主表
         // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
         // 用truncateByBytes确保中文字符串不超过字段的字节限制
+        // 注意：不传税相关字段(AMT/AMTN/TAX/TAX_RTO)，让ERP自己计算
         const tfPosRequest = new sql.Request(transaction);
         await tfPosRequest
           .input('OS_NO', sql.NVarChar(20), erpOrderNo)
@@ -301,11 +295,8 @@ export class ErpOrderSyncService {
             sql.NVarChar(255),
             truncateByBytes(chineseAttribute, 255),
           )
-          .input('QTY', sql.Numeric(28, 8), quantity)
-          .input('UP', sql.Numeric(28, 8), price)
-          .input('AMT', sql.Numeric(28, 8), amt)
-          .input('AMTN', sql.Numeric(28, 8), amtn)
-          .input('TAX', sql.Numeric(28, 8), tax)
+          .input('QTY', sql.Numeric(28, 8), item.quantity)
+          .input('UP', sql.Numeric(28, 8), item.price.toNumber())
           .input('SPC', sql.NVarChar(2000), truncateByBytes(String(item.productSpec || ''), 2000))
           .input(
             'ATTR',
@@ -340,20 +331,20 @@ export class ErpOrderSyncService {
           .input('OS_DD', sql.DateTime, order.orderDate).query(`
             INSERT INTO TF_POS (
               OS_ID, OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK,
-              QTY, UP, AMT, AMTN, TAX,
+              QTY, UP,
               SPC, ATTR, PAK_UNIT, PAK_EXC,
               PAK_NW, PAK_GW, PAK_WEIGHT_UNIT,
               PAK_MEAST, PAK_MEAST_UNIT,
               EST_DD, REM, BZ_KND, OS_DD,
-              WH, UNIT, TAX_RTO
+              WH, UNIT
             ) VALUES (
               'SO', @OS_NO, @ITM, @PRD_NO, @PRD_NAME, @PRD_MARK,
-              @QTY, @UP, @AMT, @AMTN, @TAX,
+              @QTY, @UP,
               @SPC, @ATTR, @PAK_UNIT, @PAK_EXC,
               @PAK_NW, @PAK_GW, @PAK_WEIGHT_UNIT,
               @PAK_MEAST, 'm³',
               @EST_DD, @REM, @BZ_KND, @OS_DD,
-              '${syncConfig.defaultWarehouse}', '1', ${syncConfig.taxRate * 100}
+              '${syncConfig.defaultWarehouse}', '1'
             )
           `);
 
