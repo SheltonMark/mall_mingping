@@ -12,6 +12,7 @@ export interface ErpDatabaseConfig {
     encrypt: boolean;
     trustServerCertificate: boolean;
     enableArithAbort: boolean;
+    useUTC: boolean;
   };
 }
 
