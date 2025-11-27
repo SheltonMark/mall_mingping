@@ -40,7 +40,7 @@ export interface ErpSyncConfig {
 
 export const getErpSyncConfig = (): ErpSyncConfig => ({
   enabled: process.env.ERP_SYNC_ENABLED === 'true',
-  defaultWarehouse: process.env.ERP_DEFAULT_WAREHOUSE || 'W1000',
+  defaultWarehouse: process.env.ERP_DEFAULT_WAREHOUSE || '01',
   defaultSendMethod: process.env.ERP_DEFAULT_SEND_METHOD || '1',
   taxRate: parseFloat(process.env.ERP_TAX_RATE || '0.13'),
 });
