@@ -221,7 +221,7 @@ export class ErpController {
   // ============ 测试数据管理接口 ============
 
   /**
-   * 获取测试数据统计
+   * 获取测试数据统计（旧版TEST_前缀）
    * GET /erp/test-data/stats
    * 返回 ERP 中带 TEST_ 前缀的客户和业务员数量
    */
@@ -231,7 +231,7 @@ export class ErpController {
   }
 
   /**
-   * 清理测试数据
+   * 清理测试数据（旧版TEST_前缀）
    * DELETE /erp/test-data/cleanup
    * 删除 ERP 中所有带 TEST_ 前缀的客户和业务员
    */
@@ -239,6 +239,30 @@ export class ErpController {
   async cleanupTestData() {
     return this.erpEntitySyncService.cleanupTestData();
   }
+
+  // ============ 网站同步数据管理接口 ============
+
+  /**
+   * 获取网站同步数据统计（W/W-s前缀）
+   * GET /erp/web-sync-data/stats
+   * 返回 ERP 中网站同步的客户和业务员数量
+   */
+  @Get('web-sync-data/stats')
+  async getWebSyncDataStats() {
+    return this.erpEntitySyncService.getWebSyncDataStats();
+  }
+
+  /**
+   * 清理网站同步数据（W/W-s前缀）
+   * DELETE /erp/web-sync-data/cleanup
+   * 删除 ERP 中所有网站同步的客户和业务员
+   */
+  @Delete('web-sync-data/cleanup')
+  async cleanupWebSyncData() {
+    return this.erpEntitySyncService.cleanupWebSyncData();
+  }
+
+  // ============ 实体同步接口 ============
 
   /**
    * 手动同步客户到 ERP

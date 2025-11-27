@@ -7,15 +7,18 @@ import { getErpDatabaseConfig } from '../config/erp-database.config';
  * ERP 实体同步服务
  * 用于将网站的客户和业务员同步到 ERP 数据库
  *
- * 测试数据使用 TEST_ 前缀，便于后续清理
+ * 编号格式（与ERP格式一致）：
+ * - 客户：C + 4位流水号（例如 C0177），从现有最大编号+1开始
+ * - 业务员：MP + 4位流水号（例如 MP0033），从现有最大编号+1开始
  */
 @Injectable()
 export class ErpEntitySyncService {
   private readonly logger = new Logger(ErpEntitySyncService.name);
   private pool: sql.ConnectionPool | null = null;
 
-  // 测试数据前缀，方便后续清理
-  private readonly TEST_PREFIX = 'TEST_';
+  // ERP 标准编号前缀
+  private readonly CUSTOMER_PREFIX = 'C';
+  private readonly SALESPERSON_PREFIX = 'MP';
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -46,16 +49,17 @@ export class ErpEntitySyncService {
 
   /**
    * 生成 ERP 客户编号
-   * 格式：TEST_C + 流水号(4位)
-   * 示例：TEST_C001
+   * 格式：C + 流水号(4位)
+   * 示例：C0177（从ERP现有最大编号+1开始）
    */
   private async generateCustomerNo(pool: sql.ConnectionPool): Promise<string> {
-    const prefix = `${this.TEST_PREFIX}C`;
+    const prefix = this.CUSTOMER_PREFIX;
 
+    // 查询所有C开头且长度为5的客户编号，取最大流水号
     const result = await pool.request().query(`
-      SELECT MAX(CAST(SUBSTRING(CUS_NO, ${prefix.length + 1}, 4) AS INT)) as maxSeq
+      SELECT MAX(CAST(SUBSTRING(CUS_NO, 2, 4) AS INT)) as maxSeq
       FROM CUST
-      WHERE CUS_NO LIKE '${prefix}%'
+      WHERE CUS_NO LIKE '${prefix}[0-9][0-9][0-9][0-9]' AND LEN(CUS_NO) = 5
     `);
 
     const nextSeq = (result.recordset[0]?.maxSeq || 0) + 1;
@@ -64,16 +68,17 @@ export class ErpEntitySyncService {
 
   /**
    * 生成 ERP 业务员编号
-   * 格式：TEST_S + 流水号(4位)
-   * 示例：TEST_S001
+   * 格式：MP + 流水号(4位)
+   * 示例：MP0033（从ERP现有最大编号+1开始）
    */
   private async generateSalespersonNo(pool: sql.ConnectionPool): Promise<string> {
-    const prefix = `${this.TEST_PREFIX}S`;
+    const prefix = this.SALESPERSON_PREFIX;
 
+    // 查询所有MP开头的业务员编号，取最大流水号
     const result = await pool.request().query(`
-      SELECT MAX(CAST(SUBSTRING(SAL_NO, ${prefix.length + 1}, 4) AS INT)) as maxSeq
+      SELECT MAX(CAST(SUBSTRING(SAL_NO, 3, 4) AS INT)) as maxSeq
       FROM SALM
-      WHERE SAL_NO LIKE '${prefix}%'
+      WHERE SAL_NO LIKE '${prefix}[0-9][0-9][0-9][0-9]'
     `);
 
     const nextSeq = (result.recordset[0]?.maxSeq || 0) + 1;
@@ -331,10 +336,11 @@ export class ErpEntitySyncService {
   }
 
   /**
-   * 清理测试数据
-   * 删除所有带 TEST_ 前缀的客户和业务员数据
+   * 清理网站同步的数据
+   * 根据映射表找出网站同步的客户和业务员，然后删除
+   * 注意：现在使用ERP标准格式（C0xxx, MP0xxx），需要通过映射表识别
    */
-  async cleanupTestData(): Promise<{
+  async cleanupWebSyncData(): Promise<{
     success: boolean;
     deletedCustomers: number;
     deletedSalespersons: number;
@@ -345,14 +351,119 @@ export class ErpEntitySyncService {
     try {
       const pool = await this.getPool();
 
+      // 1. 获取所有网站同步的客户映射
+      const customerMappings = await this.prisma.erpCustomerMapping.findMany();
+      const customerErpNos = customerMappings.map(m => m.erpCustomerNo);
+
+      // 2. 获取所有网站同步的业务员映射
+      const salespersonMappings = await this.prisma.erpSalespersonMapping.findMany();
+      const salespersonErpNos = salespersonMappings.map(m => m.erpSalespersonNo);
+
+      let deletedCustomers = 0;
+      let deletedSalespersons = 0;
+
+      // 3. 删除 ERP 中的网站同步客户
+      if (customerErpNos.length > 0) {
+        const custNoList = customerErpNos.map(no => `'${no}'`).join(',');
+        const custResult = await pool.request().query(`
+          DELETE FROM CUST WHERE CUS_NO IN (${custNoList})
+        `);
+        deletedCustomers = custResult.rowsAffected[0] || 0;
+      }
+
+      // 4. 删除 ERP 中的网站同步业务员
+      if (salespersonErpNos.length > 0) {
+        const salNoList = salespersonErpNos.map(no => `'${no}'`).join(',');
+        const salmResult = await pool.request().query(`
+          DELETE FROM SALM WHERE SAL_NO IN (${salNoList})
+        `);
+        deletedSalespersons = salmResult.rowsAffected[0] || 0;
+      }
+
+      // 5. 删除网站数据库中的所有映射
+      await this.prisma.erpCustomerMapping.deleteMany();
+      await this.prisma.erpSalespersonMapping.deleteMany();
+
+      this.logger.log(`网站同步数据清理完成: 客户 ${deletedCustomers}, 业务员 ${deletedSalespersons}`);
+
+      return {
+        success: true,
+        deletedCustomers,
+        deletedSalespersons,
+        deletedCustomerMappings: customerMappings.length,
+        deletedSalespersonMappings: salespersonMappings.length,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`网站同步数据清理失败: ${errorMessage}`);
+      return {
+        success: false,
+        deletedCustomers: 0,
+        deletedSalespersons: 0,
+        deletedCustomerMappings: 0,
+        deletedSalespersonMappings: 0,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 获取网站同步数据的统计信息
+   * 通过映射表统计
+   */
+  async getWebSyncDataStats(): Promise<{
+    erpCustomers: number;
+    erpSalespersons: number;
+    customerMappings: number;
+    salespersonMappings: number;
+  }> {
+    try {
+      const customerMappingCount = await this.prisma.erpCustomerMapping.count();
+      const salespersonMappingCount = await this.prisma.erpSalespersonMapping.count();
+
+      return {
+        erpCustomers: customerMappingCount,
+        erpSalespersons: salespersonMappingCount,
+        customerMappings: customerMappingCount,
+        salespersonMappings: salespersonMappingCount,
+      };
+    } catch (error) {
+      this.logger.error(`获取网站同步数据统计失败: ${error}`);
+      return {
+        erpCustomers: 0,
+        erpSalespersons: 0,
+        customerMappings: 0,
+        salespersonMappings: 0,
+      };
+    }
+  }
+
+  // ========== 兼容旧版TEST_前缀的清理方法 ==========
+
+  /**
+   * 清理测试数据（旧版TEST_前缀）
+   * 删除所有带 TEST_ 前缀的客户和业务员数据
+   */
+  async cleanupTestData(): Promise<{
+    success: boolean;
+    deletedCustomers: number;
+    deletedSalespersons: number;
+    deletedCustomerMappings: number;
+    deletedSalespersonMappings: number;
+    error?: string;
+  }> {
+    const TEST_PREFIX = 'TEST_';
+    try {
+      const pool = await this.getPool();
+
       // 1. 删除 ERP 中的测试客户
       const custResult = await pool.request().query(`
-        DELETE FROM CUST WHERE CUS_NO LIKE '${this.TEST_PREFIX}%'
+        DELETE FROM CUST WHERE CUS_NO LIKE '${TEST_PREFIX}%'
       `);
 
       // 2. 删除 ERP 中的测试业务员
       const salmResult = await pool.request().query(`
-        DELETE FROM SALM WHERE SAL_NO LIKE '${this.TEST_PREFIX}%'
+        DELETE FROM SALM WHERE SAL_NO LIKE '${TEST_PREFIX}%'
       `);
 
       // 3. 删除网站数据库中对应的映射
@@ -360,7 +471,7 @@ export class ErpEntitySyncService {
       const testCustomerMappings = await this.prisma.erpCustomerMapping.findMany({
         where: {
           erpCustomerNo: {
-            startsWith: this.TEST_PREFIX,
+            startsWith: TEST_PREFIX,
           },
         },
       });
@@ -368,7 +479,7 @@ export class ErpEntitySyncService {
       const testSalespersonMappings = await this.prisma.erpSalespersonMapping.findMany({
         where: {
           erpSalespersonNo: {
-            startsWith: this.TEST_PREFIX,
+            startsWith: TEST_PREFIX,
           },
         },
       });
@@ -377,7 +488,7 @@ export class ErpEntitySyncService {
       await this.prisma.erpCustomerMapping.deleteMany({
         where: {
           erpCustomerNo: {
-            startsWith: this.TEST_PREFIX,
+            startsWith: TEST_PREFIX,
           },
         },
       });
@@ -385,7 +496,7 @@ export class ErpEntitySyncService {
       await this.prisma.erpSalespersonMapping.deleteMany({
         where: {
           erpSalespersonNo: {
-            startsWith: this.TEST_PREFIX,
+            startsWith: TEST_PREFIX,
           },
         },
       });
@@ -414,7 +525,7 @@ export class ErpEntitySyncService {
   }
 
   /**
-   * 获取所有测试数据的统计信息
+   * 获取所有测试数据的统计信息（旧版TEST_前缀）
    */
   async getTestDataStats(): Promise<{
     erpCustomers: number;
@@ -422,21 +533,22 @@ export class ErpEntitySyncService {
     customerMappings: number;
     salespersonMappings: number;
   }> {
+    const TEST_PREFIX = 'TEST_';
     try {
       const pool = await this.getPool();
 
       const custResult = await pool.request().query(`
-        SELECT COUNT(*) as count FROM CUST WHERE CUS_NO LIKE '${this.TEST_PREFIX}%'
+        SELECT COUNT(*) as count FROM CUST WHERE CUS_NO LIKE '${TEST_PREFIX}%'
       `);
 
       const salmResult = await pool.request().query(`
-        SELECT COUNT(*) as count FROM SALM WHERE SAL_NO LIKE '${this.TEST_PREFIX}%'
+        SELECT COUNT(*) as count FROM SALM WHERE SAL_NO LIKE '${TEST_PREFIX}%'
       `);
 
       const customerMappingCount = await this.prisma.erpCustomerMapping.count({
         where: {
           erpCustomerNo: {
-            startsWith: this.TEST_PREFIX,
+            startsWith: TEST_PREFIX,
           },
         },
       });
@@ -444,7 +556,7 @@ export class ErpEntitySyncService {
       const salespersonMappingCount = await this.prisma.erpSalespersonMapping.count({
         where: {
           erpSalespersonNo: {
-            startsWith: this.TEST_PREFIX,
+            startsWith: TEST_PREFIX,
           },
         },
       });
