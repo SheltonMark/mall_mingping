@@ -12,6 +12,7 @@ import {
 import { IsString, IsOptional, IsBoolean, IsNumber, IsArray } from 'class-validator';
 import { ErpOrderSyncService } from './erp-order-sync.service';
 import { ErpProductSyncService } from './erp-product-sync.service';
+import { ErpEntitySyncService } from './erp-entity-sync.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 // DTO 定义
@@ -50,6 +51,7 @@ export class ErpController {
   constructor(
     private readonly erpOrderSyncService: ErpOrderSyncService,
     private readonly erpProductSyncService: ErpProductSyncService,
+    private readonly erpEntitySyncService: ErpEntitySyncService,
   ) {}
 
   // ============ 订单同步接口 ============
@@ -214,5 +216,45 @@ export class ErpController {
       baselineTime: baseline.toISOString(),
       baselineTimeFormatted: baseline.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }),
     };
+  }
+
+  // ============ 测试数据管理接口 ============
+
+  /**
+   * 获取测试数据统计
+   * GET /erp/test-data/stats
+   * 返回 ERP 中带 TEST_ 前缀的客户和业务员数量
+   */
+  @Get('test-data/stats')
+  async getTestDataStats() {
+    return this.erpEntitySyncService.getTestDataStats();
+  }
+
+  /**
+   * 清理测试数据
+   * DELETE /erp/test-data/cleanup
+   * 删除 ERP 中所有带 TEST_ 前缀的客户和业务员
+   */
+  @Delete('test-data/cleanup')
+  async cleanupTestData() {
+    return this.erpEntitySyncService.cleanupTestData();
+  }
+
+  /**
+   * 手动同步客户到 ERP
+   * POST /erp/entities/customers/:customerId/sync
+   */
+  @Post('entities/customers/:customerId/sync')
+  async syncCustomer(@Param('customerId') customerId: string) {
+    return this.erpEntitySyncService.syncCustomerToErp(customerId);
+  }
+
+  /**
+   * 手动同步业务员到 ERP
+   * POST /erp/entities/salespersons/:salespersonId/sync
+   */
+  @Post('entities/salespersons/:salespersonId/sync')
+  async syncSalesperson(@Param('salespersonId') salespersonId: string) {
+    return this.erpEntitySyncService.syncSalespersonToErp(salespersonId);
   }
 }

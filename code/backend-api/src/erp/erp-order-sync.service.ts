@@ -1,16 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import * as sql from 'mssql';
 import { PrismaService } from '../prisma.service';
 import {
   getErpDatabaseConfig,
   getErpSyncConfig,
 } from '../config/erp-database.config';
+import { ErpEntitySyncService } from './erp-entity-sync.service';
 
 export interface SyncResult {
   success: boolean;
   erpOrderNo?: string;
   webOrderId: string;
   error?: string;
+  autoSyncedCustomer?: boolean;
+  autoSyncedSalesperson?: boolean;
 }
 
 @Injectable()
@@ -18,7 +21,11 @@ export class ErpOrderSyncService {
   private readonly logger = new Logger(ErpOrderSyncService.name);
   private pool: sql.ConnectionPool | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => ErpEntitySyncService))
+    private readonly erpEntitySyncService: ErpEntitySyncService,
+  ) {}
 
   /**
    * 获取 ERP 数据库连接池
@@ -139,27 +146,32 @@ export class ErpOrderSyncService {
       };
     }
 
-    // 2. 获取 ERP 客户和业务员编号
-    const erpCustomerNo = await this.getErpCustomerNo(order.customerId);
-    const erpSalespersonNo = await this.getErpSalespersonNo(
-      order.salespersonId,
-    );
+    // 2. 自动同步客户和业务员到 ERP（方案B）
+    let autoSyncedCustomer = false;
+    let autoSyncedSalesperson = false;
 
-    if (!erpCustomerNo) {
+    const entitySyncResult = await this.erpEntitySyncService.ensureOrderEntitiesSynced(orderId);
+    if (!entitySyncResult.success) {
       return {
         success: false,
         webOrderId: orderId,
-        error: `客户 ${order.customerId} 未映射到 ERP`,
+        error: `实体同步失败: ${entitySyncResult.error}`,
       };
     }
 
-    if (!erpSalespersonNo) {
-      return {
-        success: false,
-        webOrderId: orderId,
-        error: `业务员 ${order.salespersonId} 未映射到 ERP`,
-      };
+    autoSyncedCustomer = !entitySyncResult.customerResult?.alreadyExists;
+    autoSyncedSalesperson = !entitySyncResult.salespersonResult?.alreadyExists;
+
+    if (autoSyncedCustomer) {
+      this.logger.log(`[ERP Sync] 自动同步客户: ${order.customer.name} -> ${entitySyncResult.customerResult?.erpNo}`);
     }
+    if (autoSyncedSalesperson) {
+      this.logger.log(`[ERP Sync] 自动同步业务员: ${order.salesperson.chineseName} -> ${entitySyncResult.salespersonResult?.erpNo}`);
+    }
+
+    // 3. 获取 ERP 客户和业务员编号（现在肯定存在了）
+    const erpCustomerNo = entitySyncResult.customerResult!.erpNo;
+    const erpSalespersonNo = entitySyncResult.salespersonResult!.erpNo;
 
     let pool: sql.ConnectionPool;
     let transaction: sql.Transaction;
@@ -346,6 +358,8 @@ export class ErpOrderSyncService {
         success: true,
         erpOrderNo,
         webOrderId: orderId,
+        autoSyncedCustomer,
+        autoSyncedSalesperson,
       };
     } catch (error) {
       // 回滚事务
