@@ -200,22 +200,22 @@ export class ErpOrderSyncService {
       // 6. 写入主表 MF_POS
       const mfPosRequest = new sql.Request(transaction);
       await mfPosRequest
-        .input('OS_NO', sql.VarChar(20), erpOrderNo)
+        .input('OS_NO', sql.NVarChar(20), erpOrderNo)
         .input('OS_DD', sql.DateTime, order.orderDate)
-        .input('CUS_NO', sql.VarChar(12), erpCustomerNo)
-        .input('SAL_NO', sql.VarChar(12), erpSalespersonNo)
+        .input('CUS_NO', sql.NVarChar(12), erpCustomerNo)
+        .input('SAL_NO', sql.NVarChar(12), erpSalespersonNo)
         .input(
           'AMTN_INT',
           sql.Numeric(28, 8),
           order.totalAmount?.toNumber() || 0,
         )
-        .input('USR', sql.VarChar(8), erpSalespersonNo)
+        .input('USR', sql.NVarChar(8), erpSalespersonNo)
         .input(
           'EST_DD',
           sql.DateTime,
           order.items[0]?.expectedDeliveryDate || null,
         )
-        .input('REM', sql.Text, JSON.stringify(customParamsJson)).query(`
+        .input('REM', sql.NVarChar(sql.MAX), JSON.stringify(customParamsJson)).query(`
           INSERT INTO MF_POS (
             OS_ID, OS_NO, OS_DD, CUS_NO, SAL_NO,
             AMTN_INT, USR, RECORD_DD, CLS_ID,
@@ -244,17 +244,17 @@ export class ErpOrderSyncService {
         // 7.1 写入 TF_POS 主表
         const tfPosRequest = new sql.Request(transaction);
         await tfPosRequest
-          .input('OS_NO', sql.VarChar(20), erpOrderNo)
+          .input('OS_NO', sql.NVarChar(20), erpOrderNo)
           .input('ITM', sql.SmallInt, itemNumber)
-          .input('PRD_NO', sql.VarChar(50), item.productSku.productCode)
+          .input('PRD_NO', sql.NVarChar(50), item.productSku.productCode)
           .input(
             'PRD_NAME',
-            sql.VarChar(100),
+            sql.NVarChar(100),
             item.productSku.productName || '',
           )
           .input(
             'PRD_MARK',
-            sql.VarChar(255),
+            sql.NVarChar(255),
             (item.additionalAttributes || '').substring(0, 255),
           )
           .input('QTY', sql.Numeric(28, 8), quantity)
@@ -262,13 +262,13 @@ export class ErpOrderSyncService {
           .input('AMT', sql.Numeric(28, 8), amt)
           .input('AMTN', sql.Numeric(28, 8), amtn)
           .input('TAX', sql.Numeric(28, 8), tax)
-          .input('SPC', sql.VarChar(2000), item.productSpec || '')
+          .input('SPC', sql.NVarChar(2000), item.productSpec || '')
           .input(
             'ATTR',
-            sql.VarChar(30),
+            sql.NVarChar(30),
             (item.additionalAttributes || '').substring(0, 30),
           )
-          .input('PAK_UNIT', sql.VarChar(24), item.packagingUnit || '')
+          .input('PAK_UNIT', sql.NVarChar(24), item.packagingUnit || '')
           .input(
             'PAK_EXC',
             sql.Numeric(28, 8),
@@ -284,15 +284,15 @@ export class ErpOrderSyncService {
             sql.Numeric(28, 8),
             item.grossWeight?.toNumber() || 0,
           )
-          .input('PAK_WEIGHT_UNIT', sql.VarChar(8), item.weightUnit || '')
+          .input('PAK_WEIGHT_UNIT', sql.NVarChar(8), item.weightUnit || '')
           .input(
             'PAK_MEAST',
             sql.Numeric(28, 8),
             item.volume?.toNumber() || 0,
           )
           .input('EST_DD', sql.DateTime, item.expectedDeliveryDate || null)
-          .input('REM', sql.VarChar(1000), item.supplierNote || '')
-          .input('BZ_KND', sql.VarChar(20), item.packagingType || '')
+          .input('REM', sql.NVarChar(1000), item.supplierNote || '')
+          .input('BZ_KND', sql.NVarChar(20), item.packagingType || '')
           .input('OS_DD', sql.DateTime, order.orderDate).query(`
             INSERT INTO TF_POS (
               OS_ID, OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK,
@@ -316,15 +316,15 @@ export class ErpOrderSyncService {
         // 7.2 写入 TF_POS_Z 扩展表（7个包装字段）
         const tfPosZRequest = new sql.Request(transaction);
         await tfPosZRequest
-          .input('OS_NO', sql.VarChar(20), erpOrderNo)
+          .input('OS_NO', sql.NVarChar(20), erpOrderNo)
           .input('ITM', sql.SmallInt, itemNumber)
           .input('PQTY1', sql.Int, item.packingQuantity || null)
           .input('PQTY2', sql.Int, item.cartonQuantity || null)
-          .input('BZFS', sql.VarChar(255), item.packagingMethod || '')
-          .input('DKBM', sql.VarChar(50), item.paperCardCode || '')
-          .input('WXBM', sql.VarChar(50), item.washLabelCode || '')
-          .input('SXBBM', sql.VarChar(255), item.outerCartonCode || '')
-          .input('XG', sql.VarChar(50), item.cartonSpecification || '').query(`
+          .input('BZFS', sql.NVarChar(255), item.packagingMethod || '')
+          .input('DKBM', sql.NVarChar(50), item.paperCardCode || '')
+          .input('WXBM', sql.NVarChar(50), item.washLabelCode || '')
+          .input('SXBBM', sql.NVarChar(255), item.outerCartonCode || '')
+          .input('XG', sql.NVarChar(50), item.cartonSpecification || '').query(`
             INSERT INTO TF_POS_Z (
               OS_ID, OS_NO, ITM,
               PQTY1, PQTY2, BZFS,
