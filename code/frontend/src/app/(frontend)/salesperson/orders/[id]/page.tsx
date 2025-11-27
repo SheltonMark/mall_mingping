@@ -439,35 +439,39 @@ export default function OrderDetailPage() {
                     )}
 
                     {/* 订单数量和价格 */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-500 mb-2">订单数量</label>
-                      <div className="px-4 py-2 bg-blue-50 rounded-lg text-sm font-semibold text-blue-900">
-                        {item.quantity}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-500 mb-2">单价</label>
-                      <div className="px-4 py-2 bg-green-50 rounded-lg text-sm font-semibold text-green-900">
-                        ¥{formatAmount(item.price)}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-500 mb-2">小计</label>
-                      <div className="px-4 py-2 bg-primary/10 rounded-lg text-sm font-bold text-primary">
-                        ¥{formatAmount(item.subtotal)}
-                      </div>
-                    </div>
-
-                    {item.untaxedLocalCurrency !== null && item.untaxedLocalCurrency !== undefined && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-500 mb-2">未税本位币</label>
-                        <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
-                          ¥{formatAmount(item.untaxedLocalCurrency)}
+                    <div className="md:col-span-3">
+                      <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-500 mb-2">订单数量</label>
+                          <div className="py-2 bg-blue-50 rounded-lg text-sm font-semibold text-blue-900">
+                            {item.quantity}
+                          </div>
                         </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-500 mb-2">单价</label>
+                          <div className="py-2 bg-green-50 rounded-lg text-sm font-semibold text-green-900">
+                            ¥{formatAmount(item.price)}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-500 mb-2">小计</label>
+                          <div className="py-2 bg-primary/10 rounded-lg text-sm font-bold text-primary">
+                            ¥{formatAmount(item.subtotal)}
+                          </div>
+                        </div>
+
+                        {item.untaxedLocalCurrency !== null && item.untaxedLocalCurrency !== undefined && (
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-500 mb-2">未税本位币</label>
+                            <div className="py-2 bg-gray-50 rounded-lg text-sm">
+                              ¥{formatAmount(item.untaxedLocalCurrency)}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
 
                     {/* 包装信息 - 始终显示所有字段 */}
                     <div className="md:col-span-3 mt-4">
@@ -475,76 +479,76 @@ export default function OrderDetailPage() {
                         <span className="text-primary">📦</span>
                         包装信息
                       </h4>
-                      <div className="grid md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">包装换算</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.packagingConversion || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">包装单位</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.packagingUnit || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">重量单位</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.weightUnit || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">净重</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.netWeight ?? '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">毛重</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.grossWeight ?? '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">包装类型</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.packagingType || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">包装尺寸</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.packagingSize || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">装箱数量</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.packingQuantity ?? '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">外箱数量</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.cartonQuantity ?? '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">包装方式</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.packagingMethod || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">外箱规格</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.cartonSpecification || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">体积</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.volume ?? '-'}
                           </div>
                         </div>
@@ -557,22 +561,22 @@ export default function OrderDetailPage() {
                         <span className="text-primary">🏷️</span>
                         辅助信息
                       </h4>
-                      <div className="grid md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-3 gap-4">
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">纸卡编号</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm font-mono">
+                          <div className="py-2 bg-gray-50 rounded text-sm font-mono">
                             {item.paperCardCode || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">水洗标编号</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm font-mono">
+                          <div className="py-2 bg-gray-50 rounded text-sm font-mono">
                             {item.washLabelCode || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">外箱编号</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm font-mono">
+                          <div className="py-2 bg-gray-50 rounded text-sm font-mono">
                             {item.outerCartonCode || '-'}
                           </div>
                         </div>
@@ -585,16 +589,16 @@ export default function OrderDetailPage() {
                         <span className="text-primary">📝</span>
                         其他信息
                       </h4>
-                      <div className="grid md:grid-cols-2 gap-4 mb-4">
+                      <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">客户料号</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm font-mono">
+                          <div className="py-2 bg-gray-50 rounded text-sm font-mono">
                             {item.customerProductCode || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">期望交期</label>
-                          <div className="px-3 py-2 bg-gray-50 rounded text-sm">
+                          <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.expectedDeliveryDate ? formatDate(item.expectedDeliveryDate) : '-'}
                           </div>
                         </div>
@@ -602,13 +606,13 @@ export default function OrderDetailPage() {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">厂商备注</label>
-                          <div className="px-4 py-2 bg-yellow-50 rounded-lg text-sm border border-yellow-200 min-h-[60px]">
+                          <div className="py-2 bg-yellow-50 rounded-lg text-sm border border-yellow-200 min-h-[60px]">
                             {item.supplierNote || '-'}
                           </div>
                         </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">摘要</label>
-                          <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm min-h-[80px]">
+                          <div className="py-2 bg-gray-50 rounded-lg text-sm min-h-[80px]">
                             {item.summary || '-'}
                           </div>
                         </div>
