@@ -100,7 +100,7 @@ export class ErpOrderSyncService {
 
   /**
    * 生成 ERP 订单编号
-   * 格式：SO + 年(4位) + 月(2位) + 流水号(不补零)
+   * 格式：SO + 年(4位) + 月(2位) + 流水号(3位补零)
    * 示例：SO202511052 (2025年11月第52单)
    */
   private async generateOrderNumber(pool: sql.ConnectionPool): Promise<string> {
@@ -116,7 +116,7 @@ export class ErpOrderSyncService {
     `);
 
     const nextSeq = (result.recordset[0]?.maxSeq || 0) + 1;
-    return `${prefix}${nextSeq}`;
+    return `${prefix}${String(nextSeq).padStart(3, '0')}`;
   }
 
   /**
