@@ -19,6 +19,18 @@ interface Customer {
   remarks?: string
 }
 
+interface EditingCustomer {
+  id: string
+  name: string
+  email: string
+  contactPerson: string
+  phone: string
+  address: string
+  country: string
+  customerType: 'NEW' | 'OLD'
+  remarks: string
+}
+
 interface OrderItem {
   id: string
   itemNumber: number
@@ -79,6 +91,9 @@ export default function SalespersonProfilePage() {
   const [loading, setLoading] = useState(true)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editingData, setEditingData] = useState<Partial<OrderItem>>({})
+  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null)
+  const [editingCustomerData, setEditingCustomerData] = useState<EditingCustomer | null>(null)
+  const [savingCustomer, setSavingCustomer] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -280,6 +295,53 @@ export default function SalespersonProfilePage() {
   const handleCancelEdit = () => {
     setEditingItemId(null)
     setEditingData({})
+  }
+
+  // 客户编辑功能
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomerId(customer.id)
+    setEditingCustomerData({
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      contactPerson: customer.contactPerson || '',
+      phone: customer.phone || '',
+      address: customer.address || '',
+      country: customer.country || '',
+      customerType: customer.customerType,
+      remarks: customer.remarks || '',
+    })
+  }
+
+  const handleSaveCustomer = async () => {
+    if (!editingCustomerData) return
+
+    setSavingCustomer(true)
+    try {
+      await customerApi.update(editingCustomerData.id, {
+        name: editingCustomerData.name,
+        email: editingCustomerData.email,
+        contactPerson: editingCustomerData.contactPerson || undefined,
+        phone: editingCustomerData.phone || undefined,
+        address: editingCustomerData.address || undefined,
+        country: editingCustomerData.country || undefined,
+        customerType: editingCustomerData.customerType,
+        remarks: editingCustomerData.remarks || undefined,
+      })
+      toast.success('客户信息更新成功')
+      setEditingCustomerId(null)
+      setEditingCustomerData(null)
+      await loadCustomers()
+    } catch (error: any) {
+      toast.error(error.message || '更新客户信息失败')
+    } finally {
+      setSavingCustomer(false)
+    }
+  }
+
+  const handleCancelCustomerEdit = () => {
+    setEditingCustomerId(null)
+    setEditingCustomerData(null)
   }
 
   if (authLoading || !isAuthenticated || !salesperson) {
@@ -745,77 +807,190 @@ export default function SalespersonProfilePage() {
               <div className="space-y-4">
                 {customers.map((customer) => (
                   <div key={customer.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between gap-6">
-                      {/* 客户基本信息 */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-4">
-                          <h3 className="font-bold text-gray-900 text-xl">{customer.name}</h3>
-                          <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                            customer.customerType === 'NEW'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {customer.customerType === 'NEW' ? '新客户' : '老客户'}
-                          </span>
+                    {editingCustomerId === customer.id && editingCustomerData ? (
+                      /* 编辑模式 */
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-bold text-gray-900 text-xl">编辑客户</h3>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleSaveCustomer}
+                              disabled={savingCustomer}
+                              className="px-4 py-2 bg-primary text-white rounded-lg text-sm flex items-center gap-1 disabled:opacity-50"
+                            >
+                              <Save size={16} />
+                              {savingCustomer ? '保存中...' : '保存'}
+                            </button>
+                            <button
+                              onClick={handleCancelCustomerEdit}
+                              className="px-4 py-2 border border-gray-300 rounded-lg text-sm flex items-center gap-1"
+                            >
+                              <X size={16} />
+                              取消
+                            </button>
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {customer.email && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">邮箱</div>
-                              <div className="flex items-center gap-2 text-sm text-gray-900">
-                                <span>📧</span>
-                                <span>{customer.email}</span>
-                              </div>
-                            </div>
-                          )}
-                          {customer.phone && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">电话</div>
-                              <div className="flex items-center gap-2 text-sm text-gray-900">
-                                <span>📞</span>
-                                <span>{customer.phone}</span>
-                              </div>
-                            </div>
-                          )}
-                          {customer.country && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">国家</div>
-                              <div className="flex items-center gap-2 text-sm text-gray-900">
-                                <span>🌍</span>
-                                <span>{customer.country}</span>
-                              </div>
-                            </div>
-                          )}
-                          {customer.contactPerson && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">联系人</div>
-                              <div className="flex items-center gap-2 text-sm text-gray-900">
-                                <span>👤</span>
-                                <span>{customer.contactPerson}</span>
-                              </div>
-                            </div>
-                          )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">客户名称 *</label>
+                            <input
+                              type="text"
+                              value={editingCustomerData.name}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, name: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">邮箱 *</label>
+                            <input
+                              type="email"
+                              value={editingCustomerData.email}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, email: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">联系人</label>
+                            <input
+                              type="text"
+                              value={editingCustomerData.contactPerson}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, contactPerson: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">电话</label>
+                            <input
+                              type="tel"
+                              value={editingCustomerData.phone}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, phone: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">国家</label>
+                            <input
+                              type="text"
+                              value={editingCustomerData.country}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, country: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">客户类型</label>
+                            <select
+                              value={editingCustomerData.customerType}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, customerType: e.target.value as 'NEW' | 'OLD'})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            >
+                              <option value="NEW">新客户</option>
+                              <option value="OLD">老客户</option>
+                            </select>
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">地址</label>
+                            <input
+                              type="text"
+                              value={editingCustomerData.address}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, address: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                            <textarea
+                              value={editingCustomerData.remarks}
+                              onChange={(e) => setEditingCustomerData({...editingCustomerData, remarks: e.target.value})}
+                              rows={3}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                            />
+                          </div>
                         </div>
-
-                        {customer.address && (
-                          <div className="mt-4">
-                            <div className="text-xs text-gray-500 mb-1">地址</div>
-                            <div className="flex items-start gap-2 text-sm text-gray-900">
-                              <span>📍</span>
-                              <span className="flex-1">{customer.address}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {customer.remarks && (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <div className="text-xs text-gray-500 mb-1">备注</div>
-                            <div className="text-sm text-gray-900">{customer.remarks}</div>
-                          </div>
-                        )}
                       </div>
-                    </div>
+                    ) : (
+                      /* 显示模式 */
+                      <div className="flex items-start justify-between gap-6">
+                        {/* 客户基本信息 */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-4">
+                            <h3 className="font-bold text-gray-900 text-xl">{customer.name}</h3>
+                            <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                              customer.customerType === 'NEW'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {customer.customerType === 'NEW' ? '新客户' : '老客户'}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {customer.email && (
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">邮箱</div>
+                                <div className="flex items-center gap-2 text-sm text-gray-900">
+                                  <span>📧</span>
+                                  <span>{customer.email}</span>
+                                </div>
+                              </div>
+                            )}
+                            {customer.phone && (
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">电话</div>
+                                <div className="flex items-center gap-2 text-sm text-gray-900">
+                                  <span>📞</span>
+                                  <span>{customer.phone}</span>
+                                </div>
+                              </div>
+                            )}
+                            {customer.country && (
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">国家</div>
+                                <div className="flex items-center gap-2 text-sm text-gray-900">
+                                  <span>🌍</span>
+                                  <span>{customer.country}</span>
+                                </div>
+                              </div>
+                            )}
+                            {customer.contactPerson && (
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">联系人</div>
+                                <div className="flex items-center gap-2 text-sm text-gray-900">
+                                  <span>👤</span>
+                                  <span>{customer.contactPerson}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {customer.address && (
+                            <div className="mt-4">
+                              <div className="text-xs text-gray-500 mb-1">地址</div>
+                              <div className="flex items-start gap-2 text-sm text-gray-900">
+                                <span>📍</span>
+                                <span className="flex-1">{customer.address}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {customer.remarks && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <div className="text-xs text-gray-500 mb-1">备注</div>
+                              <div className="text-sm text-gray-900">{customer.remarks}</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 编辑按钮 */}
+                        <button
+                          onClick={() => handleEditCustomer(customer)}
+                          className="px-4 py-2 border border-primary text-primary rounded-lg text-sm flex items-center gap-1 hover:bg-primary/5"
+                        >
+                          <Edit2 size={16} />
+                          编辑
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

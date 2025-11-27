@@ -55,11 +55,15 @@ interface Order {
   customer: {
     id: string
     name: string
+    email?: string
+    phone?: string
+    country?: string
     companyName?: string
     contactPerson?: string
     contactEmail?: string
     contactPhone?: string
     address?: string
+    remarks?: string
   }
   salesperson: {
     id: string
@@ -305,19 +309,27 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
                 )}
-                {order.customer.contactEmail && (
+                {(order.customer.email || order.customer.contactEmail) && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">邮箱</label>
                     <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                      {order.customer.contactEmail}
+                      {order.customer.email || order.customer.contactEmail}
                     </div>
                   </div>
                 )}
-                {order.customer.contactPhone && (
+                {(order.customer.phone || order.customer.contactPhone) && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">电话</label>
                     <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                      {order.customer.contactPhone}
+                      {order.customer.phone || order.customer.contactPhone}
+                    </div>
+                  </div>
+                )}
+                {order.customer.country && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">国家</label>
+                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                      {order.customer.country}
                     </div>
                   </div>
                 )}
@@ -326,6 +338,14 @@ export default function OrderDetailPage() {
                     <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">地址</label>
                     <div className="px-4 py-3 bg-gray-50 rounded-lg">
                       {order.customer.address}
+                    </div>
+                  </div>
+                )}
+                {order.customer.remarks && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">备注</label>
+                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                      {order.customer.remarks}
                     </div>
                   </div>
                 )}
