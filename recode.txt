@@ -1,0 +1,609 @@
+cd ~/internal_web/mall_mingping_internal/code/backend-api
+
+cat > .env << 'EOF'
+DATABASE_URL="mysql://lemopx:1q!@localhost:3306/internal_sales"
+JWT_SECRET="HF3suIJ4mHk9OQBwDRAqYqUC9Eaq8HyCabPaXoAx7yI="
+PORT=3001
+HOST=0.0.0.0
+CORS_ORIGIN=*
+
+ERP_SYNC_ENABLED=true
+ERP_DB_HOST=192.168.3.254
+ERP_DB_PORT=1433
+ERP_DB_USER=sa
+ERP_DB_PASSWORD=1q!
+ERP_DB_NAME=DB_MP01
+EOF
+
+cat > .env << 'EOF'
+NEXT_PUBLIC_API_URL=http://192.168.13.17:3001/api
+EOF
+
+
+cat > src/main.ts << 'EOF'
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { PrismaService } from './prisma.service';
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Enable CORS
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN === '*' ? true : (process.env.CORS_ORIGIN ||
+'http://localhost:3000').split(','),
+    credentials: true,
+  });
+
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  // Serve static files from uploads directory
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
+
+  // Set global prefix
+  app.setGlobalPrefix('api');
+
+  // Enable shutdown hooks for Prisma
+  const prismaService = app.get(PrismaService);
+  await prismaService.enableShutdownHooks(app);
+
+  const port = process.env.PORT || 3001;
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
+
+  console.log(`🚀 Server is running on: http://${host}:${port}/api`);
+  console.log(`📁 Static files served from: /uploads/`);
+}
+bootstrap();
+EOF
+
+netsh interface portproxy add v4tov4 listenport=3000 listenaddress=0.0.0.0 connectport=3000 connectaddress=172.31.15.84
+
+netsh interface portproxy add v4tov4 listenport=3001 listenaddress=0.0.0.0 connectport=3001 connectaddress=172.31.15.84
+
+  # 查看是否成功
+  netsh interface portproxy show all
+
+  # 允许防火墙
+  netsh advfirewall firewall add rule name="WSL 3000" dir=in action=allow protocol=tcp localport=3000
+  netsh advfirewall firewall add rule name="WSL 3001" dir=in action=allow protocol=tcp localport=3001
+  
+  
+  
+  
+  
+  
+  
+cat > /home/lemopx/internal_web/mall_mingping_internal/code/backend-api/src/main.ts << 'EOF'
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { AppModule } from './app.module';
+import { PrismaService } from './prisma.service';
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Enable CORS
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN === '*' ? true : (process.env.CORS_ORIGIN ||
+'http://localhost:3000').split(','),
+    credentials: true,
+  });
+
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  // Serve static files from public directory (for admin UI)
+  app.useStaticAssets(join(process.cwd(), 'public'), {
+    prefix: '/',
+  });
+
+  // Serve static files from uploads directory
+  const uploadsDir = process.env.UPLOAD_DIR || './uploads';
+  console.log('📁 Uploads directory:', join(process.cwd(), uploadsDir));
+  app.useStaticAssets(join(process.cwd(), uploadsDir), {
+    prefix: '/uploads/',
+  });
+
+  // Global prefix (must come after static assets)
+  app.setGlobalPrefix('api');
+
+  // Prisma shutdown hook
+  const prismaService = app.get(PrismaService);
+  await prismaService.enableShutdownHooks(app);
+
+  const port = process.env.PORT || 3001;
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
+
+  console.log(`🚀 Server is running on: http://${host}:${port}/api`);
+  console.log(`📁 Static files served from: /uploads/`);
+}
+bootstrap();
+EOF
+
+
+export https_proxy=http://127.0.0.1:33210 http_proxy=http://127.0.0.1:33210 all_proxy=socks5://127.0.0.1:33211
+
+
+sed -i "s/} from '@nestjs\/common';/} from '@nestjs\/common';\nimport { IsString, IsOptional, IsBoolean, IsNumber, IsArray } from 'class-validator';/" erp.controller.ts
+
+
+
+mysql -u lemopx -p'1q!' internal_sales << 'EOF'
+CREATE TABLE IF NOT EXISTS `cart_items` (
+  `id` varchar(191) NOT NULL,
+  `salesperson_id` varchar(191) NOT NULL,
+  `sku_id` varchar(191) NOT NULL,
+  `product_code` varchar(191) NOT NULL,
+  `product_name` varchar(191) NOT NULL,
+  `color_scheme` json DEFAULT NULL,
+  `quantity` int NOT NULL DEFAULT '1',
+  `price` decimal(65,30) NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cart_items_salesperson_id_idx` (`salesperson_id`),
+  CONSTRAINT `cart_items_salesperson_id_fkey` FOREIGN KEY (`salesperson_id`) REFERENCES `salespersons` (`id`) ON
+DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+EOF
+
+
+
+  cd ~/internal_web/mall_mingping_internal/code/backend-api/src/erp
+
+cat > erp.controller.ts << 'EOF'
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Put,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { IsString, IsOptional, IsBoolean, IsNumber, IsArray } from 'class-validator';
+import { ErpOrderSyncService } from './erp-order-sync.service';
+import { ErpProductSyncService } from './erp-product-sync.service';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+
+// DTO 定义
+class CreateMappingDto {
+  @IsString()
+  websiteId: string;
+
+  @IsString()
+  erpNo: string;
+}
+
+class UpdateMappingDto {
+  @IsString()
+  erpNo: string;
+}
+
+class BatchSyncDto {
+  @IsArray()
+  @IsString({ each: true })
+  orderIds: string[];
+}
+
+class ProductSyncDto {
+  @IsOptional()
+  @IsBoolean()
+  incremental?: boolean; // 是否增量同步，默认 true
+
+  @IsOptional()
+  @IsNumber()
+  days?: number;         // 增量同步天数，默认 1
+}
+
+@Controller('erp')
+@UseGuards(JwtAuthGuard)
+export class ErpController {
+  constructor(
+    private readonly erpOrderSyncService: ErpOrderSyncService,
+    private readonly erpProductSyncService: ErpProductSyncService,
+  ) {}
+
+  // ============ 订单同步接口 ============
+
+  /**
+   * 同步单个订单到 ERP
+   */
+  @Post('orders/:orderId/sync')
+  async syncOrder(@Param('orderId') orderId: string) {
+    return this.erpOrderSyncService.syncOrderToErp(orderId);
+  }
+
+  /**
+   * 重试同步失败的订单
+   */
+  @Post('orders/:orderId/retry')
+  async retrySyncOrder(@Param('orderId') orderId: string) {
+    return this.erpOrderSyncService.syncOrderToErp(orderId);
+  }
+
+  /**
+   * 批量同步订单到 ERP
+   */
+  @Post('orders/batch-sync')
+  async batchSyncOrders(@Body() dto: BatchSyncDto) {
+    return this.erpOrderSyncService.syncOrdersToErp(dto.orderIds);
+  }
+
+  /**
+   * 获取同步失败的订单列表
+   */
+  @Get('orders/failed')
+  async getFailedOrders() {
+    return this.erpOrderSyncService.getFailedSyncOrders();
+  }
+
+  /**
+   * 获取待同步的订单列表
+   */
+  @Get('orders/pending')
+  async getPendingOrders() {
+    return this.erpOrderSyncService.getPendingSyncOrders();
+  }
+
+  // ============ 客户映射管理接口 ============
+
+  /**
+   * 获取所有客户映射
+   */
+  @Get('mappings/customers')
+  async getCustomerMappings() {
+    return this.erpOrderSyncService.getAllCustomerMappings();
+  }
+
+  /**
+   * 创建客户映射
+   */
+  @Post('mappings/customers')
+  async createCustomerMapping(@Body() dto: CreateMappingDto) {
+    return this.erpOrderSyncService.createCustomerMapping(
+      dto.websiteId,
+      dto.erpNo,
+    );
+  }
+
+  /**
+   * 更新客户映射
+   */
+  @Put('mappings/customers/:id')
+  async updateCustomerMapping(
+    @Param('id') id: string,
+    @Body() dto: UpdateMappingDto,
+  ) {
+    return this.erpOrderSyncService.updateCustomerMapping(id, dto.erpNo);
+  }
+
+  /**
+   * 删除客户映射
+   */
+  @Delete('mappings/customers/:id')
+  async deleteCustomerMapping(@Param('id') id: string) {
+    return this.erpOrderSyncService.deleteCustomerMapping(id);
+  }
+
+  // ============ 业务员映射管理接口 ============
+
+  /**
+   * 获取所有业务员映射
+   */
+  @Get('mappings/salespersons')
+  async getSalespersonMappings() {
+    return this.erpOrderSyncService.getAllSalespersonMappings();
+  }
+
+  /**
+   * 创建业务员映射
+   */
+  @Post('mappings/salespersons')
+  async createSalespersonMapping(@Body() dto: CreateMappingDto) {
+    return this.erpOrderSyncService.createSalespersonMapping(
+      dto.websiteId,
+      dto.erpNo,
+    );
+  }
+
+  /**
+   * 更新业务员映射
+   */
+  @Put('mappings/salespersons/:id')
+  async updateSalespersonMapping(
+    @Param('id') id: string,
+    @Body() dto: UpdateMappingDto,
+  ) {
+    return this.erpOrderSyncService.updateSalespersonMapping(id, dto.erpNo);
+  }
+
+  /**
+   * 删除业务员映射
+   */
+  @Delete('mappings/salespersons/:id')
+  async deleteSalespersonMapping(@Param('id') id: string) {
+    return this.erpOrderSyncService.deleteSalespersonMapping(id);
+  }
+
+  // ============ 产品同步接口 ============
+
+  /**
+   * 手动触发产品同步
+   * POST /erp/products/sync
+   * Body: { incremental?: boolean, days?: number }
+   */
+  @Post('products/sync')
+  async syncProducts(@Body() dto: ProductSyncDto) {
+    const incremental = dto.incremental !== false; // 默认增量同步
+    const days = dto.days || 1;
+    return this.erpProductSyncService.syncAndRecord(incremental, days);
+  }
+
+  /**
+   * 全量同步产品
+   * POST /erp/products/sync-full
+   */
+  @Post('products/sync-full')
+  async syncProductsFull() {
+    return this.erpProductSyncService.syncAndRecord(false);
+  }
+
+  /**
+   * 获取上次同步时间和基准时间
+   * GET /erp/products/last-sync
+   */
+  @Get('products/last-sync')
+  async getLastSyncTime() {
+    const lastSync = await this.erpProductSyncService.getLastSyncTime();
+    const baseline = await this.erpProductSyncService.getSyncBaselineTime();
+
+    return {
+      lastSyncTime: lastSync?.toISOString() || null,
+      lastSyncTimeFormatted: lastSync
+        ? lastSync.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+        : '从未同步',
+      baselineTime: baseline.toISOString(),
+      baselineTimeFormatted: baseline.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }),
+    };
+  }
+}
+EOF
+
+mysql -u lemopx -p'1q!' internal_sales << 'EOF'
+-- ERP 客户映射表
+CREATE TABLE IF NOT EXISTS `erp_customer_mapping` (
+  `id` varchar(191) NOT NULL,
+  `website_id` varchar(191) NOT NULL,
+  `erp_no` varchar(191) NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `erp_customer_mapping_website_id_key` (`website_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ERP 业务员映射表
+CREATE TABLE IF NOT EXISTS `erp_salesperson_mapping` (
+  `id` varchar(191) NOT NULL,
+  `website_id` varchar(191) NOT NULL,
+  `erp_no` varchar(191) NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `erp_salesperson_mapping_website_id_key` (`website_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ERP 同步日志表
+CREATE TABLE IF NOT EXISTS `erp_sync_logs` (
+  `id` varchar(191) NOT NULL,
+  `order_id` varchar(191) NOT NULL,
+  `status` varchar(191) NOT NULL,
+  `message` text,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  KEY `erp_sync_logs_order_id_idx` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+EOF
+
+
+mysql -u lemopx -p'1q!' internal_sales << 'EOF'
+-- 删除旧表重建
+DROP TABLE IF EXISTS `erp_customer_mapping`;
+DROP TABLE IF EXISTS `erp_salesperson_mapping`;
+
+-- ERP 客户映射表（正确结构）
+CREATE TABLE `erp_customer_mapping` (
+  `id` varchar(191) NOT NULL,
+  `website_customer_id` varchar(191) NOT NULL,
+  `erp_customer_no` varchar(191) NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `erp_customer_mapping_website_customer_id_key` (`website_customer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ERP 业务员映射表（正确结构）
+CREATE TABLE `erp_salesperson_mapping` (
+  `id` varchar(191) NOT NULL,
+  `website_salesperson_id` varchar(191) NOT NULL,
+  `erp_salesperson_no` varchar(191) NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `erp_salesperson_mapping_website_salesperson_id_key` (`website_salesperson_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+EOF
+
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+
+-- 查看业务员表结构
+EXEC sp_help 'SALM';
+GO
+
+-- 查看几条业务员数据
+SELECT TOP 5 * FROM SALM;
+GO
+
+EOF
+
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+-- 最近3条客户
+SELECT TOP 3 CUS_NO, NAME, TEL1, SAL FROM CUST ORDER BY CREATE_DD DESC;
+GO
+-- 最近3条业务员
+SELECT TOP 200 SAL_NO, NAME FROM SALM ORDER BY SAL_NO DESC;
+GO
+-- 最近3条订单
+SELECT TOP 3 OS_NO, OS_DD, CUS_NO, SAL_NO, AMTN_INT FROM MF_POS WHERE OS_ID='SO' ORDER BY RECORD_DD DESC;
+GO
+EOF
+
+MP0034  王蕾
+MP0033  金露晓
+MP0032  方晓珍
+MP0031  郝文雨
+MP0030  周露
+MP0021  仓管二
+MP0020  仓管一
+MP0019  胡康立
+MP0018  陈飘飘
+MP0017  包剑报
+MP0016  张权燕
+MP0015  陈大开
+MP0014  许承建
+MP0013  针车车间
+MP0012  注塑车间
+MP0011  尹倩
+MP0010  张剑芳
+MP0009  张帅
+MP0008  何晓鸯
+MP0007  楚理凯
+MP0006  申屠斌
+MP0005  李小燕
+MP0004  陈丹
+MP0003  汪增珍
+MP0002  吴冬萍
+
+
+npx prisma db execute --schema=./prisma/schema.prisma --stdin <<< 'DELETE FROM erp_customer_mapping; DELETE FROM erp_salesperson_mapping;'
+
+npx prisma db execute --schema=./prisma/schema.prisma --stdin <<< 'SELECT * FROM erp_customer_mapping; SELECT * FROM erp_salesperson_mapping;'
+
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01
+GO
+DELETE FROM CUST WHERE CUS_NO LIKE 'TEST_%'
+DELETE FROM SALM WHERE SAL_NO LIKE 'TEST_%'
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+-- 1. MF_POS 订单主表 (非空字段)
+SELECT * FROM MF_POS WHERE OS_NO='SO202511051';
+GO
+-- 2. TF_POS 订单明细主表 (非空字段)
+SELECT * FROM TF_POS WHERE OS_NO='SO202511051';
+GO
+-- 3. TF_POS_Z 订单明细扩展表 (非空字段)
+SELECT * FROM TF_POS_Z WHERE OS_NO='SO202511051';
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+
+-- 1. 创建特征组（MARK_NO格式按照现有的 2-xxx 格式）
+INSERT INTO MARKS (MARK_NO, MARK_NAME, REM)
+VALUES ('2-100', 'TB100', '测试清洁套装特征组');
+GO
+
+-- 2. 创建附加属性（3个颜色组合选项）
+INSERT INTO PRD_MARKS (MARK_NO, PRD_MARK, MARK_NAME)
+VALUES ('2-100', '486C暗红+7717C孔雀蓝+7548C姜黄+10C冷灰', '颜色组合1');
+INSERT INTO PRD_MARKS (MARK_NO, PRD_MARK, MARK_NAME)
+VALUES ('2-100', '225C常规玫红+375C常规绿+298C常规蓝+424C灰', '颜色组合2');
+INSERT INTO PRD_MARKS (MARK_NO, PRD_MARK, MARK_NAME)
+VALUES ('2-100', '6C冷灰+305C蓝+13-5304TPG卡其+15-2216TCX粉色', '颜色组合3');
+GO
+
+-- 3. 创建3个SKU产品
+-- 三件套
+INSERT INTO PRDT (PRD_NO, NAME, SPC, MARK_NO, RECORD_DD)
+VALUES ('C04.01.1111', 'TB100-清洁三件套', 'A:全涤珊瑚绒布头
+B:双面清洁刷头
+C:伸缩铁杆(意标)22&25×0.3×68-120/190g', '2-100', GETDATE());
+
+-- 四件套
+INSERT INTO PRDT (PRD_NO, NAME, SPC, MARK_NO, RECORD_DD)
+VALUES ('C04.01.2222', 'TB100-清洁四件套', 'A:全涤珊瑚绒布头
+B:双面清洁刷头
+C:可拆卸水桶配件
+D:伸缩铁杆(意标)22&25×0.3×68-120/190g', '2-100', GETDATE());
+
+-- 六件套
+INSERT INTO PRDT (PRD_NO, NAME, SPC, MARK_NO, RECORD_DD)
+VALUES ('C04.01.3333', 'TB100-清洁六件套', 'A:全涤珊瑚绒布头
+B:双面清洁刷头
+C:可拆卸水桶配件
+D:360°旋转拖把头
+E:备用超细纤维布头
+F:伸缩铁杆(意标)22&25×0.3×68-120/190g', '2-100', GETDATE());
+GO
+
+-- 4. 验证插入结果
+SELECT * FROM MARKS WHERE MARK_NO = '2-100';
+SELECT * FROM PRD_MARKS WHERE MARK_NO = '2-100';
+SELECT PRD_NO, NAME, MARK_NO FROM PRDT WHERE MARK_NO = '2-100';
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+-- 查看产品数据是否乱码
+SELECT PRD_NO, NAME, SPC FROM PRDT WHERE PRD_NO IN ('C04.01.1111', 'C04.01.2222', 'C04.01.3333');
+GO
+-- 查看特征组
+SELECT * FROM MARKS WHERE MARK_NO = '2-100';
+GO
+-- 查看附加属性
+SELECT * FROM PRD_MARKS WHERE MARK_NO = '2-100';
+GO
+EOF

@@ -9,11 +9,13 @@
 **目标**：实现网站订单自动同步到 ERP 系统（SQL Server DB_MP01）
 
 **核心技术栈**：
+
 - NestJS + TypeORM
 - 双数据源：SQLite（网站） + MSSQL（ERP）
 - 事务管理：确保三表写入的原子性（MF_POS + TF_POS + TF_POS_Z）
 
 **关键发现**：
+
 - ✅ 7个包装字段在 ERP 的 **TF_POS_Z 扩展表**中以独立结构化字段存储
 - ✅ 需要同时写入 TF_POS（主表）和 TF_POS_Z（扩展表）
 
@@ -196,6 +198,7 @@ testErpConnection();
 ```
 
 运行测试：
+
 ```bash
 npx ts-node src/scripts/test-erp-connection.ts
 ```
@@ -278,12 +281,14 @@ private async getErpSalespersonNo(salespersonId: string): Promise<string> {
 ### 3.4-3.7 实现核心同步方法
 
 参考 `ERP_ORDER_SYNC_SOLUTION.md` 文档中的完整代码实现：
+
 - 写入 MF_POS（订单主表）
 - 写入 TF_POS（订单明细主表）
 - 写入 TF_POS_Z（订单明细扩展表，**包含7个包装字段**）
 - 事务处理和错误回滚
 
 **关键点**：
+
 ```typescript
 // 6.2 写入 TF_POS_Z 扩展表（7个包装字段）
 await queryRunner.query(`
@@ -584,6 +589,7 @@ private async notifyError(orderId: string, error: Error) {
 ### 7.1 创建同步状态查看页面
 
 **功能**：
+
 - 显示所有订单的 ERP 同步状态
 - 筛选：synced / failed / pending
 - 显示 erpOrderNo、erpSyncAt、erpSyncError
@@ -591,12 +597,14 @@ private async notifyError(orderId: string, error: Error) {
 ### 7.2 创建手动重试按钮
 
 **功能**：
+
 - 点击按钮手动触发 ERP 同步重试
 - 实时显示同步结果
 
 ### 7.3 创建映射管理界面
 
 **功能**：
+
 - 管理客户映射（website_customer_id ↔ erp_customer_no）
 - 管理业务员映射（website_salesperson_id ↔ erp_salesperson_no）
 - 批量导入映射关系
@@ -632,6 +640,7 @@ code/backend-api/
 ## ✅ 验收标准
 
 ### 功能验收
+
 - [ ] 创建订单后，ERP中可以查询到对应的订单数据
 - [ ] MF_POS、TF_POS、TF_POS_Z 三表数据完整且关联正确
 - [ ] 7个包装字段正确写入 TF_POS_Z 表
@@ -640,6 +649,7 @@ code/backend-api/
 - [ ] 手动重试接口可以正常工作
 
 ### 数据验收
+
 ```sql
 -- 验证完整性
 SELECT
@@ -657,6 +667,7 @@ GROUP BY mf.OS_NO, mf.CUS_NO;
 ```
 
 ### 性能验收
+
 - [ ] 单个订单同步时间 < 3秒
 - [ ] 并发5个订单同步无订单号冲突
 - [ ] 事务失败时完整回滚，无脏数据
@@ -676,16 +687,19 @@ GROUP BY mf.OS_NO, mf.CUS_NO;
 ## 🔥 明天开发流程建议
 
 ### 上午（4小时）
+
 1. ✅ 第一阶段：数据库准备（1小时）
 2. ✅ 第二阶段：ERP 数据库连接配置（1小时）
 3. ✅ 第三阶段：核心同步服务开发（2小时）
 
 ### 下午（4小时）
+
 4. ✅ 第四阶段：集成到订单创建流程（1小时）
 5. ✅ 第五阶段：测试验证（2小时）
 6. ✅ 第六阶段：优化和错误处理（1小时）
 
 ### 备注
+
 - 第七阶段（后台管理界面）可以放在后续迭代
 - 遇到问题随时参考 `ERP_ORDER_SYNC_SOLUTION.md` 文档
 - 每完成一个阶段，使用 SQL 命令验证 ERP 数据
