@@ -100,23 +100,24 @@ export class ErpOrderSyncService {
 
   /**
    * 生成 ERP 订单编号
-   * 格式：SO + 年(4位) + 月(2位) + 流水号(3位)
-   * 示例：SO202511044
+   * 格式：SO + 年(4位) + 月(2位) + 日(2位) + 流水号
+   * 示例：SO202511281 (2025年11月28日第1单)
    */
   private async generateOrderNumber(pool: sql.ConnectionPool): Promise<string> {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    const prefix = `SO${year}${month}`;
+    const day = String(now.getDate()).padStart(2, '0');
+    const prefix = `SO${year}${month}${day}`;
 
     const result = await pool.request().query(`
-      SELECT MAX(CAST(RIGHT(OS_NO, 3) AS INT)) as maxSeq
+      SELECT MAX(CAST(SUBSTRING(OS_NO, 11, 10) AS INT)) as maxSeq
       FROM MF_POS
       WHERE OS_ID = 'SO' AND OS_NO LIKE '${prefix}%'
     `);
 
     const nextSeq = (result.recordset[0]?.maxSeq || 0) + 1;
-    return `${prefix}${String(nextSeq).padStart(3, '0')}`;
+    return `${prefix}${nextSeq}`;
   }
 
   /**
