@@ -47,5 +47,6 @@ async function bootstrap() {
 
   console.log(`🚀 Server is running on: http://${host}:${port}/api`);
   console.log(`📁 Static files served from: /uploads/`);
+  console.log(`🌐 CORS origin: ${process.env.CORS_ORIGIN || 'localhost:3000'}`);
 }
 bootstrap();
