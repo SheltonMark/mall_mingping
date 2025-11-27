@@ -243,23 +243,23 @@ export default function OrderDetailPage() {
             {/* 订单基本信息 */}
             <div className="mb-12">
               <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">订单信息</h2>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">订单号</label>
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg text-lg font-semibold">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">订单号</label>
+                  <div className="py-2 bg-gray-50 rounded text-sm font-semibold">
                     {order.orderNumber}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">订单日期</label>
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">订单日期</label>
+                  <div className="py-2 bg-gray-50 rounded text-sm">
                     {formatDate(order.orderDate)}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">订单类型</label>
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                    <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">订单类型</label>
+                  <div className="py-2 bg-gray-50 rounded text-sm">
+                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
                       order.orderType === 'FORMAL'
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-purple-100 text-purple-800'
@@ -269,9 +269,9 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">客户类型</label>
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                    <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">客户类型</label>
+                  <div className="py-2 bg-gray-50 rounded text-sm">
+                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
                       order.customerType === 'NEW'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
@@ -286,65 +286,65 @@ export default function OrderDetailPage() {
             {/* 客户信息 */}
             <div className="mb-12">
               <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">客户信息</h2>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">客户名称</label>
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">客户名称</label>
+                  <div className="py-2 bg-gray-50 rounded text-sm">
                     {order.customer.name}
                   </div>
                 </div>
                 {order.customer.companyName && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">公司名称</label>
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">公司名称</label>
+                    <div className="py-2 bg-gray-50 rounded text-sm">
                       {order.customer.companyName}
                     </div>
                   </div>
                 )}
                 {order.customer.contactPerson && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">联系人</label>
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">联系人</label>
+                    <div className="py-2 bg-gray-50 rounded text-sm">
                       {order.customer.contactPerson}
                     </div>
                   </div>
                 )}
                 {(order.customer.email || order.customer.contactEmail) && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">邮箱</label>
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">邮箱</label>
+                    <div className="py-2 bg-gray-50 rounded text-sm">
                       {order.customer.email || order.customer.contactEmail}
                     </div>
                   </div>
                 )}
                 {(order.customer.phone || order.customer.contactPhone) && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">电话</label>
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">电话</label>
+                    <div className="py-2 bg-gray-50 rounded text-sm">
                       {order.customer.phone || order.customer.contactPhone}
                     </div>
                   </div>
                 )}
                 {order.customer.country && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">国家</label>
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">国家</label>
+                    <div className="py-2 bg-gray-50 rounded text-sm">
                       {order.customer.country}
                     </div>
                   </div>
                 )}
                 {order.customer.address && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">地址</label>
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">地址</label>
+                    <div className="py-2 bg-gray-50 rounded text-sm">
                       {order.customer.address}
                     </div>
                   </div>
                 )}
                 {order.customer.remarks && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-500 uppercase mb-2">备注</label>
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">备注</label>
+                    <div className="py-2 bg-gray-50 rounded text-sm">
                       {order.customer.remarks}
                     </div>
                   </div>
@@ -378,35 +378,35 @@ export default function OrderDetailPage() {
 
                     {/* 产品信息 */}
                     <div className="md:col-span-3">
-                      <label className="block text-sm font-semibold text-gray-500 mb-2">品号</label>
-                      <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-mono font-semibold text-primary">
-                        {item.productSku?.productCode || '-'}
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-3">
-                      <label className="block text-sm font-semibold text-gray-500 mb-2">品名</label>
-                      <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
-                        {item.productSku?.productName || item.productSku?.productNameEn || '-'}
-                      </div>
-                    </div>
-
-                    {item.customerProductCode && (
-                      <div className="md:col-span-3">
-                        <label className="block text-sm font-semibold text-gray-500 mb-2">客户料号</label>
-                        <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-mono">
-                          {item.customerProductCode}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">品号</label>
+                          <div className="py-2 bg-gray-50 rounded text-sm font-mono font-semibold text-primary">
+                            {item.productSku?.productCode || '-'}
+                          </div>
                         </div>
+                        <div className="col-span-2">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">品名</label>
+                          <div className="py-2 bg-gray-50 rounded text-sm">
+                            {item.productSku?.productName || item.productSku?.productNameEn || '-'}
+                          </div>
+                        </div>
+                        {item.customerProductCode && (
+                          <div>
+                            <label className="block text-xs font-semibold text-gray-500 mb-1">客户料号</label>
+                            <div className="py-2 bg-gray-50 rounded text-sm font-mono">
+                              {item.customerProductCode}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
 
                     {item.productSpec && (
                       <div className="md:col-span-3">
-                        <label className="block text-sm font-semibold text-gray-500 mb-2">货品规格</label>
-                        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                          <div className="text-sm text-gray-700 whitespace-pre-line">
-                            {item.productSpec}
-                          </div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">货品规格</label>
+                        <div className="py-2 bg-gray-50 rounded text-sm whitespace-pre-line">
+                          {item.productSpec}
                         </div>
                       </div>
                     )}
@@ -414,8 +414,8 @@ export default function OrderDetailPage() {
                     {/* 附加属性 */}
                     {item.additionalAttributes && Object.keys(item.additionalAttributes).length > 0 && (
                       <div className="md:col-span-3">
-                        <label className="block text-sm font-semibold text-gray-500 mb-2">附加属性</label>
-                        <div className="px-4 py-2 bg-blue-50 rounded-lg text-sm border border-blue-200">
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">附加属性</label>
+                        <div className="py-2 bg-blue-50 rounded text-sm border border-blue-200">
                           {(() => {
                             try {
                               const attrs = typeof item.additionalAttributes === 'string'
