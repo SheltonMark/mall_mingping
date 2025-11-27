@@ -10,7 +10,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: process.env.CORS_ORIGIN === '*' ? true : (process.env.CORS_ORIGIN || 'http://localhost:3000').split(','),
     credentials: true,
   });
 
@@ -42,9 +42,10 @@ async function bootstrap() {
   await prismaService.enableShutdownHooks(app);
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
 
-  console.log(`🚀 Server is running on: http://localhost:${port}/api`);
+  console.log(`🚀 Server is running on: http://${host}:${port}/api`);
   console.log(`📁 Static files served from: /uploads/`);
 }
 bootstrap();
