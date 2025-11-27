@@ -449,9 +449,6 @@ export default function ProductsPage() {
                           <p className="text-base font-medium hover:text-primary transition-colors">
                             {language === 'zh' ? productGroup.groupNameZh : (productGroup.groupNameEn || productGroup.groupNameZh)}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            ￥{Number(defaultSKU.price).toFixed(2)}
-                          </p>
                         </div>
                       </Link>
                     </div>
