@@ -175,12 +175,12 @@ export class ErpProductSyncService {
       }
 
       // 1. 查询 ERP 产品数据 - 必须有 MARK_NO 且在基准时间之后
-      // 使用 CAST 转换 varchar 到 nvarchar 解决中文编码问题
+      // 使用 CAST 转换 varchar 到 nvarchar 并指定中文排序规则解决编码问题
       const sinceDateStr = sinceDate.toISOString().split('T')[0];
       const productQuery = `
         SELECT PRD_NO,
-               CAST(NAME AS NVARCHAR(200)) AS NAME,
-               CAST(SPC AS NVARCHAR(MAX)) AS SPC,
+               CAST(NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS NAME,
+               CAST(SPC COLLATE Chinese_PRC_CI_AS AS NVARCHAR(MAX)) AS SPC,
                MARK_NO,
                RECORD_DD
         FROM PRDT
@@ -207,8 +207,8 @@ export class ErpProductSyncService {
       const markNos = [...new Set(products.map(p => p.MARK_NO).filter(Boolean))];
       const marksResult = await pool.request().query<ErpMark>(`
         SELECT MARK_NO,
-               CAST(MARK_NAME AS NVARCHAR(100)) AS MARK_NAME,
-               CAST(REM AS NVARCHAR(200)) AS REM
+               CAST(MARK_NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS MARK_NAME,
+               CAST(REM COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS REM
         FROM MARKS
         WHERE MARK_NO IN ('${markNos.join("','")}')
       `);
@@ -217,8 +217,8 @@ export class ErpProductSyncService {
       // 3. 获取所有相关的特征值（附加属性）
       const prdMarksResult = await pool.request().query<ErpPrdMark>(`
         SELECT MARK_NO,
-               CAST(PRD_MARK AS NVARCHAR(255)) AS PRD_MARK,
-               CAST(MARK_NAME AS NVARCHAR(100)) AS MARK_NAME
+               CAST(PRD_MARK COLLATE Chinese_PRC_CI_AS AS NVARCHAR(255)) AS PRD_MARK,
+               CAST(MARK_NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS MARK_NAME
         FROM PRD_MARKS
         WHERE MARK_NO IN ('${markNos.join("','")}')
       `);
