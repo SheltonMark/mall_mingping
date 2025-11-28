@@ -636,42 +636,54 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* 批量操作区域 */}
-      {selectedOrderIds.size > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-blue-800">
-                已选择 <span className="font-semibold">{selectedOrderIds.size}</span> 个订单
-              </span>
+      {/* 批量操作区域 - 始终显示 */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-blue-800">
+              已选择 <span className="font-semibold">{selectedOrderIds.size}</span> 个订单
+            </span>
+            {selectedOrderIds.size > 0 && (
               <button
                 onClick={clearSelection}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
                 取消选择
               </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleBatchApprove}
-                disabled={reviewLoading}
-                className="flex items-center gap-1 px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <CheckCircle size={16} />
-                批量审核通过
-              </button>
-              <button
-                onClick={handleBatchSyncToErp}
-                disabled={reviewLoading}
-                className="flex items-center gap-1 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Upload size={16} />
-                批量同步ERP
-              </button>
-            </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                if (selectedOrderIds.size === 0) {
+                  toast.warning('请先选择至少一个订单');
+                  return;
+                }
+                handleBatchApprove();
+              }}
+              disabled={reviewLoading}
+              className="flex items-center gap-1 px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <CheckCircle size={16} />
+              批量审核通过
+            </button>
+            <button
+              onClick={() => {
+                if (selectedOrderIds.size === 0) {
+                  toast.warning('请先选择至少一个订单');
+                  return;
+                }
+                handleBatchSyncToErp();
+              }}
+              disabled={reviewLoading}
+              className="flex items-center gap-1 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Upload size={16} />
+              批量同步ERP
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
