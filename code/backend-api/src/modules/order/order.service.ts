@@ -766,14 +766,14 @@ export class OrderService {
       throw new NotFoundException('订单不存在');
     }
 
-    if (order.status !== 'pending') {
+    if (order.status !== 'PENDING') {
       throw new BadRequestException('只能审核待审核状态的订单');
     }
 
     return this.prisma.order.update({
       where: { id },
       data: {
-        status: 'approved',
+        status: 'APPROVED',
         rejectReason: null,
       },
     });
@@ -791,7 +791,7 @@ export class OrderService {
       throw new NotFoundException('订单不存在');
     }
 
-    if (order.status !== 'pending') {
+    if (order.status !== 'PENDING') {
       throw new BadRequestException('只能驳回待审核状态的订单');
     }
 
@@ -802,7 +802,7 @@ export class OrderService {
     return this.prisma.order.update({
       where: { id },
       data: {
-        status: 'rejected',
+        status: 'REJECTED',
         rejectReason: rejectReason.trim(),
       },
     });
@@ -820,7 +820,7 @@ export class OrderService {
       throw new NotFoundException('订单不存在');
     }
 
-    if (order.status !== 'approved' && order.status !== 'sync_failed') {
+    if (order.status !== 'APPROVED' && order.status !== 'SYNC_FAILED') {
       throw new BadRequestException('只能同步已审核或同步失败的订单');
     }
 
@@ -831,7 +831,7 @@ export class OrderService {
         await this.prisma.order.update({
           where: { id },
           data: {
-            status: 'synced',
+            status: 'SYNCED',
             erpOrderNo: result.erpOrderNo,
             erpSyncAt: new Date(),
             erpSyncError: null,
@@ -847,7 +847,7 @@ export class OrderService {
         await this.prisma.order.update({
           where: { id },
           data: {
-            status: 'sync_failed',
+            status: 'SYNC_FAILED',
             erpSyncError: result.error,
           },
         });
@@ -864,7 +864,7 @@ export class OrderService {
       await this.prisma.order.update({
         where: { id },
         data: {
-          status: 'sync_failed',
+          status: 'SYNC_FAILED',
           erpSyncError: errorMessage,
         },
       });
@@ -917,14 +917,14 @@ export class OrderService {
       throw new NotFoundException('订单不存在');
     }
 
-    if (order.status !== 'rejected') {
+    if (order.status !== 'REJECTED') {
       throw new BadRequestException('只有被驳回的订单才能重新提交审核');
     }
 
     return this.prisma.order.update({
       where: { id },
       data: {
-        status: 'pending',
+        status: 'PENDING',
         rejectReason: null, // 清除驳回原因
       },
     });

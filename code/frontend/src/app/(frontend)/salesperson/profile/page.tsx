@@ -8,7 +8,7 @@ import { useToast } from '@/components/common/ToastContainer'
 import { User, Package, Users, Eye, Edit2, Save, X, Clock, CheckCircle, XCircle, AlertCircle, Check, RefreshCw } from 'lucide-react'
 
 // 订单状态类型
-type OrderStatus = 'pending' | 'approved' | 'rejected' | 'synced' | 'sync_failed'
+type OrderStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SYNCED' | 'SYNC_FAILED'
 
 interface Customer {
   id: string
@@ -90,11 +90,11 @@ interface Order {
 
 // 订单状态配置
 const orderStatusConfig: Record<OrderStatus, { label: string; color: string; bgColor: string; icon: any }> = {
-  pending: { label: '待审核', color: 'text-yellow-700', bgColor: 'bg-yellow-100', icon: Clock },
-  approved: { label: '已审核', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: Check },
-  rejected: { label: '已驳回', color: 'text-red-700', bgColor: 'bg-red-100', icon: XCircle },
-  synced: { label: '已同步ERP', color: 'text-green-700', bgColor: 'bg-green-100', icon: CheckCircle },
-  sync_failed: { label: '同步失败', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: AlertCircle },
+  PENDING: { label: '待审核', color: 'text-yellow-700', bgColor: 'bg-yellow-100', icon: Clock },
+  APPROVED: { label: '已审核', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: Check },
+  REJECTED: { label: '已驳回', color: 'text-red-700', bgColor: 'bg-red-100', icon: XCircle },
+  SYNCED: { label: '已同步ERP', color: 'text-green-700', bgColor: 'bg-green-100', icon: CheckCircle },
+  SYNC_FAILED: { label: '同步失败', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: AlertCircle },
 }
 
 export default function SalespersonProfilePage() {
@@ -434,14 +434,14 @@ export default function SalespersonProfilePage() {
             ) : (
               <div className="space-y-6">
                 {orders.map((order) => {
-                  const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.pending
+                  const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.PENDING
                   const StatusIcon = statusConfig.icon
                   return (
                   <div
                     key={order.id}
                     className={`border-2 rounded-xl overflow-hidden ${
-                      order.status === 'rejected' ? 'border-red-300' :
-                      order.status === 'synced' ? 'border-green-300' :
+                      order.status === 'REJECTED' ? 'border-red-300' :
+                      order.status === 'SYNCED' ? 'border-green-300' :
                       'border-gray-200'
                     }`}
                   >
@@ -479,7 +479,7 @@ export default function SalespersonProfilePage() {
                       </div>
 
                       {/* 驳回原因提示 */}
-                      {order.status === 'rejected' && order.rejectReason && (
+                      {order.status === 'REJECTED' && order.rejectReason && (
                         <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-2 flex-1">
@@ -502,7 +502,7 @@ export default function SalespersonProfilePage() {
                       )}
 
                       {/* ERP订单号显示 */}
-                      {order.status === 'synced' && order.erpOrderNo && (
+                      {order.status === 'SYNCED' && order.erpOrderNo && (
                         <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                           <div className="flex items-center gap-2">
                             <CheckCircle size={18} className="text-green-500" />

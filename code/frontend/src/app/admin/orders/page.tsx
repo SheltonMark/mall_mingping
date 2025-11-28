@@ -15,7 +15,7 @@ import CustomSelect from '@/components/common/CustomSelect';
 import SearchableSelect from '@/components/common/SearchableSelect';
 
 // 订单状态类型
-type OrderStatus = 'pending' | 'approved' | 'rejected' | 'synced' | 'sync_failed';
+type OrderStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SYNCED' | 'SYNC_FAILED';
 
 interface Order {
   id: string;
@@ -103,21 +103,21 @@ const formatAmount = (amount: any) => {
 
 // 订单状态配置
 const orderStatusConfig: Record<OrderStatus, { label: string; color: string; bgColor: string; icon: any }> = {
-  pending: { label: '待审核', color: 'text-yellow-700', bgColor: 'bg-yellow-100', icon: Clock },
-  approved: { label: '已审核', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: Check },
-  rejected: { label: '已驳回', color: 'text-red-700', bgColor: 'bg-red-100', icon: XCircle },
-  synced: { label: '已同步ERP', color: 'text-green-700', bgColor: 'bg-green-100', icon: CheckCircle },
-  sync_failed: { label: '同步失败', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: AlertCircle },
+  PENDING: { label: '待审核', color: 'text-yellow-700', bgColor: 'bg-yellow-100', icon: Clock },
+  APPROVED: { label: '已审核', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: Check },
+  REJECTED: { label: '已驳回', color: 'text-red-700', bgColor: 'bg-red-100', icon: XCircle },
+  SYNCED: { label: '已同步ERP', color: 'text-green-700', bgColor: 'bg-green-100', icon: CheckCircle },
+  SYNC_FAILED: { label: '同步失败', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: AlertCircle },
 };
 
 // 状态筛选选项
 const statusFilterOptions = [
   { value: '', label: '全部状态' },
-  { value: 'pending', label: '待审核' },
-  { value: 'approved', label: '已审核' },
-  { value: 'rejected', label: '已驳回' },
-  { value: 'synced', label: '已同步ERP' },
-  { value: 'sync_failed', label: '同步失败' },
+  { value: 'PENDING', label: '待审核' },
+  { value: 'APPROVED', label: '已审核' },
+  { value: 'REJECTED', label: '已驳回' },
+  { value: 'SYNCED', label: '已同步ERP' },
+  { value: 'SYNC_FAILED', label: '同步失败' },
 ];
 
 // 提取双语文本的中文部分
@@ -478,7 +478,7 @@ export default function AdminOrdersPage() {
     const ids = Array.from(selectedOrderIds);
     const pendingIds = ids.filter(id => {
       const order = orders.find(o => o.id === id);
-      return order?.status === 'pending';
+      return order?.status === 'PENDING';
     });
 
     if (pendingIds.length === 0) {
@@ -505,7 +505,7 @@ export default function AdminOrdersPage() {
     const ids = Array.from(selectedOrderIds);
     const syncableIds = ids.filter(id => {
       const order = orders.find(o => o.id === id);
-      return order?.status === 'approved' || order?.status === 'sync_failed';
+      return order?.status === 'APPROVED' || order?.status === 'SYNC_FAILED';
     });
 
     if (syncableIds.length === 0) {
@@ -746,7 +746,7 @@ export default function AdminOrdersPage() {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {filteredOrders.map((order) => {
-                  const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.pending;
+                  const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.PENDING;
                   const StatusIcon = statusConfig.icon;
                   return (
                   <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrderIds.has(order.id) ? 'bg-blue-50' : ''}`}>
@@ -775,12 +775,12 @@ export default function AdminOrdersPage() {
                           <StatusIcon size={12} />
                           {statusConfig.label}
                         </span>
-                        {order.status === 'rejected' && order.rejectReason && (
+                        {order.status === 'REJECTED' && order.rejectReason && (
                           <span className="text-xs text-red-600 truncate max-w-[120px]" title={order.rejectReason}>
                             {order.rejectReason}
                           </span>
                         )}
-                        {order.status === 'sync_failed' && order.erpSyncError && (
+                        {order.status === 'SYNC_FAILED' && order.erpSyncError && (
                           <span className="text-xs text-orange-600 truncate max-w-[120px]" title={order.erpSyncError}>
                             {order.erpSyncError}
                           </span>
@@ -839,7 +839,7 @@ export default function AdminOrdersPage() {
                           <Download size={14} />
                         </button>
                         {/* 审核按钮 - 仅待审核状态显示 */}
-                        {order.status === 'pending' && (
+                        {order.status === 'PENDING' && (
                           <button
                             onClick={() => openReviewModal(order)}
                             className="flex items-center gap-1 px-2 py-1 text-sm text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
@@ -850,15 +850,15 @@ export default function AdminOrdersPage() {
                           </button>
                         )}
                         {/* 同步ERP按钮 - 已审核或同步失败状态显示 */}
-                        {(order.status === 'approved' || order.status === 'sync_failed') && (
+                        {(order.status === 'APPROVED' || order.status === 'SYNC_FAILED') && (
                           <button
                             onClick={() => handleSyncToErp(order.id)}
                             disabled={reviewLoading}
                             className="flex items-center gap-1 px-2 py-1 text-sm text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
-                            title={order.status === 'sync_failed' ? '重新同步ERP' : '同步到ERP'}
+                            title={order.status === 'SYNC_FAILED' ? '重新同步ERP' : '同步到ERP'}
                           >
-                            {order.status === 'sync_failed' ? <RefreshCw size={14} /> : <Upload size={14} />}
-                            {order.status === 'sync_failed' ? '重试' : '同步'}
+                            {order.status === 'SYNC_FAILED' ? <RefreshCw size={14} /> : <Upload size={14} />}
+                            {order.status === 'SYNC_FAILED' ? '重试' : '同步'}
                           </button>
                         )}
                       </div>
