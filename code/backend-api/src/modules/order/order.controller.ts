@@ -24,6 +24,8 @@ import { InternalAuthGuard } from '../../common/guards/internal-auth.guard';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  // ============ 静态路由（必须放在动态路由前面） ============
+
   // 公开接口：创建订单（前台订单页面使用）
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
@@ -57,28 +59,7 @@ export class OrderController {
     });
   }
 
-  // 管理接口：需要认证
-  @Get(':id')
-  @UseGuards(InternalAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(id);
-  }
-
-  // 管理接口：需要认证
-  @Patch(':id')
-  @UseGuards(InternalAuthGuard)
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(id, updateOrderDto);
-  }
-
-  // 管理接口：需要认证
-  @Delete(':id')
-  @UseGuards(InternalAuthGuard)
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(id);
-  }
-
-  // Order Param Config endpoints - 管理接口：需要认证
+  // Order Param Config endpoints - 静态路由
   @Post('param-configs')
   @UseGuards(InternalAuthGuard)
   createParamConfig(@Body() dto: CreateOrderParamConfigDto) {
@@ -112,20 +93,56 @@ export class OrderController {
     return this.orderService.removeParamConfig(id);
   }
 
-  // Export endpoints - 管理接口：需要认证
-  @Get(':id/export')
-  @UseGuards(InternalAuthGuard)
-  async exportOrder(@Param('id') id: string, @Res() res: Response) {
-    return this.orderService.exportOrderToExcel(id, res);
-  }
-
+  // 批量导出
   @Post('export-batch')
   @UseGuards(InternalAuthGuard)
   async exportBatch(@Body('orderIds') orderIds: string[], @Res() res: Response) {
     return this.orderService.exportOrdersToExcel(orderIds, res);
   }
 
-  // ============ 订单审核相关接口 ============
+  // 批量审核通过
+  @Post('batch/approve')
+  @UseGuards(InternalAuthGuard)
+  batchApprove(@Body('ids') ids: string[]) {
+    return this.orderService.batchApprove(ids);
+  }
+
+  // 批量同步到 ERP
+  @Post('batch/sync-erp')
+  @UseGuards(InternalAuthGuard)
+  batchSyncToErp(@Body('ids') ids: string[]) {
+    return this.orderService.batchSyncToErp(ids);
+  }
+
+  // ============ 动态路由（:id 参数） ============
+
+  // 管理接口：需要认证
+  @Get(':id')
+  @UseGuards(InternalAuthGuard)
+  findOne(@Param('id') id: string) {
+    return this.orderService.findOne(id);
+  }
+
+  // 管理接口：需要认证
+  @Patch(':id')
+  @UseGuards(InternalAuthGuard)
+  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+    return this.orderService.update(id, updateOrderDto);
+  }
+
+  // 管理接口：需要认证
+  @Delete(':id')
+  @UseGuards(InternalAuthGuard)
+  remove(@Param('id') id: string) {
+    return this.orderService.remove(id);
+  }
+
+  // 导出单个订单
+  @Get(':id/export')
+  @UseGuards(InternalAuthGuard)
+  async exportOrder(@Param('id') id: string, @Res() res: Response) {
+    return this.orderService.exportOrderToExcel(id, res);
+  }
 
   // 审核通过订单
   @Post(':id/approve')
@@ -146,20 +163,6 @@ export class OrderController {
   @UseGuards(InternalAuthGuard)
   syncToErp(@Param('id') id: string) {
     return this.orderService.syncToErp(id);
-  }
-
-  // 批量审核通过
-  @Post('batch/approve')
-  @UseGuards(InternalAuthGuard)
-  batchApprove(@Body('ids') ids: string[]) {
-    return this.orderService.batchApprove(ids);
-  }
-
-  // 批量同步到 ERP
-  @Post('batch/sync-erp')
-  @UseGuards(InternalAuthGuard)
-  batchSyncToErp(@Body('ids') ids: string[]) {
-    return this.orderService.batchSyncToErp(ids);
   }
 
   // 重新提交审核（被驳回的订单）
