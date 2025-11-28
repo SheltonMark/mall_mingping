@@ -134,7 +134,7 @@ export class OrderService {
         companyName,
         ...orderData,
         totalAmount,
-        erpSyncStatus: 'pending', // 初始化 ERP 同步状态
+        status: 'PENDING', // 订单创建时默认为待审核状态
         items: {
           create: orderItems,
         },
@@ -170,8 +170,8 @@ export class OrderService {
       },
     });
 
-    // 异步同步到 ERP（不阻塞订单创建）
-    this.syncOrderToErpAsync(order.id);
+    // 订单创建后状态为 PENDING（待审核），需要管理员审核通过后才能同步到 ERP
+    // 不再自动同步到 ERP
 
     return order;
   }

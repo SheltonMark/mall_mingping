@@ -383,7 +383,7 @@ export class ErpOrderSyncService {
         where: { id: orderId },
         data: {
           erpOrderNo,
-          erpSyncStatus: 'synced',
+          status: 'SYNCED',
           erpSyncAt: new Date(),
           erpSyncError: null,
         },
@@ -416,7 +416,7 @@ export class ErpOrderSyncService {
       await this.prisma.order.update({
         where: { id: orderId },
         data: {
-          erpSyncStatus: 'failed',
+          status: 'SYNC_FAILED',
           erpSyncError: errorMessage,
         },
       });
@@ -448,7 +448,7 @@ export class ErpOrderSyncService {
    */
   async getFailedSyncOrders() {
     return this.prisma.order.findMany({
-      where: { erpSyncStatus: 'failed' },
+      where: { status: 'SYNC_FAILED' },
       include: {
         customer: {
           select: { id: true, name: true },
@@ -462,13 +462,11 @@ export class ErpOrderSyncService {
   }
 
   /**
-   * 获取待同步的订单列表
+   * 获取待同步的订单列表（已审核但未同步的订单）
    */
   async getPendingSyncOrders() {
     return this.prisma.order.findMany({
-      where: {
-        OR: [{ erpSyncStatus: null }, { erpSyncStatus: 'pending' }],
-      },
+      where: { status: 'APPROVED' },
       include: {
         customer: {
           select: { id: true, name: true },
