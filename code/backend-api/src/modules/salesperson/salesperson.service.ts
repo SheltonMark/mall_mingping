@@ -123,7 +123,7 @@ export class SalespersonService {
     const salesStats = await this.prisma.order.aggregate({
       where: {
         salespersonId: id,
-        status: { not: 'cancelled' },
+        status: { notIn: ['REJECTED'] },
       },
       _sum: {
         totalAmount: true,
@@ -139,7 +139,7 @@ export class SalespersonService {
       orders: salesperson.orders,
       _count: salesperson._count,
       stats: {
-        totalSales: salesStats._sum.totalAmount || 0,
+        totalSales: salesStats._sum?.totalAmount || 0,
       },
     };
   }

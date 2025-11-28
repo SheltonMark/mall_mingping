@@ -351,7 +351,7 @@ export class OrderService {
       throw new NotFoundException('Order not found');
     }
 
-    const { items, customParams, ...orderData } = updateOrderDto;
+    const { items, customParams, customerId, salespersonId, ...orderData } = updateOrderDto;
 
     // If items are updated, recalculate total
     let totalAmount: Decimal | undefined;
@@ -877,7 +877,7 @@ export class OrderService {
    * 批量审核通过
    */
   async batchApprove(ids: string[]) {
-    const results = [];
+    const results: { id: string; success: boolean; error?: string }[] = [];
     for (const id of ids) {
       try {
         await this.approveOrder(id);
@@ -893,7 +893,7 @@ export class OrderService {
    * 批量同步到 ERP
    */
   async batchSyncToErp(ids: string[]) {
-    const results = [];
+    const results: { id: string; success: boolean; erpOrderNo?: string; error?: string; message?: string }[] = [];
     for (const id of ids) {
       try {
         const result = await this.syncToErp(id);
