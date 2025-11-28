@@ -157,6 +157,12 @@ export const orderApi = {
       body: JSON.stringify(data),
     }),
 
+  // 重新提交审核（被驳回的订单）
+  resubmit: (id: string) =>
+    request<any>(`/orders/${id}/resubmit`, {
+      method: 'POST',
+    }),
+
   // 导出订单
   exportOne: (id: string) => {
     const token = getToken();

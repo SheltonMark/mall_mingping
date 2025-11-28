@@ -124,4 +124,48 @@ export class OrderController {
   async exportBatch(@Body('orderIds') orderIds: string[], @Res() res: Response) {
     return this.orderService.exportOrdersToExcel(orderIds, res);
   }
+
+  // ============ 订单审核相关接口 ============
+
+  // 审核通过订单
+  @Post(':id/approve')
+  @UseGuards(InternalAuthGuard)
+  approveOrder(@Param('id') id: string) {
+    return this.orderService.approveOrder(id);
+  }
+
+  // 驳回订单
+  @Post(':id/reject')
+  @UseGuards(InternalAuthGuard)
+  rejectOrder(@Param('id') id: string, @Body('rejectReason') rejectReason: string) {
+    return this.orderService.rejectOrder(id, rejectReason);
+  }
+
+  // 同步订单到 ERP
+  @Post(':id/sync-erp')
+  @UseGuards(InternalAuthGuard)
+  syncToErp(@Param('id') id: string) {
+    return this.orderService.syncToErp(id);
+  }
+
+  // 批量审核通过
+  @Post('batch/approve')
+  @UseGuards(InternalAuthGuard)
+  batchApprove(@Body('ids') ids: string[]) {
+    return this.orderService.batchApprove(ids);
+  }
+
+  // 批量同步到 ERP
+  @Post('batch/sync-erp')
+  @UseGuards(InternalAuthGuard)
+  batchSyncToErp(@Body('ids') ids: string[]) {
+    return this.orderService.batchSyncToErp(ids);
+  }
+
+  // 重新提交审核（被驳回的订单）
+  @Post(':id/resubmit')
+  @UseGuards(InternalAuthGuard)
+  resubmitOrder(@Param('id') id: string) {
+    return this.orderService.resubmitOrder(id);
+  }
 }

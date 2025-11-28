@@ -85,13 +85,13 @@ model Order {
   customerType    CustomerType @map("customer_type")
   orderType       OrderType @map("order_type")
   orderDate       DateTime @map("order_date")
-  status          String   @default("pending")
+  status          OrderStatus @default(PENDING) // 订单状态
   companyName     String?  @map("company_name") // 公司名称 (如: 东阳市铭品日用品有限公司)
   totalAmount     Decimal? @map("total_amount")
+  rejectReason    String?  @map("reject_reason") // 驳回原因
 
   // ERP 同步相关字段
   erpOrderNo      String?  @map("erp_order_no") // ERP订单号（如 SO202511044）
-  erpSyncStatus   String?  @map("erp_sync_status") // synced | failed | pending
   erpSyncAt       DateTime? @map("erp_sync_at")
   erpSyncError    String?  @map("erp_sync_error")
 
@@ -104,6 +104,15 @@ model Order {
   items           OrderItem[]
 
   @@map("orders")
+}
+
+// 订单状态枚举
+enum OrderStatus {
+  PENDING      @map("pending")      // 待审核
+  APPROVED     @map("approved")     // 已审核（待同步）
+  REJECTED     @map("rejected")     // 已驳回
+  SYNCED       @map("synced")       // 已同步ERP
+  SYNC_FAILED  @map("sync_failed")  // 同步失败
 }
 
 enum OrderType {

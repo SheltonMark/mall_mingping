@@ -190,6 +190,40 @@ export const orderApi = {
       method: 'POST',
       body: JSON.stringify({ orderIds }),
     }),
+
+  // ============ 订单审核相关 ============
+  // 审核通过订单
+  approve: (id: string) =>
+    request<any>(`/orders/${id}/approve`, {
+      method: 'POST',
+    }),
+
+  // 驳回订单
+  reject: (id: string, rejectReason: string) =>
+    request<any>(`/orders/${id}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ rejectReason }),
+    }),
+
+  // 同步订单到ERP
+  syncToErp: (id: string) =>
+    request<any>(`/orders/${id}/sync-erp`, {
+      method: 'POST',
+    }),
+
+  // 批量审核通过
+  batchApprove: (ids: string[]) =>
+    request<any>('/orders/batch/approve', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    }),
+
+  // 批量同步到ERP
+  batchSyncToErp: (ids: string[]) =>
+    request<any>('/orders/batch/sync-erp', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    }),
 };
 
 // ============ 询价单管理（客户提交的订单表单）============

@@ -751,4 +751,182 @@ export class OrderService {
       '订单列表',
     );
   }
+
+  // ============ 订单审核相关方法 ============
+
+  /**
+   * 审核通过订单
+   */
+  async approveOrder(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      throw new NotFoundException('订单不存在');
+    }
+
+    if (order.status !== 'pending') {
+      throw new BadRequestException('只能审核待审核状态的订单');
+    }
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        status: 'approved',
+        rejectReason: null,
+      },
+    });
+  }
+
+  /**
+   * 驳回订单
+   */
+  async rejectOrder(id: string, rejectReason: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      throw new NotFoundException('订单不存在');
+    }
+
+    if (order.status !== 'pending') {
+      throw new BadRequestException('只能驳回待审核状态的订单');
+    }
+
+    if (!rejectReason || rejectReason.trim() === '') {
+      throw new BadRequestException('驳回原因不能为空');
+    }
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        status: 'rejected',
+        rejectReason: rejectReason.trim(),
+      },
+    });
+  }
+
+  /**
+   * 同步订单到 ERP（只能同步已审核的订单）
+   */
+  async syncToErp(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      throw new NotFoundException('订单不存在');
+    }
+
+    if (order.status !== 'approved' && order.status !== 'sync_failed') {
+      throw new BadRequestException('只能同步已审核或同步失败的订单');
+    }
+
+    try {
+      const result = await this.erpOrderSyncService.syncOrderToErp(id);
+
+      if (result.success) {
+        await this.prisma.order.update({
+          where: { id },
+          data: {
+            status: 'synced',
+            erpOrderNo: result.erpOrderNo,
+            erpSyncAt: new Date(),
+            erpSyncError: null,
+          },
+        });
+
+        return {
+          success: true,
+          erpOrderNo: result.erpOrderNo,
+          message: '同步成功',
+        };
+      } else {
+        await this.prisma.order.update({
+          where: { id },
+          data: {
+            status: 'sync_failed',
+            erpSyncError: result.error,
+          },
+        });
+
+        return {
+          success: false,
+          error: result.error,
+          message: '同步失败',
+        };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      await this.prisma.order.update({
+        where: { id },
+        data: {
+          status: 'sync_failed',
+          erpSyncError: errorMessage,
+        },
+      });
+
+      throw new BadRequestException(`同步失败: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * 批量审核通过
+   */
+  async batchApprove(ids: string[]) {
+    const results = [];
+    for (const id of ids) {
+      try {
+        await this.approveOrder(id);
+        results.push({ id, success: true });
+      } catch (error) {
+        results.push({ id, success: false, error: error instanceof Error ? error.message : String(error) });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * 批量同步到 ERP
+   */
+  async batchSyncToErp(ids: string[]) {
+    const results = [];
+    for (const id of ids) {
+      try {
+        const result = await this.syncToErp(id);
+        results.push({ id, ...result });
+      } catch (error) {
+        results.push({ id, success: false, error: error instanceof Error ? error.message : String(error) });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * 重新提交审核（被驳回的订单）
+   */
+  async resubmitOrder(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      throw new NotFoundException('订单不存在');
+    }
+
+    if (order.status !== 'rejected') {
+      throw new BadRequestException('只有被驳回的订单才能重新提交审核');
+    }
+
+    return this.prisma.order.update({
+      where: { id },
+      data: {
+        status: 'pending',
+        rejectReason: null, // 清除驳回原因
+      },
+    });
+  }
 }

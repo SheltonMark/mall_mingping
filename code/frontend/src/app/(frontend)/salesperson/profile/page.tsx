@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { orderApi, customerApi } from '@/lib/salespersonApi'
 import { useToast } from '@/components/common/ToastContainer'
-import { User, Package, Users, Eye, Edit2, Save, X } from 'lucide-react'
+import { User, Package, Users, Eye, Edit2, Save, X, Clock, CheckCircle, XCircle, AlertCircle, Check, RefreshCw } from 'lucide-react'
+
+// 订单状态类型
+type OrderStatus = 'pending' | 'approved' | 'rejected' | 'synced' | 'sync_failed'
 
 interface Customer {
   id: string
@@ -75,11 +78,23 @@ interface Order {
   orderNumber: string
   orderDate: string
   orderType: 'FORMAL' | 'INTENTION'
+  status: OrderStatus
+  rejectReason?: string
+  erpOrderNo?: string
   totalAmount: number
   customer: {
     name: string
   }
   items: OrderItem[]
+}
+
+// 订单状态配置
+const orderStatusConfig: Record<OrderStatus, { label: string; color: string; bgColor: string; icon: any }> = {
+  pending: { label: '待审核', color: 'text-yellow-700', bgColor: 'bg-yellow-100', icon: Clock },
+  approved: { label: '已审核', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: Check },
+  rejected: { label: '已驳回', color: 'text-red-700', bgColor: 'bg-red-100', icon: XCircle },
+  synced: { label: '已同步ERP', color: 'text-green-700', bgColor: 'bg-green-100', icon: CheckCircle },
+  sync_failed: { label: '同步失败', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: AlertCircle },
 }
 
 export default function SalespersonProfilePage() {
@@ -94,6 +109,7 @@ export default function SalespersonProfilePage() {
   const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null)
   const [editingCustomerData, setEditingCustomerData] = useState<EditingCustomer | null>(null)
   const [savingCustomer, setSavingCustomer] = useState(false)
+  const [resubmittingOrderId, setResubmittingOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -126,6 +142,20 @@ export default function SalespersonProfilePage() {
       setCustomers(Array.isArray(response) ? response : response.data || [])
     } catch (error: any) {
       toast.error(error.message || '加载客户失败')
+    }
+  }
+
+  // 重新提交审核（被驳回的订单）
+  const handleResubmit = async (orderId: string) => {
+    try {
+      setResubmittingOrderId(orderId)
+      await orderApi.resubmit(orderId)
+      toast.success('订单已重新提交审核')
+      await loadOrders()
+    } catch (error: any) {
+      toast.error(error.message || '重新提交审核失败')
+    } finally {
+      setResubmittingOrderId(null)
     }
   }
 
@@ -403,36 +433,85 @@ export default function SalespersonProfilePage() {
               </div>
             ) : (
               <div className="space-y-6">
-                {orders.map((order) => (
+                {orders.map((order) => {
+                  const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.pending
+                  const StatusIcon = statusConfig.icon
+                  return (
                   <div
                     key={order.id}
-                    className="border-2 border-gray-200 rounded-xl overflow-hidden"
+                    className={`border-2 rounded-xl overflow-hidden ${
+                      order.status === 'rejected' ? 'border-red-300' :
+                      order.status === 'synced' ? 'border-green-300' :
+                      'border-gray-200'
+                    }`}
                   >
                     {/* 订单头部 */}
-                    <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-b border-gray-200">
-                      <div className="flex items-center gap-4">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          订单号: {order.orderNumber}
-                        </h3>
-                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                          order.orderType === 'FORMAL'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-purple-100 text-purple-800'
-                        }`}>
-                          {order.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
-                        </span>
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-4">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            订单号: {order.orderNumber}
+                          </h3>
+                          <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                            order.orderType === 'FORMAL'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {order.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
+                          </span>
+                          {/* 订单状态标签 */}
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
+                            <StatusIcon size={12} />
+                            {statusConfig.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-6">
+                          <div className="text-sm text-gray-600">{formatDate(order.orderDate)}</div>
+                          <div className="text-xl font-bold text-primary">¥{formatAmount(order.totalAmount)}</div>
+                          <button
+                            onClick={() => viewOrderDetail(order.id)}
+                            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
+                          >
+                            <Eye size={16} />
+                            查看详情
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-sm text-gray-600">{formatDate(order.orderDate)}</div>
-                        <div className="text-xl font-bold text-primary">¥{formatAmount(order.totalAmount)}</div>
-                        <button
-                          onClick={() => viewOrderDetail(order.id)}
-                          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
-                        >
-                          <Eye size={16} />
-                          查看详情
-                        </button>
-                      </div>
+
+                      {/* 驳回原因提示 */}
+                      {order.status === 'rejected' && order.rejectReason && (
+                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-2 flex-1">
+                              <XCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-sm font-medium text-red-800">订单已被驳回</p>
+                                <p className="text-sm text-red-600 mt-1">{order.rejectReason}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleResubmit(order.id)}
+                              disabled={resubmittingOrderId === order.id}
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                            >
+                              <RefreshCw size={14} className={resubmittingOrderId === order.id ? 'animate-spin' : ''} />
+                              {resubmittingOrderId === order.id ? '提交中...' : '重新提交审核'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ERP订单号显示 */}
+                      {order.status === 'synced' && order.erpOrderNo && (
+                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle size={18} className="text-green-500" />
+                            <p className="text-sm text-green-800">
+                              已同步到ERP系统，ERP订单号: <span className="font-mono font-semibold">{order.erpOrderNo}</span>
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* 订单商品列表 */}
@@ -784,7 +863,8 @@ export default function SalespersonProfilePage() {
                       ))}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

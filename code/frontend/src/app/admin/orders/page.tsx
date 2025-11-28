@@ -7,17 +7,26 @@ import { ButtonLoader } from '@/components/common/Loader';
 import {
   Package, Calendar, Hash, Eye, X, Filter,
   Download, ChevronDown, ChevronUp, Edit2, Save,
-  User, Building, UserCircle
+  User, Building, UserCircle, CheckCircle, XCircle,
+  Upload, AlertCircle, Clock, Check, RefreshCw
 } from 'lucide-react';
 import PageHeader from '@/components/admin/PageHeader';
 import CustomSelect from '@/components/common/CustomSelect';
 import SearchableSelect from '@/components/common/SearchableSelect';
+
+// 订单状态类型
+type OrderStatus = 'pending' | 'approved' | 'rejected' | 'synced' | 'sync_failed';
 
 interface Order {
   id: string;
   orderNumber: string;
   orderDate: string;
   orderType: 'FORMAL' | 'INTENTION';
+  status: OrderStatus;
+  rejectReason?: string;
+  erpOrderNo?: string;
+  erpSyncAt?: string;
+  erpSyncError?: string;
   totalAmount: number | string;
   salesperson: {
     id: string;
@@ -92,6 +101,25 @@ const formatAmount = (amount: any) => {
   return num.toFixed(2);
 };
 
+// 订单状态配置
+const orderStatusConfig: Record<OrderStatus, { label: string; color: string; bgColor: string; icon: any }> = {
+  pending: { label: '待审核', color: 'text-yellow-700', bgColor: 'bg-yellow-100', icon: Clock },
+  approved: { label: '已审核', color: 'text-blue-700', bgColor: 'bg-blue-100', icon: Check },
+  rejected: { label: '已驳回', color: 'text-red-700', bgColor: 'bg-red-100', icon: XCircle },
+  synced: { label: '已同步ERP', color: 'text-green-700', bgColor: 'bg-green-100', icon: CheckCircle },
+  sync_failed: { label: '同步失败', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: AlertCircle },
+};
+
+// 状态筛选选项
+const statusFilterOptions = [
+  { value: '', label: '全部状态' },
+  { value: 'pending', label: '待审核' },
+  { value: 'approved', label: '已审核' },
+  { value: 'rejected', label: '已驳回' },
+  { value: 'synced', label: '已同步ERP' },
+  { value: 'sync_failed', label: '同步失败' },
+];
+
 // 提取双语文本的中文部分
 const extractChineseText = (text: string | undefined | null): string => {
   if (!text) return '';
@@ -141,6 +169,15 @@ export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSalesperson, setFilterSalesperson] = useState('');
   const [filterCustomer, setFilterCustomer] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+
+  // 订单选择
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+
+  // 审核模态框
+  const [reviewModalOrder, setReviewModalOrder] = useState<Order | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   // 详情模态框
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -347,6 +384,149 @@ export default function AdminOrdersPage() {
     setEditingData({});
   };
 
+  // ============ 订单选择相关 ============
+  const toggleOrderSelection = (orderId: string) => {
+    setSelectedOrderIds(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllSelection = () => {
+    if (selectedOrderIds.size === filteredOrders.length) {
+      setSelectedOrderIds(new Set());
+    } else {
+      setSelectedOrderIds(new Set(filteredOrders.map(o => o.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedOrderIds(new Set());
+  };
+
+  // ============ 订单审核相关 ============
+  const openReviewModal = (order: Order) => {
+    setReviewModalOrder(order);
+    setRejectReason('');
+  };
+
+  const closeReviewModal = () => {
+    setReviewModalOrder(null);
+    setRejectReason('');
+    setReviewLoading(false);
+  };
+
+  // 审核通过单个订单
+  const handleApprove = async (orderId: string) => {
+    try {
+      setReviewLoading(true);
+      await orderApi.approve(orderId);
+      toast.success('订单已审核通过');
+      closeReviewModal();
+      await loadData();
+    } catch (error: any) {
+      toast.error(error.message || '审核失败');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  // 驳回单个订单
+  const handleReject = async (orderId: string) => {
+    if (!rejectReason.trim()) {
+      toast.error('请输入驳回原因');
+      return;
+    }
+    try {
+      setReviewLoading(true);
+      await orderApi.reject(orderId, rejectReason.trim());
+      toast.success('订单已驳回');
+      closeReviewModal();
+      await loadData();
+    } catch (error: any) {
+      toast.error(error.message || '驳回失败');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  // 同步单个订单到ERP
+  const handleSyncToErp = async (orderId: string) => {
+    try {
+      setReviewLoading(true);
+      const result = await orderApi.syncToErp(orderId);
+      if (result.success) {
+        toast.success(`订单已同步到ERP: ${result.erpOrderNo}`);
+      } else {
+        toast.error(result.error || '同步失败');
+      }
+      await loadData();
+    } catch (error: any) {
+      toast.error(error.message || '同步失败');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  // 批量审核通过
+  const handleBatchApprove = async () => {
+    const ids = Array.from(selectedOrderIds);
+    const pendingIds = ids.filter(id => {
+      const order = orders.find(o => o.id === id);
+      return order?.status === 'pending';
+    });
+
+    if (pendingIds.length === 0) {
+      toast.error('请选择待审核的订单');
+      return;
+    }
+
+    try {
+      setReviewLoading(true);
+      const results = await orderApi.batchApprove(pendingIds);
+      const successCount = results.filter((r: any) => r.success).length;
+      toast.success(`批量审核完成: ${successCount}/${pendingIds.length} 个订单审核通过`);
+      clearSelection();
+      await loadData();
+    } catch (error: any) {
+      toast.error(error.message || '批量审核失败');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  // 批量同步到ERP
+  const handleBatchSyncToErp = async () => {
+    const ids = Array.from(selectedOrderIds);
+    const syncableIds = ids.filter(id => {
+      const order = orders.find(o => o.id === id);
+      return order?.status === 'approved' || order?.status === 'sync_failed';
+    });
+
+    if (syncableIds.length === 0) {
+      toast.error('请选择已审核或同步失败的订单');
+      return;
+    }
+
+    try {
+      setReviewLoading(true);
+      const results = await orderApi.batchSyncToErp(syncableIds);
+      const successCount = results.filter((r: any) => r.success).length;
+      toast.success(`批量同步完成: ${successCount}/${syncableIds.length} 个订单同步成功`);
+      clearSelection();
+      await loadData();
+    } catch (error: any) {
+      toast.error(error.message || '批量同步失败');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   const filteredOrders = orders.filter((order) => {
     // 搜索过滤
     if (searchTerm) {
@@ -363,6 +543,11 @@ export default function AdminOrdersPage() {
 
     // 客户过滤
     if (filterCustomer && order.customer?.id !== filterCustomer) {
+      return false;
+    }
+
+    // 状态过滤
+    if (filterStatus && order.status !== filterStatus) {
       return false;
     }
 
@@ -383,7 +568,7 @@ export default function AdminOrdersPage() {
           <Filter size={18} />
           <span>筛选条件</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* 搜索框 */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">搜索订单号</label>
@@ -393,6 +578,20 @@ export default function AdminOrdersPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* 状态筛选 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">订单状态</label>
+            <CustomSelect
+              options={statusFilterOptions}
+              value={filterStatus}
+              onChange={(value) => {
+                setFilterStatus(value);
+                clearSelection(); // 切换筛选时清除选择
+              }}
+              placeholder="选择状态"
             />
           </div>
 
@@ -437,6 +636,43 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
+      {/* 批量操作区域 */}
+      {selectedOrderIds.size > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-blue-800">
+                已选择 <span className="font-semibold">{selectedOrderIds.size}</span> 个订单
+              </span>
+              <button
+                onClick={clearSelection}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                取消选择
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleBatchApprove}
+                disabled={reviewLoading}
+                className="flex items-center gap-1 px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <CheckCircle size={16} />
+                批量审核通过
+              </button>
+              <button
+                onClick={handleBatchSyncToErp}
+                disabled={reviewLoading}
+                className="flex items-center gap-1 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload size={16} />
+                批量同步ERP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -455,46 +691,91 @@ export default function AdminOrdersPage() {
         ) : filteredOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <Package size={48} className="mb-4 text-gray-300" />
-            <p>{searchTerm || filterSalesperson || filterCustomer ? '没有找到匹配的订单' : '暂无订单数据'}</p>
+            <p>{searchTerm || filterSalesperson || filterCustomer || filterStatus ? '没有找到匹配的订单' : '暂无订单数据'}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
+                      onChange={toggleAllSelection}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     订单号
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    状态
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     业务员
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     客户
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     订单日期
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     类型
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     总金额
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     操作
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                {filteredOrders.map((order) => {
+                  const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.pending;
+                  const StatusIcon = statusConfig.icon;
+                  return (
+                  <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrderIds.has(order.id) ? 'bg-blue-50' : ''}`}>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderIds.has(order.id)}
+                        onChange={() => toggleOrderSelection(order.id)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
                         <Hash className="w-4 h-4 text-gray-400" />
                         {order.orderNumber}
                       </div>
+                      {order.erpOrderNo && (
+                        <div className="text-xs text-green-600 mt-1">
+                          ERP: {order.erpOrderNo}
+                        </div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
+                          <StatusIcon size={12} />
+                          {statusConfig.label}
+                        </span>
+                        {order.status === 'rejected' && order.rejectReason && (
+                          <span className="text-xs text-red-600 truncate max-w-[120px]" title={order.rejectReason}>
+                            {order.rejectReason}
+                          </span>
+                        )}
+                        {order.status === 'sync_failed' && order.erpSyncError && (
+                          <span className="text-xs text-orange-600 truncate max-w-[120px]" title={order.erpSyncError}>
+                            {order.erpSyncError}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <UserCircle className="w-4 h-4 text-gray-400" />
                         <div>
@@ -503,19 +784,19 @@ export default function AdminOrdersPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <Building className="w-4 h-4 text-gray-400" />
-                        <div className="text-sm text-gray-900">{order.customer?.name || '-'}</div>
+                        <div className="text-sm text-gray-900 max-w-[150px] truncate">{order.customer?.name || '-'}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         {new Date(order.orderDate).toLocaleDateString('zh-CN')}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                         order.orderType === 'FORMAL'
                           ? 'bg-blue-100 text-blue-800'
@@ -524,32 +805,55 @@ export default function AdminOrdersPage() {
                         {order.orderType === 'FORMAL' ? '正式' : '意向'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-1 text-sm font-semibold text-gray-900">
-                        
                         ¥{formatAmount(order.totalAmount)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => viewOrderDetail(order.id)}
-                          className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="flex items-center gap-1 px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="查看详情"
                         >
-                          <Eye size={16} />
-                          查看
+                          <Eye size={14} />
                         </button>
                         <button
                           onClick={() => handleExport(order.id)}
-                          className="flex items-center gap-1 px-3 py-1 text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          className="flex items-center gap-1 px-2 py-1 text-sm text-green-600 hover:bg-green-50 rounded transition-colors"
+                          title="导出Excel"
                         >
-                          <Download size={16} />
-                          导出
+                          <Download size={14} />
                         </button>
+                        {/* 审核按钮 - 仅待审核状态显示 */}
+                        {order.status === 'pending' && (
+                          <button
+                            onClick={() => openReviewModal(order)}
+                            className="flex items-center gap-1 px-2 py-1 text-sm text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
+                            title="审核订单"
+                          >
+                            <CheckCircle size={14} />
+                            审核
+                          </button>
+                        )}
+                        {/* 同步ERP按钮 - 已审核或同步失败状态显示 */}
+                        {(order.status === 'approved' || order.status === 'sync_failed') && (
+                          <button
+                            onClick={() => handleSyncToErp(order.id)}
+                            disabled={reviewLoading}
+                            className="flex items-center gap-1 px-2 py-1 text-sm text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
+                            title={order.status === 'sync_failed' ? '重新同步ERP' : '同步到ERP'}
+                          >
+                            {order.status === 'sync_failed' ? <RefreshCw size={14} /> : <Upload size={14} />}
+                            {order.status === 'sync_failed' ? '重试' : '同步'}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -1069,6 +1373,91 @@ export default function AdminOrdersPage() {
                   className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                 >
                   关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 审核模态框 */}
+      {reviewModalOrder && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            {/* 模态框头部 */}
+            <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-yellow-500 to-yellow-600">
+              <div className="flex items-start justify-between">
+                <div className="text-white">
+                  <h3 className="text-xl font-bold mb-1">订单审核</h3>
+                  <div className="flex items-center gap-2 text-sm text-yellow-100">
+                    <Hash className="w-4 h-4" />
+                    {reviewModalOrder.orderNumber}
+                  </div>
+                </div>
+                <button
+                  onClick={closeReviewModal}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+
+            {/* 模态框内容 */}
+            <div className="p-5">
+              {/* 订单信息摘要 */}
+              <div className="mb-5 p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-500">客户：</span>
+                    <span className="font-medium">{reviewModalOrder.customer?.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">业务员：</span>
+                    <span className="font-medium">{reviewModalOrder.salesperson?.chineseName}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">订单日期：</span>
+                    <span className="font-medium">{new Date(reviewModalOrder.orderDate).toLocaleDateString('zh-CN')}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">订单金额：</span>
+                    <span className="font-medium text-blue-600">¥{formatAmount(reviewModalOrder.totalAmount)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 驳回原因输入 */}
+              <div className="mb-5">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  驳回原因（仅驳回时需要填写）
+                </label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="请输入驳回原因..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+              </div>
+
+              {/* 操作按钮 */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleReject(reviewModalOrder.id)}
+                  disabled={reviewLoading || !rejectReason.trim()}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <XCircle size={18} />
+                  驳回
+                </button>
+                <button
+                  onClick={() => handleApprove(reviewModalOrder.id)}
+                  disabled={reviewLoading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <CheckCircle size={18} />
+                  审核通过
                 </button>
               </div>
             </div>
