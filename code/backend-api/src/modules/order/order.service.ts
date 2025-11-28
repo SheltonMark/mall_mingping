@@ -351,7 +351,7 @@ export class OrderService {
       throw new NotFoundException('Order not found');
     }
 
-    const { items, customParams, customerId, salespersonId, ...orderData } = updateOrderDto;
+    const { items, customParams, customerId, salespersonId, status, ...orderData } = updateOrderDto;
 
     // If items are updated, recalculate total
     let totalAmount: Decimal | undefined;
