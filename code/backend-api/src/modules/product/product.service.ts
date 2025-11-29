@@ -235,8 +235,12 @@ export class ProductService {
     const category = await this.prisma.category.findUnique({
       where: { id },
       include: {
-        _count: {
-          select: { productGroups: true },
+        productGroups: {
+          include: {
+            _count: {
+              select: { skus: true },
+            },
+          },
         },
       },
     });
@@ -245,12 +249,25 @@ export class ProductService {
       throw new NotFoundException('分类不存在');
     }
 
-    if (category._count.productGroups > 0) {
+    // 检查是否有产品组包含 SKU
+    const groupsWithSkus = category.productGroups.filter(g => g._count.skus > 0);
+
+    if (groupsWithSkus.length > 0) {
+      const totalSkus = groupsWithSkus.reduce((sum, g) => sum + g._count.skus, 0);
       throw new BadRequestException(
-        `该分类下还有 ${category._count.productGroups} 个产品，请先删除或移动这些产品后再删除分类`,
+        `该分类下有 ${groupsWithSkus.length} 个产品组包含 ${totalSkus} 个SKU，请先删除这些SKU后再删除分类`,
       );
     }
 
+    // 如果有空的产品组（没有SKU），先删除这些产品组
+    if (category.productGroups.length > 0) {
+      console.log(`🗑️ [Delete Category] 删除 ${category.productGroups.length} 个空产品组`);
+      await this.prisma.productGroup.deleteMany({
+        where: { categoryId: id },
+      });
+    }
+
+    // 删除分类
     return this.prisma.category.delete({
       where: { id },
     });
