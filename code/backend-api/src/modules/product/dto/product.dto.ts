@@ -30,8 +30,8 @@ export class CreateCategoryDto {
   nameZh: string;
 
   @IsString()
-  @MinLength(1)
-  nameEn: string;
+  @IsOptional()
+  nameEn?: string;
 
   @IsString()
   @IsOptional()
