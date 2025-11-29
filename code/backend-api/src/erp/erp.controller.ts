@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { IsString, IsOptional, IsBoolean, IsNumber, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsNumber, IsArray, IsObject } from 'class-validator';
 import { ErpOrderSyncService } from './erp-order-sync.service';
 import { ErpProductSyncService } from './erp-product-sync.service';
 import { ErpEntitySyncService } from './erp-entity-sync.service';
@@ -50,6 +50,7 @@ class ProductSyncSelectedDto {
   @IsString({ each: true })
   selectedGroups: string[]; // 选中的产品组前缀列表
 
+  @IsObject()
   selectedSkus: Record<string, string[]>; // 每个产品组下选中的SKU编码列表
 }
 
