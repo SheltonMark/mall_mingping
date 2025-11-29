@@ -12,6 +12,24 @@ export interface CustomerSyncResult {
   error?: string;
 }
 
+// 预览数据结构
+export interface CustomerPreviewItem {
+  cusNo: string;
+  name: string;
+  shortName: string | null;
+  salespersonNo: string | null;
+  isNew: boolean;
+}
+
+export interface CustomerPreviewResult {
+  success: boolean;
+  customers: CustomerPreviewItem[];
+  total: number;
+  newCount: number;
+  updateCount: number;
+  error?: string;
+}
+
 interface ErpCustomer {
   CUS_NO: string;      // 客户编号（如 C0098, D04057）
   NAME: string;        // 客户全称
@@ -317,5 +335,213 @@ export class ErpCustomerSyncService {
         },
       },
     });
+  }
+
+  /**
+   * 预览待同步的客户（不实际同步）
+   */
+  async previewCustomers(): Promise<CustomerPreviewResult> {
+    const syncConfig = getErpSyncConfig();
+
+    if (!syncConfig.enabled) {
+      return {
+        success: false,
+        customers: [],
+        total: 0,
+        newCount: 0,
+        updateCount: 0,
+        error: 'ERP 同步未启用',
+      };
+    }
+
+    try {
+      const pool = await this.getPool();
+
+      // 查询 ERP 客户数据
+      const customerQuery = `
+        SELECT
+          CUS_NO,
+          CAST(NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS NAME,
+          CAST(SNM COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS SNM,
+          SAL
+        FROM CUST
+        WHERE OBJ_ID = 1
+        ORDER BY CUS_NO
+      `;
+
+      const result = await pool.request().query<ErpCustomer>(customerQuery);
+      const erpCustomers = result.recordset;
+
+      // 获取已存在的客户编号
+      const existingCustomers = await this.prisma.erpCustomer.findMany({
+        select: { cusNo: true },
+      });
+      const existingCusNos = new Set(existingCustomers.map(c => c.cusNo));
+
+      // 构建预览列表
+      const customers: CustomerPreviewItem[] = erpCustomers.map(c => ({
+        cusNo: c.CUS_NO,
+        name: c.NAME || '',
+        shortName: c.SNM || null,
+        salespersonNo: c.SAL || null,
+        isNew: !existingCusNos.has(c.CUS_NO),
+      }));
+
+      const newCount = customers.filter(c => c.isNew).length;
+      const updateCount = customers.length - newCount;
+
+      return {
+        success: true,
+        customers,
+        total: customers.length,
+        newCount,
+        updateCount,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[客户预览] 失败: ${errorMessage}`);
+      return {
+        success: false,
+        customers: [],
+        total: 0,
+        newCount: 0,
+        updateCount: 0,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 选择性同步客户
+   */
+  async syncSelectedCustomers(selectedCusNos: string[]): Promise<CustomerSyncResult> {
+    const startTime = Date.now();
+    const syncConfig = getErpSyncConfig();
+
+    if (!syncConfig.enabled) {
+      return {
+        success: false,
+        created: 0,
+        updated: 0,
+        total: 0,
+        duration: Date.now() - startTime,
+        error: 'ERP 同步未启用',
+      };
+    }
+
+    if (selectedCusNos.length === 0) {
+      return {
+        success: true,
+        created: 0,
+        updated: 0,
+        total: 0,
+        duration: Date.now() - startTime,
+      };
+    }
+
+    let created = 0;
+    let updated = 0;
+
+    try {
+      const pool = await this.getPool();
+
+      // 构建 IN 查询条件
+      const placeholders = selectedCusNos.map((_, i) => `@cus${i}`).join(', ');
+      const request = pool.request();
+      selectedCusNos.forEach((cusNo, i) => {
+        request.input(`cus${i}`, sql.NVarChar, cusNo);
+      });
+
+      const customerQuery = `
+        SELECT
+          CUS_NO,
+          CAST(NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS NAME,
+          CAST(SNM COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS SNM,
+          CAST(COUNTRY COLLATE Chinese_PRC_CI_AS AS NVARCHAR(50)) AS COUNTRY,
+          TEL1,
+          E_MAIL,
+          CAST(ADR1 COLLATE Chinese_PRC_CI_AS AS NVARCHAR(MAX)) AS ADR1,
+          CAST(CNT_MAN1 COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS CNT_MAN1,
+          SAL
+        FROM CUST
+        WHERE OBJ_ID = 1 AND CUS_NO IN (${placeholders})
+      `;
+
+      const result = await request.query<ErpCustomer>(customerQuery);
+      const customers = result.recordset;
+
+      this.logger.log(`[客户选择性同步] 查询到 ${customers.length} 个客户`);
+
+      // 获取业务员映射
+      const salespersons = await this.prisma.salesperson.findMany({
+        select: { id: true, accountId: true },
+      });
+      const salespersonMap = new Map(salespersons.map(s => [s.accountId, s.id]));
+
+      // 同步每个客户
+      for (const customer of customers) {
+        const existingCustomer = await this.prisma.erpCustomer.findUnique({
+          where: { cusNo: customer.CUS_NO },
+        });
+
+        const salespersonId = customer.SAL ? salespersonMap.get(customer.SAL) : null;
+
+        const customerData = {
+          name: customer.NAME || '',
+          shortName: customer.SNM || null,
+          country: customer.COUNTRY || null,
+          phone: customer.TEL1 || null,
+          email: customer.E_MAIL || null,
+          address: customer.ADR1 || null,
+          contactPerson: customer.CNT_MAN1 || null,
+          salespersonNo: customer.SAL || null,
+          salespersonId: salespersonId || null,
+          erpSyncAt: new Date(),
+        };
+
+        if (existingCustomer) {
+          await this.prisma.erpCustomer.update({
+            where: { id: existingCustomer.id },
+            data: customerData,
+          });
+          updated++;
+        } else {
+          await this.prisma.erpCustomer.create({
+            data: {
+              cusNo: customer.CUS_NO,
+              ...customerData,
+            },
+          });
+          created++;
+        }
+      }
+
+      const duration = Date.now() - startTime;
+      this.logger.log(
+        `[客户选择性同步] 完成! 新增${created}/更新${updated}, 耗时${duration}ms`,
+      );
+
+      await this.recordSyncTime();
+
+      return {
+        success: true,
+        created,
+        updated,
+        total: customers.length,
+        duration,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[客户选择性同步] 失败: ${errorMessage}`);
+
+      return {
+        success: false,
+        created,
+        updated,
+        total: 0,
+        duration: Date.now() - startTime,
+        error: errorMessage,
+      };
+    }
   }
 }
