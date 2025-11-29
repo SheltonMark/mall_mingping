@@ -52,7 +52,7 @@ interface Order {
   orderType: 'FORMAL' | 'INTENTION'
   customerType: 'NEW' | 'OLD'
   totalAmount: number
-  customer: {
+  customer?: {
     id: string
     name: string
     email?: string
@@ -64,6 +64,15 @@ interface Order {
     contactPhone?: string
     address?: string
     remarks?: string
+  }
+  erpCustomer?: {
+    id: string
+    cusNo: string
+    name: string
+    contactPerson?: string
+    phone?: string
+    country?: string
+    address?: string
   }
   salesperson: {
     id: string
