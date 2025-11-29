@@ -506,6 +506,22 @@ model CartItem {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  // 订单明细扩展字段
+  productCategory       String?   @map("product_category")       // 产品类别: new, old, sample
+  customerProductCode   String?   @map("customer_product_code")  // 客户料号
+  untaxedLocalCurrency  Decimal?  @map("untaxed_local_currency") // 未税本位币
+  expectedDeliveryDate  DateTime? @map("expected_delivery_date") // 预交日
+  packingQuantity       Int?      @map("packing_quantity")       // 装箱数
+  cartonQuantity        Int?      @map("carton_quantity")        // 箱数
+  packagingMethod       String?   @map("packaging_method")       // 包装方式
+  paperCardCode         String?   @map("paper_card_code")        // 纸卡编码
+  washLabelCode         String?   @map("wash_label_code")        // 水洗标编码
+  outerCartonCode       String?   @map("outer_carton_code")      // 外箱编码
+  cartonSpecification   String?   @map("carton_specification")   // 箱规
+  volume                Decimal?  @map("volume")                 // 体积
+  supplierNote          String?   @map("supplier_note")          // 厂商备注
+  summary               String?   @map("summary")                // 摘要
+
   salesperson     Salesperson @relation(fields: [salespersonId], references: [id], onDelete: Cascade)
 
   @@unique([salespersonId, skuId, colorScheme])

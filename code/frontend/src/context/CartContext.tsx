@@ -104,6 +104,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isLoaded, isAuthenticated])
 
+  // Build request body with all extended fields
+  const buildCartItemBody = (item: CartItem) => ({
+    skuId: item.skuId,
+    productCode: item.sku || '',
+    productName: item.groupName || '',
+    colorScheme: JSON.stringify(item.colorCombination),
+    quantity: item.quantity,
+    price: item.price,
+    // Extended fields
+    productCategory: item.productCategory,
+    customerProductCode: item.customerProductCode,
+    untaxedLocalCurrency: item.untaxedLocalCurrency,
+    expectedDeliveryDate: item.expectedDeliveryDate,
+    packingQuantity: item.packingQuantity,
+    cartonQuantity: item.cartonQuantity,
+    packagingMethod: item.packagingMethod,
+    paperCardCode: item.paperCardCode,
+    washLabelCode: item.washLabelCode,
+    outerCartonCode: item.outerCartonCode,
+    cartonSpecification: item.cartonSpecification,
+    volume: item.volume,
+    supplierNote: item.supplierNote,
+    summary: item.summary,
+  })
+
   // Sync cart to database on login
   const syncCartOnLogin = async (token: string) => {
     try {
@@ -116,15 +141,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const guestItems = JSON.parse(guestCart)
 
         if (guestItems.length > 0) {
-          // Sync guest cart to database
-          const syncData = guestItems.map((item: CartItem) => ({
-            skuId: item.skuId,
-            productCode: item.sku || '',
-            productName: item.groupName || '',
-            colorScheme: JSON.stringify(item.colorCombination),
-            quantity: item.quantity,
-            price: item.price,
-          }))
+          // Sync guest cart to database with all extended fields
+          const syncData = guestItems.map((item: CartItem) => buildCartItemBody(item))
 
           await fetch(`${API_URL}/cart/sync`, {
             method: 'POST',
@@ -210,6 +228,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             quantity: item.quantity,
             price: parseFloat(item.price),
             mainImage,
+            // Extended fields from database
+            productCategory: item.productCategory,
+            customerProductCode: item.customerProductCode,
+            untaxedLocalCurrency: item.untaxedLocalCurrency ? parseFloat(item.untaxedLocalCurrency) : undefined,
+            expectedDeliveryDate: item.expectedDeliveryDate,
+            packingQuantity: item.packingQuantity,
+            cartonQuantity: item.cartonQuantity,
+            packagingMethod: item.packagingMethod,
+            paperCardCode: item.paperCardCode,
+            washLabelCode: item.washLabelCode,
+            outerCartonCode: item.outerCartonCode,
+            cartonSpecification: item.cartonSpecification,
+            volume: item.volume ? parseFloat(item.volume) : undefined,
+            supplierNote: item.supplierNote,
+            summary: item.summary,
           }
         })
         setItems(cartItems)
@@ -223,7 +256,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Add item to cart
   const addItem = async (newItem: CartItem) => {
     if (isAuthenticated && authToken) {
-      // Add to database
+      // Add to database with all extended fields
       try {
         await fetch(`${API_URL}/cart`, {
           method: 'POST',
@@ -231,14 +264,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${authToken}`,
           },
-          body: JSON.stringify({
-            skuId: newItem.skuId,
-            productCode: newItem.sku || '',
-            productName: newItem.groupName || '',
-            colorScheme: JSON.stringify(newItem.colorCombination),
-            quantity: newItem.quantity,
-            price: newItem.price,
-          }),
+          body: JSON.stringify(buildCartItemBody(newItem)),
         })
 
         // Reload cart from database
@@ -332,14 +358,63 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Update item (for editing cart item details)
   const updateItem = async (skuId: string, updates: Partial<CartItem>) => {
-    // Update local state (these fields are stored locally, not in backend)
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.skuId === skuId
-          ? { ...item, ...updates }
-          : item
+    if (isAuthenticated && authToken) {
+      // Find item ID from current items
+      const item = items.find(i => i.skuId === skuId)
+      if (item?.id) {
+        try {
+          // Build update body with only changed fields
+          const updateBody: Record<string, any> = {}
+
+          if (updates.quantity !== undefined) updateBody.quantity = updates.quantity
+          if (updates.price !== undefined) updateBody.price = updates.price
+          if (updates.productCategory !== undefined) updateBody.productCategory = updates.productCategory
+          if (updates.customerProductCode !== undefined) updateBody.customerProductCode = updates.customerProductCode
+          if (updates.untaxedLocalCurrency !== undefined) updateBody.untaxedLocalCurrency = updates.untaxedLocalCurrency
+          if (updates.expectedDeliveryDate !== undefined) updateBody.expectedDeliveryDate = updates.expectedDeliveryDate
+          if (updates.packingQuantity !== undefined) updateBody.packingQuantity = updates.packingQuantity
+          if (updates.cartonQuantity !== undefined) updateBody.cartonQuantity = updates.cartonQuantity
+          if (updates.packagingMethod !== undefined) updateBody.packagingMethod = updates.packagingMethod
+          if (updates.paperCardCode !== undefined) updateBody.paperCardCode = updates.paperCardCode
+          if (updates.washLabelCode !== undefined) updateBody.washLabelCode = updates.washLabelCode
+          if (updates.outerCartonCode !== undefined) updateBody.outerCartonCode = updates.outerCartonCode
+          if (updates.cartonSpecification !== undefined) updateBody.cartonSpecification = updates.cartonSpecification
+          if (updates.volume !== undefined) updateBody.volume = updates.volume
+          if (updates.supplierNote !== undefined) updateBody.supplierNote = updates.supplierNote
+          if (updates.summary !== undefined) updateBody.summary = updates.summary
+
+          await fetch(`${API_URL}/cart/${item.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`,
+            },
+            body: JSON.stringify(updateBody),
+          })
+
+          // Update local state
+          setItems((prevItems) =>
+            prevItems.map((i) =>
+              i.skuId === skuId
+                ? { ...i, ...updates }
+                : i
+            )
+          )
+        } catch (error) {
+          console.error('Failed to update cart item:', error)
+          throw error
+        }
+      }
+    } else {
+      // Update local state only (guest cart)
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item.skuId === skuId
+            ? { ...item, ...updates }
+            : item
+        )
       )
-    )
+    }
   }
 
   // Clear cart
