@@ -315,23 +315,32 @@ export class ErpProductSyncService {
         });
 
         if (productGroup) {
-          // 更新产品组
+          // 更新产品组 - 强制更新updatedAt确保排序正确
           await this.prisma.productGroup.update({
             where: { id: productGroup.id },
             data: {
               categoryId: category.id,
               categoryCode: category.code,
               optionalAttributes: optionalAttributes.length > 0 ? optionalAttributes : undefined,
+              updatedAt: new Date(), // 强制更新时间戳
             },
           });
           groupsUpdated++;
         } else {
           // 创建产品组
+          // 判断MARK_NAME是否是通用特征组（包含"颜色特征组"或"特征组"字样）
+          // 如果是，则使用品名前缀作为产品组名称
+          let groupName = prefix;
+          if (mark?.MARK_NAME) {
+            const isGenericMark = mark.MARK_NAME.includes('特征组') || mark.MARK_NAME.includes('特征');
+            groupName = isGenericMark ? prefix : mark.MARK_NAME;
+          }
+
           productGroup = await this.prisma.productGroup.create({
             data: {
               prefix,
-              groupNameZh: mark?.MARK_NAME || prefix,
-              groupNameEn: mark?.MARK_NAME || prefix,
+              groupNameZh: groupName,
+              groupNameEn: groupName,
               categoryId: category.id,
               categoryCode: category.code,
               optionalAttributes: optionalAttributes.length > 0 ? optionalAttributes : undefined,
@@ -822,15 +831,24 @@ export class ErpProductSyncService {
               categoryId: category.id,
               categoryCode: category.code,
               optionalAttributes: optionalAttributes.length > 0 ? optionalAttributes : undefined,
+              updatedAt: new Date(), // 强制更新时间戳确保排序正确
             },
           });
           groupsUpdated++;
         } else {
+          // 判断MARK_NAME是否是通用特征组（包含"颜色特征组"或"特征组"字样）
+          // 如果是，则使用品名前缀作为产品组名称
+          let groupName = prefix;
+          if (mark?.MARK_NAME) {
+            const isGenericMark = mark.MARK_NAME.includes('特征组') || mark.MARK_NAME.includes('特征');
+            groupName = isGenericMark ? prefix : mark.MARK_NAME;
+          }
+
           productGroup = await this.prisma.productGroup.create({
             data: {
               prefix,
-              groupNameZh: mark?.MARK_NAME || prefix,
-              groupNameEn: mark?.MARK_NAME || prefix,
+              groupNameZh: groupName,
+              groupNameEn: groupName,
               categoryId: category.id,
               categoryCode: category.code,
               optionalAttributes: optionalAttributes.length > 0 ? optionalAttributes : undefined,
