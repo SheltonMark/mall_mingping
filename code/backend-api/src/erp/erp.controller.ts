@@ -56,6 +56,18 @@ class ProductSyncSelectedDto {
   selectedSkus: Record<string, string[]>; // 每个产品组下选中的SKU编码列表
 }
 
+class CustomerSyncSelectedDto {
+  @IsArray()
+  @IsString({ each: true })
+  selectedCusNos: string[]; // 选中的客户编号列表
+}
+
+class SalespersonSyncSelectedDto {
+  @IsArray()
+  @IsString({ each: true })
+  selectedSalNos: string[]; // 选中的业务员编号列表
+}
+
 @Controller('erp')
 @UseGuards(JwtAuthGuard)
 export class ErpController {
@@ -381,6 +393,24 @@ export class ErpController {
     return this.erpCustomerSyncService.findByCusNo(cusNo);
   }
 
+  /**
+   * 预览待同步的客户（不实际同步）
+   * GET /erp/erp-customers/preview
+   */
+  @Get('erp-customers/preview')
+  async previewErpCustomers() {
+    return this.erpCustomerSyncService.previewCustomers();
+  }
+
+  /**
+   * 选择性同步客户
+   * POST /erp/erp-customers/sync-selected
+   */
+  @Post('erp-customers/sync-selected')
+  async syncSelectedErpCustomers(@Body() dto: CustomerSyncSelectedDto) {
+    return this.erpCustomerSyncService.syncSelectedCustomers(dto.selectedCusNos);
+  }
+
   // ============ ERP 业务员同步接口（从ERP读取到网站）============
 
   /**
@@ -422,5 +452,23 @@ export class ErpController {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 20,
     });
+  }
+
+  /**
+   * 预览待同步的业务员（不实际同步）
+   * GET /erp/erp-salespersons/preview
+   */
+  @Get('erp-salespersons/preview')
+  async previewErpSalespersons() {
+    return this.erpSalespersonSyncService.previewSalespersons();
+  }
+
+  /**
+   * 选择性同步业务员
+   * POST /erp/erp-salespersons/sync-selected
+   */
+  @Post('erp-salespersons/sync-selected')
+  async syncSelectedErpSalespersons(@Body() dto: SalespersonSyncSelectedDto) {
+    return this.erpSalespersonSyncService.syncSelectedSalespersons(dto.selectedSalNos);
   }
 }

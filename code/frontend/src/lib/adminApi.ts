@@ -656,6 +656,37 @@ export const erpApi = {
   getErpCustomerByCusNo: (cusNo: string) =>
     request<any>(`/erp/erp-customers/by-cus-no/${cusNo}`),
 
+  // 预览待同步的 ERP 客户
+  previewErpCustomers: () =>
+    request<{
+      success: boolean;
+      customers: Array<{
+        cusNo: string;
+        name: string;
+        shortName: string | null;
+        salespersonNo: string | null;
+        isNew: boolean;
+      }>;
+      total: number;
+      newCount: number;
+      updateCount: number;
+      error?: string;
+    }>('/erp/erp-customers/preview'),
+
+  // 选择性同步 ERP 客户
+  syncSelectedErpCustomers: (selectedCusNos: string[]) =>
+    request<{
+      success: boolean;
+      created: number;
+      updated: number;
+      total: number;
+      duration: number;
+      error?: string;
+    }>('/erp/erp-customers/sync-selected', {
+      method: 'POST',
+      body: JSON.stringify({ selectedCusNos }),
+    }),
+
   // ============ ERP 业务员同步（从ERP读取到网站）============
 
   // 同步 ERP 业务员到网站
@@ -690,4 +721,36 @@ export const erpApi = {
       meta: { total: number; page: number; limit: number; totalPages: number };
     }>(`/erp/erp-salespersons${query ? `?${query}` : ''}`);
   },
+
+  // 预览待同步的 ERP 业务员
+  previewErpSalespersons: () =>
+    request<{
+      success: boolean;
+      salespersons: Array<{
+        salNo: string;
+        name: string;
+        englishName: string | null;
+        department: string | null;
+        position: string | null;
+        isNew: boolean;
+      }>;
+      total: number;
+      newCount: number;
+      updateCount: number;
+      error?: string;
+    }>('/erp/erp-salespersons/preview'),
+
+  // 选择性同步 ERP 业务员
+  syncSelectedErpSalespersons: (selectedSalNos: string[]) =>
+    request<{
+      success: boolean;
+      created: number;
+      updated: number;
+      total: number;
+      duration: number;
+      error?: string;
+    }>('/erp/erp-salespersons/sync-selected', {
+      method: 'POST',
+      body: JSON.stringify({ selectedSalNos }),
+    }),
 };
