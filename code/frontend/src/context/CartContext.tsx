@@ -17,6 +17,22 @@ export interface CartItem {
   quantity: number
   price: number
   mainImage: string
+
+  // 订单明细扩展字段
+  productCategory?: 'new' | 'old' | 'sample'  // 产品类别
+  customerProductCode?: string                 // 客户料号
+  untaxedLocalCurrency?: number                // 未税本位币
+  expectedDeliveryDate?: string                // 预交日
+  packingQuantity?: number                     // 装箱数
+  cartonQuantity?: number                      // 箱数
+  packagingMethod?: string                     // 包装方式
+  paperCardCode?: string                       // 纸卡编码
+  washLabelCode?: string                       // 水洗标编码
+  outerCartonCode?: string                     // 外箱编码
+  cartonSpecification?: string                 // 箱规
+  volume?: number                              // 体积
+  supplierNote?: string                        // 厂商备注
+  summary?: string                             // 摘要
 }
 
 // Database cart item with id
@@ -29,6 +45,7 @@ interface CartContextType {
   addItem: (item: CartItem) => Promise<void>
   removeItem: (skuId: string) => Promise<void>
   updateQuantity: (skuId: string, quantity: number) => Promise<void>
+  updateItem: (skuId: string, updates: Partial<CartItem>) => Promise<void>
   clearCart: () => Promise<void>
   removeSelectedItems: () => void
   totalItems: number
@@ -313,6 +330,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Update item (for editing cart item details)
+  const updateItem = async (skuId: string, updates: Partial<CartItem>) => {
+    // Update local state (these fields are stored locally, not in backend)
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.skuId === skuId
+          ? { ...item, ...updates }
+          : item
+      )
+    )
+  }
+
   // Clear cart
   const clearCart = async () => {
     if (isAuthenticated && authToken) {
@@ -382,6 +411,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addItem,
         removeItem,
         updateQuantity,
+        updateItem,
         clearCart,
         removeSelectedItems,
         totalItems,

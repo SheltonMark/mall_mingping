@@ -3,14 +3,34 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ShoppingCart, Check, Play, Image as ImageIcon, FileText } from 'lucide-react'
+import { ShoppingCart, Check, Play, Image as ImageIcon, FileText, X } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
-import { useCart } from '@/context/CartContext'
+import { useCart, CartItem } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { productApi, type ProductGroup, type ProductSku } from '@/lib/publicApi'
 import IOSPicker from '@/components/common/IOSPicker'
+import DatePicker from '@/components/common/DatePicker'
 
 type ViewMode = 'gallery' | 'video' | 'params'
+
+// 购物车商品详情表单数据
+interface CartItemFormData {
+  productCategory: 'new' | 'old' | 'sample'
+  price: number | undefined
+  customerProductCode: string
+  untaxedLocalCurrency: number | undefined
+  expectedDeliveryDate: string
+  packingQuantity: number | undefined
+  cartonQuantity: number | undefined
+  packagingMethod: string
+  paperCardCode: string
+  washLabelCode: string
+  outerCartonCode: string
+  cartonSpecification: string
+  volume: number | undefined
+  supplierNote: string
+  summary: string
+}
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -36,6 +56,56 @@ export default function ProductDetailPage() {
 
   // 视图模式
   const [viewMode, setViewMode] = useState<ViewMode>('gallery')
+
+  // 购物车模态框状态
+  const [showCartModal, setShowCartModal] = useState(false)
+  const [cartFormData, setCartFormData] = useState<CartItemFormData>({
+    productCategory: 'new',
+    price: undefined,
+    customerProductCode: '',
+    untaxedLocalCurrency: undefined,
+    expectedDeliveryDate: '',
+    packingQuantity: undefined,
+    cartonQuantity: undefined,
+    packagingMethod: '',
+    paperCardCode: '',
+    washLabelCode: '',
+    outerCartonCode: '',
+    cartonSpecification: '',
+    volume: undefined,
+    supplierNote: '',
+    summary: '',
+  })
+
+  // 解析箱规并计算体积 (格式: number*number*number 或 number*number*numbercm)
+  const calculateVolumeFromCartonSpec = (cartonSpec: string): number | undefined => {
+    if (!cartonSpec) return undefined
+    const match = cartonSpec.match(/^(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*(?:cm)?$/i)
+    if (!match) return undefined
+    const [, length, width, height] = match
+    const volumeCm3 = parseFloat(length) * parseFloat(width) * parseFloat(height)
+    const volumeM3 = volumeCm3 / 1000000
+    return Math.round(volumeM3 * 1000000) / 1000000
+  }
+
+  // 更新表单字段
+  const updateCartFormField = (field: keyof CartItemFormData, value: any) => {
+    setCartFormData(prev => {
+      const updated = { ...prev, [field]: value }
+      // 如果修改的是箱规，自动计算体积
+      if (field === 'cartonSpecification' && typeof value === 'string') {
+        const calculatedVolume = calculateVolumeFromCartonSpec(value)
+        if (calculatedVolume !== undefined) {
+          updated.volume = calculatedVolume
+        }
+      }
+      // 如果修改装箱数，自动计算箱数
+      if (field === 'packingQuantity' && typeof value === 'number' && value > 0) {
+        updated.cartonQuantity = Math.ceil(quantity / value)
+      }
+      return updated
+    })
+  }
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -159,11 +229,36 @@ export default function ProductDetailPage() {
     setSelectedAttribute(selectedAttr || null)
   }
 
+  // 打开购物车模态框
   const handleAddToCart = () => {
     if (!selectedSku || !productGroup) {
       toast.error(language === 'zh' ? '请先选择品名' : 'Please select a product name first')
       return
     }
+    // 重置表单数据
+    setCartFormData({
+      productCategory: 'new',
+      price: undefined,
+      customerProductCode: '',
+      untaxedLocalCurrency: undefined,
+      expectedDeliveryDate: '',
+      packingQuantity: undefined,
+      cartonQuantity: undefined,
+      packagingMethod: '',
+      paperCardCode: '',
+      washLabelCode: '',
+      outerCartonCode: '',
+      cartonSpecification: '',
+      volume: undefined,
+      supplierNote: '',
+      summary: '',
+    })
+    setShowCartModal(true)
+  }
+
+  // 确认加入购物车
+  const handleConfirmAddToCart = () => {
+    if (!selectedSku || !productGroup) return
 
     addItem({
       skuId: selectedSku.id,
@@ -178,10 +273,26 @@ export default function ProductDetailPage() {
       optionalAttributes: selectedAttribute,
       colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
       quantity: quantity,
-      price: Number(selectedSku.price),
+      price: cartFormData.price || 0,
       mainImage: images[0] || (productGroup as any).mainImage || '/images/placeholder.jpg',
+      // 扩展字段
+      productCategory: cartFormData.productCategory,
+      customerProductCode: cartFormData.customerProductCode || undefined,
+      untaxedLocalCurrency: cartFormData.untaxedLocalCurrency,
+      expectedDeliveryDate: cartFormData.expectedDeliveryDate || undefined,
+      packingQuantity: cartFormData.packingQuantity,
+      cartonQuantity: cartFormData.cartonQuantity,
+      packagingMethod: cartFormData.packagingMethod || undefined,
+      paperCardCode: cartFormData.paperCardCode || undefined,
+      washLabelCode: cartFormData.washLabelCode || undefined,
+      outerCartonCode: cartFormData.outerCartonCode || undefined,
+      cartonSpecification: cartFormData.cartonSpecification || undefined,
+      volume: cartFormData.volume,
+      supplierNote: cartFormData.supplierNote || undefined,
+      summary: cartFormData.summary || undefined,
     })
 
+    setShowCartModal(false)
     setAddedToCart(true)
     setTimeout(() => setAddedToCart(false), 2000)
     toast.success(language === 'zh' ? '已加入购物车' : 'Added to cart')
@@ -584,6 +695,264 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 加入购物车模态框 */}
+      {showCartModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* 模态框头部 */}
+            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary to-primary-dark flex items-center justify-between flex-shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-white">
+                  {language === 'zh' ? '加入购物车' : 'Add to Cart'}
+                </h2>
+                <p className="text-white/80 text-sm mt-1">
+                  {language === 'zh' ? '填写商品详细信息（可选）' : 'Fill in product details (optional)'}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCartModal(false)}
+                className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* 模态框内容 - 可滚动 */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* 产品类别 */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary">
+                  {language === 'zh' ? '产品类别' : 'Product Category'}
+                </h3>
+                <div className="flex gap-3">
+                  {[
+                    { value: 'new', labelZh: '新产品', labelEn: 'New Product' },
+                    { value: 'old', labelZh: '老产品', labelEn: 'Old Product' },
+                    { value: 'sample', labelZh: '样品需求', labelEn: 'Sample Request' },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => updateCartFormField('productCategory', option.value as 'new' | 'old' | 'sample')}
+                      className={`flex-1 py-2.5 px-4 rounded-lg border-2 font-medium transition-all text-sm ${
+                        cartFormData.productCategory === option.value
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
+                      }`}
+                    >
+                      {language === 'zh' ? option.labelZh : option.labelEn}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 基本信息 */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary">
+                  {language === 'zh' ? '基本信息' : 'Basic Information'}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '单价' : 'Unit Price'}
+                    </label>
+                    <input
+                      type="number"
+                      value={cartFormData.price ?? ''}
+                      onChange={(e) => updateCartFormField('price', e.target.value ? parseFloat(e.target.value) : undefined)}
+                      step="0.01"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '客户料号' : 'Customer Product Code'}
+                    </label>
+                    <input
+                      type="text"
+                      value={cartFormData.customerProductCode}
+                      onChange={(e) => updateCartFormField('customerProductCode', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '未税本位币' : 'Untaxed Local Currency'}
+                    </label>
+                    <input
+                      type="number"
+                      value={cartFormData.untaxedLocalCurrency ?? ''}
+                      onChange={(e) => updateCartFormField('untaxedLocalCurrency', e.target.value ? parseFloat(e.target.value) : undefined)}
+                      step="0.01"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '预交日' : 'Expected Delivery Date'}
+                    </label>
+                    <DatePicker
+                      value={cartFormData.expectedDeliveryDate}
+                      onChange={(value) => updateCartFormField('expectedDeliveryDate', value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 包装信息 */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary flex items-center gap-2">
+                  <span>📦</span>
+                  <span>{language === 'zh' ? '包装信息' : 'Packaging Information'}</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '装箱数' : 'Packing Quantity'}
+                    </label>
+                    <input
+                      type="number"
+                      value={cartFormData.packingQuantity ?? ''}
+                      onChange={(e) => updateCartFormField('packingQuantity', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '箱数' : 'Carton Quantity'}
+                    </label>
+                    <input
+                      type="number"
+                      value={cartFormData.cartonQuantity ?? ''}
+                      onChange={(e) => updateCartFormField('cartonQuantity', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '包装方式' : 'Packaging Method'}
+                    </label>
+                    <input
+                      type="text"
+                      value={cartFormData.packagingMethod}
+                      onChange={(e) => updateCartFormField('packagingMethod', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '纸卡编码' : 'Paper Card Code'}
+                    </label>
+                    <input
+                      type="text"
+                      value={cartFormData.paperCardCode}
+                      onChange={(e) => updateCartFormField('paperCardCode', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '水洗标编码' : 'Wash Label Code'}
+                    </label>
+                    <input
+                      type="text"
+                      value={cartFormData.washLabelCode}
+                      onChange={(e) => updateCartFormField('washLabelCode', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '外箱编码' : 'Outer Carton Code'}
+                    </label>
+                    <input
+                      type="text"
+                      value={cartFormData.outerCartonCode}
+                      onChange={(e) => updateCartFormField('outerCartonCode', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '箱规 (cm)' : 'Carton Spec (cm)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={cartFormData.cartonSpecification}
+                      onChange={(e) => updateCartFormField('cartonSpecification', e.target.value)}
+                      placeholder={language === 'zh' ? '例如: 74*44*20' : 'e.g., 74*44*20'}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '体积 (m³)' : 'Volume (m³)'}
+                    </label>
+                    <input
+                      type="number"
+                      value={cartFormData.volume ?? ''}
+                      onChange={(e) => updateCartFormField('volume', e.target.value ? parseFloat(e.target.value) : undefined)}
+                      step="0.000001"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 备注信息 */}
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary flex items-center gap-2">
+                  <span>📝</span>
+                  <span>{language === 'zh' ? '备注信息' : 'Notes'}</span>
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '厂商备注' : 'Supplier Note'}
+                    </label>
+                    <textarea
+                      value={cartFormData.supplierNote}
+                      onChange={(e) => updateCartFormField('supplierNote', e.target.value)}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '摘要' : 'Summary'}
+                    </label>
+                    <textarea
+                      value={cartFormData.summary}
+                      onChange={(e) => updateCartFormField('summary', e.target.value)}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 模态框底部 */}
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex gap-3 flex-shrink-0">
+              <button
+                onClick={() => setShowCartModal(false)}
+                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all font-semibold"
+              >
+                {language === 'zh' ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleConfirmAddToCart}
+                className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all font-semibold flex items-center justify-center gap-2"
+              >
+                <ShoppingCart size={18} />
+                {language === 'zh' ? '确认加入购物车' : 'Add to Cart'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
