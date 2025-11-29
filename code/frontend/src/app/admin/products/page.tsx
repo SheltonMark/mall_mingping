@@ -93,6 +93,33 @@ export default function ProductsPage() {
     error?: string;
   } | null>(null);
 
+  // ERP 预览同步状态
+  const [showSyncPreview, setShowSyncPreview] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewData, setPreviewData] = useState<{
+    success: boolean;
+    groups: Array<{
+      prefix: string;
+      groupName: string;
+      categoryCode: string;
+      categoryExists: boolean;
+      isNew: boolean;
+      skus: Array<{
+        productCode: string;
+        productName: string;
+        specification: string | null;
+        isNew: boolean;
+      }>;
+    }>;
+    totalGroups: number;
+    totalSkus: number;
+    newGroups: number;
+    newSkus: number;
+    error?: string;
+  } | null>(null);
+  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
+  const [selectedSkus, setSelectedSkus] = useState<Record<string, Set<string>>>({});
+
   // 确认对话框状态
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
@@ -135,9 +162,137 @@ export default function ProductsPage() {
   };
 
   const handleSyncProducts = async () => {
+    // 打开预览弹窗并加载预览数据
+    setShowSyncPreview(true);
+    setPreviewLoading(true);
+    setSelectedGroups(new Set());
+    setSelectedSkus({});
+
+    try {
+      const result = await erpApi.previewProducts();
+      setPreviewData(result);
+
+      if (!result.success) {
+        toast.error(`加载预览失败: ${result.error}`);
+      }
+    } catch (error: any) {
+      toast.error(`加载预览失败: ${error.message || '未知错误'}`);
+      setPreviewData(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  // 切换产品组选择
+  const toggleGroupSelection = (prefix: string) => {
+    setSelectedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(prefix)) {
+        next.delete(prefix);
+        // 同时取消该组下所有SKU的选择
+        setSelectedSkus(prevSkus => {
+          const newSkus = { ...prevSkus };
+          delete newSkus[prefix];
+          return newSkus;
+        });
+      } else {
+        next.add(prefix);
+        // 默认选中该组下所有SKU
+        const group = previewData?.groups.find(g => g.prefix === prefix);
+        if (group) {
+          setSelectedSkus(prevSkus => ({
+            ...prevSkus,
+            [prefix]: new Set(group.skus.map(s => s.productCode))
+          }));
+        }
+      }
+      return next;
+    });
+  };
+
+  // 切换SKU选择
+  const toggleSkuSelection = (prefix: string, productCode: string) => {
+    if (!selectedGroups.has(prefix)) return; // 如果产品组未选中，不允许选择SKU
+
+    setSelectedSkus(prev => {
+      const groupSkus = prev[prefix] || new Set();
+      const next = new Set(groupSkus);
+      if (next.has(productCode)) {
+        next.delete(productCode);
+      } else {
+        next.add(productCode);
+      }
+      return { ...prev, [prefix]: next };
+    });
+  };
+
+  // 全选/取消全选产品组
+  const toggleAllGroups = () => {
+    if (!previewData) return;
+
+    const validGroups = previewData.groups.filter(g => g.categoryExists);
+    if (selectedGroups.size === validGroups.length) {
+      // 全部取消选择
+      setSelectedGroups(new Set());
+      setSelectedSkus({});
+    } else {
+      // 全选
+      const allPrefixes = new Set(validGroups.map(g => g.prefix));
+      setSelectedGroups(allPrefixes);
+
+      const allSkus: Record<string, Set<string>> = {};
+      validGroups.forEach(g => {
+        allSkus[g.prefix] = new Set(g.skus.map(s => s.productCode));
+      });
+      setSelectedSkus(allSkus);
+    }
+  };
+
+  // 全选/取消全选某个产品组下的SKU
+  const toggleAllSkusInGroup = (prefix: string) => {
+    if (!selectedGroups.has(prefix)) return;
+
+    const group = previewData?.groups.find(g => g.prefix === prefix);
+    if (!group) return;
+
+    const currentSkus = selectedSkus[prefix] || new Set();
+    if (currentSkus.size === group.skus.length) {
+      // 取消全选
+      setSelectedSkus(prev => ({ ...prev, [prefix]: new Set() }));
+    } else {
+      // 全选
+      setSelectedSkus(prev => ({
+        ...prev,
+        [prefix]: new Set(group.skus.map(s => s.productCode))
+      }));
+    }
+  };
+
+  // 执行选择性同步
+  const handleSyncSelected = async () => {
+    const groupsArray = Array.from(selectedGroups);
+    const skusRecord: Record<string, string[]> = {};
+
+    groupsArray.forEach(prefix => {
+      skusRecord[prefix] = Array.from(selectedSkus[prefix] || []);
+    });
+
+    // 计算选中的数量
+    const totalSelectedSkus = Object.values(skusRecord).reduce((sum, arr) => sum + arr.length, 0);
+
+    if (totalSelectedSkus === 0) {
+      toast.warning('请至少选择一个SKU');
+      return;
+    }
+
     setSyncing(true);
     try {
-      const result = await erpApi.syncProducts({ incremental: false }); // 全量同步
+      const result = await erpApi.syncSelectedProducts({
+        selectedGroups: groupsArray,
+        selectedSkus: skusRecord
+      });
+
+      setShowSyncPreview(false);
       setSyncResult(result);
       setShowSyncResult(true);
 
@@ -248,14 +403,14 @@ export default function ProductsPage() {
 
   const handleDeleteSku = async (skuId: string, productCode: string) => {
     setConfirmAction({
-      title: '删除产品规格',
-      message: `确定要删除产品规格 "${productCode}" 吗？此操作不可恢复！`,
+      title: '删除SKU',
+      message: `确定要删除SKU "${productCode}" 吗？此操作不可恢复！`,
       type: 'danger',
       onConfirm: async () => {
         setDeleting(true);
         try {
           await productApi.deleteSku(skuId);
-          toast.success(`产品规格 ${productCode} 已删除`);
+          toast.success(`SKU ${productCode} 已删除`);
           await loadData();
         } catch (error: any) {
           toast.error(`删除失败: ${error.message}`);
@@ -270,14 +425,14 @@ export default function ProductsPage() {
 
   const handleDeleteGroup = async (groupId: string, groupName: string) => {
     setConfirmAction({
-      title: '删除产品系列',
-      message: `确定要删除产品系列 "${groupName}" 吗？此操作将删除该系列下的所有规格，不可恢复！`,
+      title: '删除产品组',
+      message: `确定要删除产品组 "${groupName}" 吗？此操作将删除该产品组下的所有SKU，不可恢复！`,
       type: 'danger',
       onConfirm: async () => {
         setDeleting(true);
         try {
           await productApi.deleteGroup(groupId);
-          toast.success(`产品系列 "${groupName}" 已删除`);
+          toast.success(`产品组 "${groupName}" 已删除`);
           await loadData();
         } catch (error: any) {
           toast.error(`删除失败: ${error.message}`);
@@ -405,7 +560,7 @@ export default function ProductsPage() {
             className="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-gold-600 transition-all flex items-center gap-2"
           >
             <Plus size={18} />
-            新增SKU
+            新增产品组
           </button>
         </div>
       </div>
@@ -473,23 +628,23 @@ export default function ProductsPage() {
                           className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
                         >
                           <Plus size={18} />
-                          新增规格
+                          新增SKU
                         </button>
                         <button
                           onClick={() => router.push(`/admin/products/create-group?id=${group.id}`)}
                           className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
                         >
                           <Edit2 size={18} />
-                          编辑SKU
+                          编辑产品组
                         </button>
                         <button
                           onClick={() => handleDeleteGroup(group.id, group.groupNameZh)}
                           disabled={deleting}
                           className="px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg hover:from-red-700 hover:to-rose-700 transition-all flex items-center gap-2 font-medium shadow-md hover:shadow-lg disabled:opacity-50"
-                          title="删除整个产品系列"
+                          title="删除整个产品组"
                         >
                           <Trash2 size={18} />
-                          删除SKU
+                          删除产品组
                         </button>
                       </div>
                     </div>
@@ -661,6 +816,210 @@ export default function ProductsPage() {
               >
                 关闭
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ERP 同步预览弹窗 */}
+      {showSyncPreview && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+            {/* 弹窗头部 */}
+            <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-purple-600 to-indigo-600">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">ERP产品同步预览</h2>
+                  <p className="text-purple-100 mt-1">选择要导入的产品组和SKU</p>
+                </div>
+                <button
+                  onClick={() => setShowSyncPreview(false)}
+                  className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+
+            {/* 弹窗内容 */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {previewLoading ? (
+                <div className="flex justify-center items-center py-20">
+                  <div className="text-center">
+                    <ButtonLoader />
+                    <p className="mt-4 text-gray-600">正在从ERP加载产品数据...</p>
+                  </div>
+                </div>
+              ) : !previewData || !previewData.success ? (
+                <div className="text-center py-20">
+                  <div className="text-5xl mb-4">❌</div>
+                  <p className="text-gray-600">{previewData?.error || '加载预览数据失败'}</p>
+                </div>
+              ) : previewData.groups.length === 0 ? (
+                <div className="text-center py-20">
+                  <div className="text-5xl mb-4">📭</div>
+                  <p className="text-gray-600">暂无待同步的产品</p>
+                  <p className="text-sm text-gray-500 mt-2">ERP中没有在基准时间之后新增的产品</p>
+                </div>
+              ) : (
+                <>
+                  {/* 统计信息和全选按钮 */}
+                  <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div className="text-sm text-gray-600">
+                        共 <span className="font-semibold text-gray-900">{previewData.totalGroups}</span> 个产品组，
+                        <span className="font-semibold text-gray-900">{previewData.totalSkus}</span> 个SKU
+                      </div>
+                      <div className="text-sm">
+                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded">新增 {previewData.newGroups} 组 / {previewData.newSkus} SKU</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-600">
+                        已选 {selectedGroups.size} 组 /
+                        {Object.values(selectedSkus).reduce((sum, set) => sum + set.size, 0)} SKU
+                      </span>
+                      <button
+                        onClick={toggleAllGroups}
+                        className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition"
+                      >
+                        {selectedGroups.size === previewData.groups.filter(g => g.categoryExists).length ? '取消全选' : '全选'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 产品组列表 */}
+                  <div className="space-y-4">
+                    {previewData.groups.map((group) => {
+                      const isGroupSelected = selectedGroups.has(group.prefix);
+                      const groupSkuSet = selectedSkus[group.prefix] || new Set();
+                      const allSkusSelected = groupSkuSet.size === group.skus.length;
+
+                      return (
+                        <div
+                          key={group.prefix}
+                          className={`border-2 rounded-xl overflow-hidden transition-all ${
+                            !group.categoryExists
+                              ? 'border-gray-200 bg-gray-50 opacity-60'
+                              : isGroupSelected
+                                ? 'border-purple-300 bg-purple-50/30'
+                                : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {/* 产品组头部 */}
+                          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={isGroupSelected}
+                                onChange={() => toggleGroupSelection(group.prefix)}
+                                disabled={!group.categoryExists}
+                                className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 disabled:opacity-50"
+                              />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-gray-900">{group.groupName}</span>
+                                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                                    {group.prefix}
+                                  </span>
+                                  {group.isNew && (
+                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                                      新产品组
+                                    </span>
+                                  )}
+                                  {!group.categoryExists && (
+                                    <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded">
+                                      分类 {group.categoryCode} 不存在
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                  分类: {group.categoryCode} · {group.skus.length} 个SKU
+                                </div>
+                              </div>
+                            </div>
+                            {isGroupSelected && (
+                              <button
+                                onClick={() => toggleAllSkusInGroup(group.prefix)}
+                                className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
+                              >
+                                {allSkusSelected ? '取消全选SKU' : '全选SKU'}
+                              </button>
+                            )}
+                          </div>
+
+                          {/* SKU列表 - 仅在产品组选中时可见 */}
+                          {isGroupSelected && (
+                            <div className="p-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {group.skus.map((sku) => {
+                                  const isSkuSelected = groupSkuSet.has(sku.productCode);
+                                  return (
+                                    <label
+                                      key={sku.productCode}
+                                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition ${
+                                        isSkuSelected
+                                          ? 'bg-purple-100 border border-purple-300'
+                                          : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                                      }`}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isSkuSelected}
+                                        onChange={() => toggleSkuSelection(group.prefix, sku.productCode)}
+                                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-mono text-sm text-gray-700">{sku.productCode}</span>
+                                          {sku.isNew && (
+                                            <span className="px-1.5 py-0.5 bg-green-100 text-green-600 text-xs rounded">新</span>
+                                          )}
+                                        </div>
+                                        <div className="text-sm text-gray-600 truncate">{sku.productName}</div>
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* 弹窗底部 */}
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                {selectedGroups.size > 0 && (
+                  <span>
+                    将同步 <span className="font-semibold text-purple-700">{selectedGroups.size}</span> 个产品组，
+                    <span className="font-semibold text-purple-700">
+                      {Object.values(selectedSkus).reduce((sum, set) => sum + set.size, 0)}
+                    </span> 个SKU
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowSyncPreview(false)}
+                  className="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleSyncSelected}
+                  disabled={syncing || selectedGroups.size === 0}
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+                  {syncing ? '同步中...' : '开始同步'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

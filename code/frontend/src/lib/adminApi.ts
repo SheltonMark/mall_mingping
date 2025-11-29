@@ -531,6 +531,50 @@ export const erpApi = {
       lastSyncTimeFormatted: string;
     }>('/erp/products/last-sync'),
 
+  // 预览待同步的产品
+  previewProducts: () =>
+    request<{
+      success: boolean;
+      groups: Array<{
+        prefix: string;
+        groupName: string;
+        categoryCode: string;
+        categoryExists: boolean;
+        isNew: boolean;
+        skus: Array<{
+          productCode: string;
+          productName: string;
+          specification: string | null;
+          isNew: boolean;
+        }>;
+      }>;
+      totalGroups: number;
+      totalSkus: number;
+      newGroups: number;
+      newSkus: number;
+      error?: string;
+    }>('/erp/products/preview'),
+
+  // 选择性同步产品
+  syncSelectedProducts: (data: {
+    selectedGroups: string[];
+    selectedSkus: Record<string, string[]>;
+  }) =>
+    request<{
+      success: boolean;
+      groupsCreated: number;
+      groupsUpdated: number;
+      skusCreated: number;
+      skusUpdated: number;
+      skipped: number;
+      skippedProducts: string[];
+      duration: number;
+      error?: string;
+    }>('/erp/products/sync-selected', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   // 订单同步
   syncOrder: (orderId: string) =>
     request<{ success: boolean; erpOrderNo?: string; error?: string }>(`/erp/orders/${orderId}/sync`, {
