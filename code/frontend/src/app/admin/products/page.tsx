@@ -6,7 +6,7 @@ import { productApi } from '@/lib/adminApi';
 import { erpApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
-import { Upload, Edit2, Trash2, Search, Image as ImageIcon, Plus, X, RefreshCw } from 'lucide-react';
+import { Upload, Edit2, Trash2, Search, Image as ImageIcon, Plus, X, RefreshCw, CheckCheck } from 'lucide-react';
 import PageHeader from '@/components/admin/PageHeader';
 import CustomSelect from '@/components/common/CustomSelect';
 
@@ -24,6 +24,8 @@ interface ProductGroup {
   isPublished: boolean;
   visibilityTier?: 'ALL' | 'STANDARD' | 'VIP' | 'SVIP';
   skuCount?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ProductSku {
@@ -128,6 +130,41 @@ export default function ProductsPage() {
     onConfirm: () => void;
     type: 'danger' | 'warning';
   } | null>(null);
+
+  // 新增标识相关状态
+  const [lastViewedAt, setLastViewedAt] = useState<string | null>(null);
+
+  // 从localStorage加载上次查看时间
+  useEffect(() => {
+    const stored = localStorage.getItem('products_last_viewed_at');
+    if (stored) {
+      setLastViewedAt(stored);
+    }
+  }, []);
+
+  // 判断是否为新增的产品组
+  const isNewGroup = (group: ProductGroup): boolean => {
+    if (!lastViewedAt) return false;
+    return new Date(group.createdAt).getTime() > new Date(lastViewedAt).getTime();
+  };
+
+  // 判断是否为新增的SKU
+  const isNewSku = (sku: ProductSku): boolean => {
+    if (!lastViewedAt) return false;
+    return new Date(sku.createdAt).getTime() > new Date(lastViewedAt).getTime();
+  };
+
+  // 计算新增数量
+  const newGroupsCount = groups.filter(isNewGroup).length;
+  const newSkusCount = skus.filter(isNewSku).length;
+
+  // 标记全部已读
+  const handleMarkAllRead = () => {
+    const now = new Date().toISOString();
+    localStorage.setItem('products_last_viewed_at', now);
+    setLastViewedAt(now);
+    toast.success('已标记全部为已读');
+  };
 
   useEffect(() => {
     loadData();
@@ -565,6 +602,32 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      {/* 新增产品提示条 */}
+      {(newGroupsCount > 0 || newSkusCount > 0) && (
+        <div className="flex items-center justify-between bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <span className="text-red-500 text-lg">🔔</span>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-900">有新增产品</div>
+              <div className="text-sm text-gray-600">
+                {newGroupsCount > 0 && <span className="text-red-600 font-medium">{newGroupsCount} 个新产品组</span>}
+                {newGroupsCount > 0 && newSkusCount > 0 && <span className="mx-1">·</span>}
+                {newSkusCount > 0 && <span className="text-red-600 font-medium">{newSkusCount} 个新SKU</span>}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleMarkAllRead}
+            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 font-medium shadow-sm"
+          >
+            <CheckCheck size={18} />
+            全部标记已读
+          </button>
+        </div>
+      )}
+
       {/* 主内容 */}
       <div>
         {loading ? (
@@ -589,21 +652,35 @@ export default function ProductsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {groups.map((group) => {
+            {/* 按updatedAt降序排序，最新更新的在最上面 */}
+            {[...groups].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).map((group) => {
               const groupSkus = groupedSkus[group.id] || [];
               if (searchQuery && groupSkus.length === 0) return null;
+              const groupIsNew = isNewGroup(group);
 
               return (
-                <div key={group.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                <div key={group.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow ${groupIsNew ? 'border-red-300 ring-1 ring-red-200' : 'border-gray-200'}`}>
                   {/* 产品组头部 */}
                   <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 px-6 py-5 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
-                          {group.prefix.substring(0, 2)}
+                        <div className="relative">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
+                            {group.prefix.substring(0, 2)}
+                          </div>
+                          {/* 新增红点标识 */}
+                          {groupIsNew && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                          )}
                         </div>
                         <div>
                           <div className="flex items-center gap-3">
+                            {/* 新增标签 */}
+                            {groupIsNew && (
+                              <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded animate-pulse">
+                                新
+                              </span>
+                            )}
                             <h2 className="text-xl font-bold text-gray-900">{group.groupNameZh}</h2>
                             <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
                               {group.prefix}
@@ -664,13 +741,13 @@ export default function ProductsPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {groupSkus.sort((a, b) => {
-                            // 按创建时间升序排序，新增的SKU显示在最下面
-                            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-                          }).map((sku) => (
-                            <tr key={sku.id} id={`sku-${sku.id}`} className="hover:bg-blue-50/30 transition-colors">
+                          {/* 按创建时间降序排序，最新的SKU显示在最上面 */}
+                          {[...groupSkus].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((sku) => {
+                            const skuIsNew = isNewSku(sku);
+                            return (
+                            <tr key={sku.id} id={`sku-${sku.id}`} className={`hover:bg-blue-50/30 transition-colors ${skuIsNew ? 'bg-red-50/30' : ''}`}>
                               <td className="px-6 py-4">
-                                <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
+                                <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
                                   {(() => {
                                     // 解析图片数组，取第一张
                                     let firstImage = null;
@@ -695,12 +772,21 @@ export default function ProductsPage() {
                                       <ImageIcon size={24} className="text-gray-400" />
                                     );
                                   })()}
+                                  {/* SKU新增红点标识 */}
+                                  {skuIsNew && (
+                                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                                  )}
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="text-sm font-semibold text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
-                                  {sku.productCode}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  {skuIsNew && (
+                                    <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded">新</span>
+                                  )}
+                                  <span className="text-sm font-semibold text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
+                                    {sku.productCode}
+                                  </span>
+                                </div>
                               </td>
                               <td className="px-6 py-4">
                                 <div className="text-sm font-medium text-gray-900 max-w-xs">
@@ -736,7 +822,8 @@ export default function ProductsPage() {
                                 </div>
                               </td>
                             </tr>
-                          ))}
+                          );
+                          })}
                         </tbody>
                       </table>
                     </div>
