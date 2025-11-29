@@ -482,7 +482,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setSelectedItems([])
   }
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
+  // 显示购物车中的商品种类数（而非总数量），适合B2B批发场景
+  const totalItems = items.length
   const totalPrice = items.reduce((sum, item) => sum + (Number(item.price) || 0) * item.quantity, 0)
 
   return (

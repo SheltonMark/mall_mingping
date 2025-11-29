@@ -51,6 +51,7 @@ export class OrderService {
       items,
       customParams,
       customerId,
+      erpCustomerId,
       salespersonId,
       orderNumber,
       companyName,
@@ -65,15 +66,28 @@ export class OrderService {
       throw new ConflictException('Order number already exists');
     }
 
-    // Verify customer and salesperson exist
-    const [customer, salesperson] = await Promise.all([
-      this.prisma.customer.findUnique({ where: { id: customerId } }),
-      this.prisma.salesperson.findUnique({ where: { id: salespersonId } }),
-    ]);
+    // 验证客户存在（优先使用 ERP 客户，兼容网站客户）
+    let customer = null;
+    let erpCustomer = null;
 
-    if (!customer) {
-      throw new BadRequestException('Customer not found');
+    if (erpCustomerId) {
+      // 使用 ERP 客户
+      erpCustomer = await this.prisma.erpCustomer.findUnique({ where: { id: erpCustomerId } });
+      if (!erpCustomer) {
+        throw new BadRequestException('ERP Customer not found');
+      }
+    } else if (customerId) {
+      // 兼容旧版：使用网站客户
+      customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
+      if (!customer) {
+        throw new BadRequestException('Customer not found');
+      }
+    } else {
+      throw new BadRequestException('Either customerId or erpCustomerId is required');
     }
+
+    // 验证业务员存在
+    const salesperson = await this.prisma.salesperson.findUnique({ where: { id: salespersonId } });
     if (!salesperson) {
       throw new BadRequestException('Salesperson not found');
     }
@@ -129,7 +143,8 @@ export class OrderService {
     const order = await this.prisma.order.create({
       data: {
         orderNumber,
-        customerId,
+        customerId: customerId || null,
+        erpCustomerId: erpCustomerId || null,
         salespersonId,
         companyName,
         ...orderData,
@@ -149,6 +164,7 @@ export class OrderService {
       },
       include: {
         customer: true,
+        erpCustomer: true,
         salesperson: {
           select: {
             id: true,

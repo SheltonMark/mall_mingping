@@ -94,6 +94,7 @@ model ErpCustomer {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   salesperson     Salesperson? @relation(fields: [salespersonId], references: [id])
+  orders          Order[]
 
   @@map("erp_customers")
 }
@@ -109,7 +110,8 @@ enum CustomerType {
 model Order {
   id              String   @id @default(uuid())
   orderNumber     String   @unique @map("order_number")
-  customerId      String   @map("customer_id")
+  customerId      String?  @map("customer_id")          // 网站客户ID（可选，兼容旧数据）
+  erpCustomerId   String?  @map("erp_customer_id")      // ERP客户ID（新订单使用）
   salespersonId   String   @map("salesperson_id")
   customerType    CustomerType @map("customer_type")
   orderType       OrderType @map("order_type")
@@ -127,7 +129,8 @@ model Order {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  customer        Customer @relation(fields: [customerId], references: [id])
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  erpCustomer     ErpCustomer? @relation(fields: [erpCustomerId], references: [id])
   salesperson     Salesperson @relation(fields: [salespersonId], references: [id])
   customParams    OrderCustomParam[]
   items           OrderItem[]

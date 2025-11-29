@@ -130,6 +130,35 @@ export class ErpOrderSyncService {
   }
 
   /**
+   * 从 ERP 客户表获取税率 (RTO_TAX)
+   * @param pool 数据库连接池
+   * @param cusNo ERP 客户编号
+   * @returns 税率值（如 13 表示 13%），默认返回 13
+   */
+  private async getCustomerTaxRate(
+    pool: sql.ConnectionPool,
+    cusNo: string,
+  ): Promise<number> {
+    try {
+      const result = await pool.request()
+        .input('CUS_NO', sql.NVarChar(12), cusNo)
+        .query(`SELECT RTO_TAX FROM CUST WHERE CUS_NO = @CUS_NO`);
+
+      if (result.recordset.length > 0 && result.recordset[0].RTO_TAX != null) {
+        const taxRate = parseFloat(result.recordset[0].RTO_TAX);
+        this.logger.log(`[ERP Sync] 客户 ${cusNo} 税率: ${taxRate}%`);
+        return taxRate;
+      }
+
+      this.logger.warn(`[ERP Sync] 客户 ${cusNo} 未找到税率，使用默认值 13%`);
+      return 13;
+    } catch (error) {
+      this.logger.error(`[ERP Sync] 获取客户税率失败: ${error.message}，使用默认值 13%`);
+      return 13;
+    }
+  }
+
+  /**
    * 获取 ERP 业务员编号
    */
   private async getErpSalespersonNo(
@@ -171,6 +200,7 @@ export class ErpOrderSyncService {
           },
         },
         customer: true,
+        erpCustomer: true,
         salesperson: true,
         customParams: true,
       },
@@ -268,7 +298,10 @@ export class ErpOrderSyncService {
 
       this.logger.log(`[ERP Sync] MF_POS 写入成功`);
 
-      // 7. 写入明细表 TF_POS 和扩展表 TF_POS_Z
+      // 7. 获取客户税率
+      const customerTaxRate = await this.getCustomerTaxRate(pool, erpCustomerNo);
+
+      // 8. 写入明细表 TF_POS 和扩展表 TF_POS_Z
       for (let i = 0; i < order.items.length; i++) {
         const item = order.items[i];
         const itemNumber = item.itemNumber || i + 1;
@@ -276,14 +309,14 @@ export class ErpOrderSyncService {
         // 提取中文附加属性
         const chineseAttribute = extractChineseAttribute(item.additionalAttributes);
 
-        // 7.1 写入 TF_POS 主表
+        // 8.1 写入 TF_POS 主表
         // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
         // 用truncateByBytes确保中文字符串不超过字段的字节限制
-        // 税率固定13%，计算AMT和AMTN
+        // 从客户获取税率，计算AMT和AMTN
         const qty = item.quantity;
         const up = item.price.toNumber();
         const amt = qty * up; // 含税金额
-        const taxRto = 13; // 税率13%
+        const taxRto = customerTaxRate; // 从客户获取的税率
         const amtn = amt / (1 + taxRto / 100) * (1 + taxRto / 100); // 本位币金额（这里等于amt）
         const tax = 0; // 税额设为0（根据已有订单的模式）
 
@@ -359,7 +392,7 @@ export class ErpOrderSyncService {
             )
           `);
 
-        // 7.2 写入 TF_POS_Z 扩展表（7个包装字段）
+        // 8.2 写入 TF_POS_Z 扩展表（7个包装字段）
         const tfPosZRequest = new sql.Request(transaction);
         await tfPosZRequest
           .input('OS_NO', sql.NVarChar(20), erpOrderNo)
@@ -385,11 +418,11 @@ export class ErpOrderSyncService {
         this.logger.log(`[ERP Sync] 明细 ${itemNumber} 写入成功`);
       }
 
-      // 8. 提交事务
+      // 9. 提交事务
       await transaction.commit();
       this.logger.log(`[ERP Sync] 订单同步完成: ${erpOrderNo}`);
 
-      // 9. 更新网站订单的 ERP 同步状态
+      // 10. 更新网站订单的 ERP 同步状态
       await this.prisma.order.update({
         where: { id: orderId },
         data: {

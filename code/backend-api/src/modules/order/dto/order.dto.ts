@@ -143,7 +143,12 @@ export class CreateOrderDto {
   orderNumber: string;
 
   @IsUUID()
-  customerId: string;
+  @IsOptional()
+  customerId?: string;  // 网站客户ID（可选，兼容旧数据）
+
+  @IsUUID()
+  @IsOptional()
+  erpCustomerId?: string;  // ERP客户ID（新订单使用）
 
   @IsUUID()
   salespersonId: string;

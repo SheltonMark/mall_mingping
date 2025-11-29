@@ -12,14 +12,15 @@ import Link from 'next/link'
 
 interface Customer {
   id: string
+  cusNo: string        // ERP客户编号
   name: string
-  email: string
+  shortName?: string
+  email?: string
   contactPerson?: string
   phone?: string
   address?: string
   country?: string
-  customerType: 'NEW' | 'OLD'
-  remarks?: string
+  salespersonNo?: string
 }
 
 interface OrderItem {
@@ -115,17 +116,17 @@ export default function OrderConfirmationPage() {
     }
   }
 
-  // 加载客户列表
+  // 加载ERP客户列表
   const loadCustomers = async () => {
     try {
       const token = localStorage.getItem('salesperson_token')
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
-       // 只加载当前业务员的客户
+      // 加载当前业务员的ERP客户
       const salespersonId = salesperson?.id
       const url = salespersonId
-        ? `${API_URL}/customers?salespersonId=${salespersonId}`
-        : `${API_URL}/customers`
+        ? `${API_URL}/erp/erp-customers?salespersonId=${salespersonId}&limit=1000`
+        : `${API_URL}/erp/erp-customers?limit=1000`
 
       const response = await fetch(url, {
         headers: {
@@ -135,7 +136,7 @@ export default function OrderConfirmationPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setCustomers(data.data || data)
+        setCustomers(data.data || [])
       }
     } catch (err) {
       console.error('加载客户列表失败:', err)
@@ -257,12 +258,12 @@ export default function OrderConfirmationPage() {
       const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
       const orderNumber = `SO${year}${month}${day}${hours}${minutes}${seconds}-${random}`
 
-      // 准备订单数据
+      // 准备订单数据（使用ERP客户ID）
       const orderData = {
         orderNumber,
-        customerId: selectedCustomerId,
+        erpCustomerId: selectedCustomerId,  // 使用ERP客户ID
         salespersonId: salesperson?.id,
-        customerType: selectedCustomer?.customerType || 'NEW',
+        customerType: 'OLD',  // ERP客户默认为老客户
         orderType,
         orderDate: new Date(orderDate).toISOString(),
         items: orderItems.map((item, index) => ({
@@ -425,17 +426,9 @@ export default function OrderConfirmationPage() {
 
           {/* 客户信息 */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <User className="text-primary" size={24} />
-                <h2 className="text-xl font-bold text-gray-900">客户信息</h2>
-              </div>
-              <Link
-                href="/salesperson/customer/new?returnUrl=/order-confirmation"
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
-              >
-                + 新增客户
-              </Link>
+            <div className="flex items-center gap-3 mb-6">
+              <User className="text-primary" size={24} />
+              <h2 className="text-xl font-bold text-gray-900">客户信息</h2>
             </div>
 
             <div className="mb-6">
@@ -456,8 +449,8 @@ export default function OrderConfirmationPage() {
             {selectedCustomer && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 rounded-lg">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">客户类型</label>
-                  <p className="text-gray-900">{selectedCustomer.customerType === 'NEW' ? '新客户' : '老客户'}</p>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">客户编号</label>
+                  <p className="text-gray-900 font-mono">{selectedCustomer.cusNo || '-'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">联系人</label>
