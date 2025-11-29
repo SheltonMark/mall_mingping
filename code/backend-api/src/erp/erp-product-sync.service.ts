@@ -427,9 +427,19 @@ export class ErpProductSyncService {
 
   /**
    * 更新产品组的计算字段（最低价、最高价、规格数量、主图）
+   * @param selectedPrefixes 可选，只更新指定前缀的产品组。如果不传，更新所有产品组。
+   * @param skipTimestampCheck 如果为 true，即使值没变也会更新（用于全量同步）。默认 false。
    */
-  private async updateGroupCalculatedFields(): Promise<void> {
+  private async updateGroupCalculatedFields(
+    selectedPrefixes?: string[],
+    skipTimestampCheck: boolean = false,
+  ): Promise<void> {
+    const where = selectedPrefixes && selectedPrefixes.length > 0
+      ? { prefix: { in: selectedPrefixes } }
+      : undefined;
+
     const groups = await this.prisma.productGroup.findMany({
+      where,
       include: {
         skus: {
           select: {
@@ -445,31 +455,42 @@ export class ErpProductSyncService {
         .map(s => s.price?.toNumber())
         .filter((p): p is number => p !== null && p !== undefined);
 
-      const minPrice = prices.length > 0 ? Math.min(...prices) : null;
-      const maxPrice = prices.length > 0 ? Math.max(...prices) : null;
-      const specCount = group.skus.length;
+      const newMinPrice = prices.length > 0 ? Math.min(...prices) : null;
+      const newMaxPrice = prices.length > 0 ? Math.max(...prices) : null;
+      const newSpecCount = group.skus.length;
 
       // 获取主图（第一个有图片的SKU的第一张图）
-      let mainImage: string | null = null;
+      let newMainImage: string | null = null;
       for (const sku of group.skus) {
         if (sku.images && Array.isArray(sku.images) && sku.images.length > 0) {
           const firstImage = sku.images[0] as { url?: string };
           if (firstImage.url) {
-            mainImage = firstImage.url;
+            newMainImage = firstImage.url;
             break;
           }
         }
       }
 
-      await this.prisma.productGroup.update({
-        where: { id: group.id },
-        data: {
-          minPrice,
-          maxPrice,
-          specCount,
-          mainImage,
-        },
-      });
+      // 只有在值真正变化时才更新，避免触发不必要的 @updatedAt
+      const currentMinPrice = group.minPrice?.toNumber() ?? null;
+      const currentMaxPrice = group.maxPrice?.toNumber() ?? null;
+      const hasChanges = skipTimestampCheck ||
+        currentMinPrice !== newMinPrice ||
+        currentMaxPrice !== newMaxPrice ||
+        group.specCount !== newSpecCount ||
+        group.mainImage !== newMainImage;
+
+      if (hasChanges) {
+        await this.prisma.productGroup.update({
+          where: { id: group.id },
+          data: {
+            minPrice: newMinPrice,
+            maxPrice: newMaxPrice,
+            specCount: newSpecCount,
+            mainImage: newMainImage,
+          },
+        });
+      }
     }
   }
 
@@ -913,8 +934,8 @@ export class ErpProductSyncService {
         }
       }
 
-      // 更新产品组的计算字段
-      await this.updateGroupCalculatedFields();
+      // 更新产品组的计算字段（只更新选中的产品组）
+      await this.updateGroupCalculatedFields(selectedGroups);
 
       const duration = Date.now() - startTime;
       this.logger.log(
