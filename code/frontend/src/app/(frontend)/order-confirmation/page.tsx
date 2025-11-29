@@ -657,7 +657,7 @@ export default function OrderConfirmationPage() {
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">预交日</label>
                             <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
-                              {item.expectedDeliveryDate || '-'}
+                              {item.expectedDeliveryDate ? item.expectedDeliveryDate.split('T')[0] : '-'}
                             </div>
                           </div>
                         </div>
