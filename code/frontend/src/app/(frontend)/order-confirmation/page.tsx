@@ -619,6 +619,13 @@ export default function OrderConfirmationPage() {
                       <div>
                         <h4 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary">基本信息</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* 第一行：客户料号、数量、单价 */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">客户料号</label>
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.customerProductCode || '-'}
+                            </div>
+                          </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">数量 <span className="text-red-500">*</span></label>
                             <input
@@ -630,7 +637,7 @@ export default function OrderConfirmationPage() {
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                           </div>
-                          <div className="md:col-span-2">
+                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">单价 <span className="text-red-500">*</span></label>
                             <input
                               type="number"
@@ -642,12 +649,7 @@ export default function OrderConfirmationPage() {
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">客户料号</label>
-                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
-                              {item.customerProductCode || '-'}
-                            </div>
-                          </div>
+                          {/* 第二行：未税本位币、预交日、空位 */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">未税本位币</label>
                             <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
