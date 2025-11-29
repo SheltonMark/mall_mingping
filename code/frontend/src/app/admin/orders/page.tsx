@@ -89,6 +89,7 @@ interface OrderItem {
   expectedDeliveryDate?: string;
   supplierNote?: string;
   summary?: string;
+  untaxedLocalCurrency?: number;
 }
 
 interface Salesperson {
@@ -278,7 +279,7 @@ export default function AdminOrdersPage() {
       }
 
       // 数字字段：尝试转换
-      const numberFields = ['packagingConversion', 'netWeight', 'grossWeight', 'packingQuantity', 'cartonQuantity', 'volume', 'quantity', 'price'];
+      const numberFields = ['packagingConversion', 'netWeight', 'grossWeight', 'packingQuantity', 'cartonQuantity', 'volume', 'quantity', 'price', 'untaxedLocalCurrency'];
       if (numberFields.includes(key) && typeof value === 'string') {
         const num = parseFloat(value);
         cleaned[key] = isNaN(num) ? undefined : num;
@@ -292,9 +293,11 @@ export default function AdminOrdersPage() {
   // 开始编辑商品项
   const handleEditItem = (item: OrderItem) => {
     setEditingItemId(item.id);
+    const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
     setEditingData({
-      price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+      price,
       quantity: item.quantity,
+      untaxedLocalCurrency: item.untaxedLocalCurrency ?? (price * item.quantity),
       packagingConversion: item.packagingConversion,
       packagingUnit: item.packagingUnit,
       weightUnit: item.weightUnit,
@@ -377,6 +380,7 @@ export default function AdminOrdersPage() {
           volume: item.volume,
           supplierNote: item.supplierNote,
           summary: item.summary,
+          untaxedLocalCurrency: item.untaxedLocalCurrency,
         };
       });
 
@@ -1086,7 +1090,13 @@ export default function AdminOrdersPage() {
                                 value={editingData.price ?? ''}
                                 onChange={(e) => {
                                   const val = e.target.value;
-                                  setEditingData({...editingData, price: val ? parseFloat(val) : 0});
+                                  const newPrice = val ? parseFloat(val) : 0;
+                                  const newData = {...editingData, price: newPrice};
+                                  // 自动计算未税本位币
+                                  if (editingData.quantity) {
+                                    newData.untaxedLocalCurrency = newPrice * editingData.quantity;
+                                  }
+                                  setEditingData(newData);
                                 }}
                                 className="w-full px-3 py-2 border rounded text-sm font-semibold"
                                 placeholder="请输入单价"
@@ -1101,7 +1111,17 @@ export default function AdminOrdersPage() {
                                 value={editingData.quantity ?? ''}
                                 onChange={(e) => {
                                   const val = e.target.value;
-                                  setEditingData({...editingData, quantity: val ? parseInt(val) : 1});
+                                  const newQuantity = val ? parseInt(val) : 1;
+                                  const newData = {...editingData, quantity: newQuantity};
+                                  // 自动计算箱数
+                                  if (editingData.packingQuantity && newQuantity) {
+                                    newData.cartonQuantity = Math.ceil(newQuantity / editingData.packingQuantity);
+                                  }
+                                  // 自动计算未税本位币
+                                  if (editingData.price) {
+                                    newData.untaxedLocalCurrency = Number(editingData.price) * newQuantity;
+                                  }
+                                  setEditingData(newData);
                                 }}
                                 className="w-full px-3 py-2 border rounded text-sm font-semibold"
                                 placeholder="请输入数量"
