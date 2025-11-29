@@ -286,6 +286,7 @@ export class ErpEntitySyncService {
         where: { id: orderId },
         select: {
           customerId: true,
+          erpCustomerId: true,
           salespersonId: true,
         },
       });
@@ -306,20 +307,46 @@ export class ErpEntitySyncService {
         };
       }
 
-      // 再同步客户
-      const customerResult = await this.syncCustomerToErp(order.customerId);
-      if (!customerResult.success) {
+      // 处理客户：优先使用ERP客户，否则同步网站客户
+      let customerErpNo: string;
+      let customerAlreadyExists = true;
+
+      if (order.erpCustomerId) {
+        // 使用ERP客户，直接获取cusNo
+        const erpCustomer = await this.prisma.erpCustomer.findUnique({
+          where: { id: order.erpCustomerId },
+          select: { cusNo: true },
+        });
+        if (!erpCustomer) {
+          return {
+            success: false,
+            error: `ERP客户 ${order.erpCustomerId} 不存在`,
+          };
+        }
+        customerErpNo = erpCustomer.cusNo;
+      } else if (order.customerId) {
+        // 同步网站客户到ERP
+        const customerResult = await this.syncCustomerToErp(order.customerId);
+        if (!customerResult.success) {
+          return {
+            success: false,
+            error: `客户同步失败: ${customerResult.error}`,
+          };
+        }
+        customerErpNo = customerResult.erpCustomerNo!;
+        customerAlreadyExists = customerResult.alreadyExists || false;
+      } else {
         return {
           success: false,
-          error: `客户同步失败: ${customerResult.error}`,
+          error: '订单没有关联客户',
         };
       }
 
       return {
         success: true,
         customerResult: {
-          erpNo: customerResult.erpCustomerNo!,
-          alreadyExists: customerResult.alreadyExists || false,
+          erpNo: customerErpNo,
+          alreadyExists: customerAlreadyExists,
         },
         salespersonResult: {
           erpNo: salespersonResult.erpSalespersonNo!,

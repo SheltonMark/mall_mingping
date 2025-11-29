@@ -231,7 +231,8 @@ export class ErpOrderSyncService {
     autoSyncedSalesperson = !entitySyncResult.salespersonResult?.alreadyExists;
 
     if (autoSyncedCustomer) {
-      this.logger.log(`[ERP Sync] 自动同步客户: ${order.customer.name} -> ${entitySyncResult.customerResult?.erpNo}`);
+      const customerName = order.customer?.name || order.erpCustomer?.name || '未知客户';
+      this.logger.log(`[ERP Sync] 自动同步客户: ${customerName} -> ${entitySyncResult.customerResult?.erpNo}`);
     }
     if (autoSyncedSalesperson) {
       this.logger.log(`[ERP Sync] 自动同步业务员: ${order.salesperson.chineseName} -> ${entitySyncResult.salespersonResult?.erpNo}`);

@@ -67,8 +67,8 @@ export class OrderService {
     }
 
     // 验证客户存在（优先使用 ERP 客户，兼容网站客户）
-    let customer = null;
-    let erpCustomer = null;
+    let customer: any = null;
+    let erpCustomer: any = null;
 
     if (erpCustomerId) {
       // 使用 ERP 客户
@@ -561,10 +561,12 @@ export class OrderService {
     // Row 4-5: Customer and Salesperson Information
     worksheet.getCell('A4').value = '客户信息';
     worksheet.getCell('A4').font = { bold: true, size: 11 };
-    worksheet.getCell('A5').value = `公司名称: ${order.customer.name}`;
-    worksheet.getCell('H5').value = `联系人: ${order.customer.contactPerson || ''}`;
-    worksheet.getCell('O5').value = `电话: ${order.customer.phone || ''}`;
-    worksheet.getCell('U5').value = `地址: ${order.customer.address || ''}`;
+    // 支持网站客户和ERP客户
+    const customerInfo = order.customer || order.erpCustomer;
+    worksheet.getCell('A5').value = `公司名称: ${customerInfo?.name || ''}`;
+    worksheet.getCell('H5').value = `联系人: ${customerInfo?.contactPerson || ''}`;
+    worksheet.getCell('O5').value = `电话: ${customerInfo?.phone || ''}`;
+    worksheet.getCell('U5').value = `地址: ${customerInfo?.address || ''}`;
 
     worksheet.getCell('A6').value = `业务员: ${order.salesperson.chineseName} (${order.salesperson.accountId})`;
     worksheet.getCell('H6').value = `订单号: ${order.orderNumber}`;
@@ -711,10 +713,11 @@ export class OrderService {
       where: { id: { in: orderIds } },
       include: {
         customer: true,
+        erpCustomer: true,
         salesperson: {
           select: {
             chineseName: true,
-            
+
           },
         },
         items: {
@@ -733,18 +736,21 @@ export class OrderService {
       throw new NotFoundException('No orders found');
     }
 
-    const data = orders.map((order) => ({
-      订单号: order.orderNumber,
-      订单日期: order.orderDate.toISOString().split('T')[0],
-      订单类型: order.orderType,
-      客户类型: order.customerType,
-      状态: order.status,
-      客户: order.customer.name,
-      联系人: order.customer.contactPerson || '-',
-      业务员: `${order.salesperson.chineseName}`,
-      订单总额: order.totalAmount?.toNumber() || 0,
-      明细数量: order.items.length,
-    }));
+    const data = orders.map((order) => {
+      const customerInfo = order.customer || order.erpCustomer;
+      return {
+        订单号: order.orderNumber,
+        订单日期: order.orderDate.toISOString().split('T')[0],
+        订单类型: order.orderType,
+        客户类型: order.customerType,
+        状态: order.status,
+        客户: customerInfo?.name || '-',
+        联系人: customerInfo?.contactPerson || '-',
+        业务员: `${order.salesperson.chineseName}`,
+        订单总额: order.totalAmount?.toNumber() || 0,
+        明细数量: order.items.length,
+      };
+    });
 
     const columns = [
       { header: '订单号', key: '订单号', width: 20 },
