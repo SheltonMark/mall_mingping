@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import { SalespersonAuthService } from './salesperson-auth.service';
 import { SalespersonLoginDto, VerifyPasswordDto } from './dto/salesperson-auth.dto';
-import { SalespersonAuthGuard } from './salesperson-auth.guard';
+import { JwtSalespersonGuard } from './jwt-salesperson.guard';
 
 @Controller('salesperson-auth')
 export class SalespersonAuthController {
@@ -15,7 +15,7 @@ export class SalespersonAuthController {
 
   @Post('verify-password')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(SalespersonAuthGuard)
+  @UseGuards(JwtSalespersonGuard)
   async verifyPassword(@Request() req, @Body() verifyDto: VerifyPasswordDto) {
     return this.salespersonAuthService.verifyPassword(req.user.sub, verifyDto.password);
   }

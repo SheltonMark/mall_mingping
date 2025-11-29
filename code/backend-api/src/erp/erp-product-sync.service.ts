@@ -572,7 +572,7 @@ export class ErpProductSyncService {
         FROM MARKS
         WHERE MARK_NO IN ('${markNos.join("','")}')
       `);
-      const marksMap = new Map(marksResult.recordset.map(m => [m.MARK_NO, m]));
+      const marksMap = new Map<string, ErpMark>(marksResult.recordset.map(m => [m.MARK_NO, m]));
 
       // 按品名前缀分组产品
       const groupedProducts = new Map<string, typeof products>();
@@ -739,7 +739,7 @@ export class ErpProductSyncService {
         FROM MARKS
         WHERE MARK_NO IN ('${markNos.join("','")}')
       `);
-      const marksMap = new Map(marksResult.recordset.map(m => [m.MARK_NO, m]));
+      const marksMap = new Map<string, ErpMark>(marksResult.recordset.map(m => [m.MARK_NO, m]));
 
       // 获取附加属性
       const prdMarksResult = await pool.request().query<{
