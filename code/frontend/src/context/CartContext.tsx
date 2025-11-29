@@ -258,7 +258,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (isAuthenticated && authToken) {
       // Add to database with all extended fields
       try {
-        await fetch(`${API_URL}/cart`, {
+        const response = await fetch(`${API_URL}/cart`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -266,6 +266,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           },
           body: JSON.stringify(buildCartItemBody(newItem)),
         })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Add to cart API error:', response.status, errorData)
+          throw new Error(errorData.message || `HTTP ${response.status}`)
+        }
 
         // Reload cart from database
         await loadUserCartFromDB(authToken)

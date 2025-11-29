@@ -257,45 +257,50 @@ export default function ProductDetailPage() {
   }
 
   // 确认加入购物车
-  const handleConfirmAddToCart = () => {
+  const handleConfirmAddToCart = async () => {
     if (!selectedSku || !productGroup) return
 
-    addItem({
-      skuId: selectedSku.id,
-      sku: selectedSku.productCode,
-      groupName: productGroup.groupNameEn
-        ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
-        : productGroup.groupNameZh,
-      productName: selectedSku.productName,
-      productNameEn: selectedSku.productNameEn,
-      specification: selectedSku.specification,
-      specificationEn: selectedSku.specificationEn,
-      optionalAttributes: selectedAttribute,
-      colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
-      quantity: quantity,
-      price: cartFormData.price || 0,
-      mainImage: images[0] || (productGroup as any).mainImage || '/images/placeholder.jpg',
-      // 扩展字段
-      productCategory: cartFormData.productCategory,
-      customerProductCode: cartFormData.customerProductCode || undefined,
-      untaxedLocalCurrency: cartFormData.untaxedLocalCurrency,
-      expectedDeliveryDate: cartFormData.expectedDeliveryDate || undefined,
-      packingQuantity: cartFormData.packingQuantity,
-      cartonQuantity: cartFormData.cartonQuantity,
-      packagingMethod: cartFormData.packagingMethod || undefined,
-      paperCardCode: cartFormData.paperCardCode || undefined,
-      washLabelCode: cartFormData.washLabelCode || undefined,
-      outerCartonCode: cartFormData.outerCartonCode || undefined,
-      cartonSpecification: cartFormData.cartonSpecification || undefined,
-      volume: cartFormData.volume,
-      supplierNote: cartFormData.supplierNote || undefined,
-      summary: cartFormData.summary || undefined,
-    })
+    try {
+      await addItem({
+        skuId: selectedSku.id,
+        sku: selectedSku.productCode,
+        groupName: productGroup.groupNameEn
+          ? `${productGroup.groupNameZh}/${productGroup.groupNameEn}`
+          : productGroup.groupNameZh,
+        productName: selectedSku.productName,
+        productNameEn: selectedSku.productNameEn,
+        specification: selectedSku.specification,
+        specificationEn: selectedSku.specificationEn,
+        optionalAttributes: selectedAttribute,
+        colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
+        quantity: quantity,
+        price: cartFormData.price || 0,
+        mainImage: images[0] || (productGroup as any).mainImage || '/images/placeholder.jpg',
+        // 扩展字段
+        productCategory: cartFormData.productCategory,
+        customerProductCode: cartFormData.customerProductCode || undefined,
+        untaxedLocalCurrency: cartFormData.untaxedLocalCurrency,
+        expectedDeliveryDate: cartFormData.expectedDeliveryDate || undefined,
+        packingQuantity: cartFormData.packingQuantity,
+        cartonQuantity: cartFormData.cartonQuantity,
+        packagingMethod: cartFormData.packagingMethod || undefined,
+        paperCardCode: cartFormData.paperCardCode || undefined,
+        washLabelCode: cartFormData.washLabelCode || undefined,
+        outerCartonCode: cartFormData.outerCartonCode || undefined,
+        cartonSpecification: cartFormData.cartonSpecification || undefined,
+        volume: cartFormData.volume,
+        supplierNote: cartFormData.supplierNote || undefined,
+        summary: cartFormData.summary || undefined,
+      })
 
-    setShowCartModal(false)
-    setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 2000)
-    toast.success(language === 'zh' ? '已加入购物车' : 'Added to cart')
+      setShowCartModal(false)
+      setAddedToCart(true)
+      setTimeout(() => setAddedToCart(false), 2000)
+      toast.success(language === 'zh' ? '已加入购物车' : 'Added to cart')
+    } catch (error: any) {
+      console.error('Failed to add to cart:', error)
+      toast.error(language === 'zh' ? '加入购物车失败，请重试' : 'Failed to add to cart, please try again')
+    }
   }
 
   if (loading) {
