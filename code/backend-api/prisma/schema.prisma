@@ -210,7 +210,7 @@ model Category {
   id              String   @id @default(uuid())
   code            String   @unique // 分类代码 (如: MP, TB, T, B, S, CG, CD, MB, QC, CW, W)
   nameZh          String   @map("name_zh") // 中文名称 (如: 组合套装, 拖把类)
-  nameEn          String   @map("name_en") // 英文名称 (如: Combo Sets, Mops)
+  nameEn          String?  @map("name_en") // 英文名称 (如: Combo Sets, Mops)
   icon            String? // 图标URL
   sortOrder       Int      @default(0) @map("sort_order")
   isAutoCreated   Boolean  @default(false) @map("is_auto_created") // 是否自动创建

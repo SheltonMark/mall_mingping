@@ -645,9 +645,17 @@ export class ErpProductSyncService {
 
         if (isNewGroup) newGroups++;
 
+        // 判断MARK_NAME是否是通用特征组（包含"颜色特征组"或"特征组"字样）
+        // 如果是，则使用品名前缀作为产品组名称（与实际同步逻辑保持一致）
+        let groupName = prefix;
+        if (mark?.MARK_NAME) {
+          const isGenericMark = mark.MARK_NAME.includes('特征组') || mark.MARK_NAME.includes('特征');
+          groupName = isGenericMark ? prefix : mark.MARK_NAME;
+        }
+
         previewGroups.push({
           prefix,
-          groupName: mark?.MARK_NAME || prefix,
+          groupName,
           categoryCode,
           categoryExists,
           isNew: isNewGroup,
