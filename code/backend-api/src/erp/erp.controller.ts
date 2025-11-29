@@ -45,6 +45,14 @@ class ProductSyncDto {
   days?: number;         // 增量同步天数，默认 1
 }
 
+class ProductSyncSelectedDto {
+  @IsArray()
+  @IsString({ each: true })
+  selectedGroups: string[]; // 选中的产品组前缀列表
+
+  selectedSkus: Record<string, string[]>; // 每个产品组下选中的SKU编码列表
+}
+
 @Controller('erp')
 @UseGuards(JwtAuthGuard)
 export class ErpController {
@@ -216,6 +224,29 @@ export class ErpController {
       baselineTime: baseline.toISOString(),
       baselineTimeFormatted: baseline.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }),
     };
+  }
+
+  /**
+   * 预览待同步的产品（不实际同步）
+   * GET /erp/products/preview
+   * 返回待同步的产品组和SKU列表，供用户选择
+   */
+  @Get('products/preview')
+  async previewProducts() {
+    return this.erpProductSyncService.previewProducts();
+  }
+
+  /**
+   * 选择性同步产品
+   * POST /erp/products/sync-selected
+   * Body: { selectedGroups: string[], selectedSkus: Record<string, string[]> }
+   */
+  @Post('products/sync-selected')
+  async syncSelectedProducts(@Body() dto: ProductSyncSelectedDto) {
+    return this.erpProductSyncService.syncSelectedProducts(
+      dto.selectedGroups,
+      dto.selectedSkus,
+    );
   }
 
   // ============ 测试数据管理接口 ============

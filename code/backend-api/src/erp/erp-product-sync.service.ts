@@ -15,6 +15,33 @@ export interface ProductSyncResult {
   error?: string;
 }
 
+// 预览数据结构
+export interface ProductPreviewSku {
+  productCode: string;
+  productName: string;
+  specification: string | null;
+  isNew: boolean; // 是否为新SKU
+}
+
+export interface ProductPreviewGroup {
+  prefix: string;
+  groupName: string;
+  categoryCode: string;
+  categoryExists: boolean;
+  isNew: boolean; // 是否为新产品组
+  skus: ProductPreviewSku[];
+}
+
+export interface ProductPreviewResult {
+  success: boolean;
+  groups: ProductPreviewGroup[];
+  totalGroups: number;
+  totalSkus: number;
+  newGroups: number;
+  newSkus: number;
+  error?: string;
+}
+
 interface ErpProduct {
   PRD_NO: string;      // 产品编号 (如 C02.01.0180)
   NAME: string;        // 品名 (如 MB001-涤锦经编抹布10PCS)
@@ -472,5 +499,412 @@ export class ErpProductSyncService {
       await this.recordSyncTime();
     }
     return result;
+  }
+
+  /**
+   * 预览待同步的产品数据（不实际同步）
+   * 用于让用户选择要导入的产品组和SKU
+   */
+  async previewProducts(): Promise<ProductPreviewResult> {
+    const syncConfig = getErpSyncConfig();
+
+    if (!syncConfig.enabled) {
+      return {
+        success: false,
+        groups: [],
+        totalGroups: 0,
+        totalSkus: 0,
+        newGroups: 0,
+        newSkus: 0,
+        error: 'ERP 同步未启用',
+      };
+    }
+
+    try {
+      const pool = await this.getPool();
+
+      // 获取同步基准时间
+      const baselineTime = await this.getSyncBaselineTime();
+      const sinceDateStr = baselineTime.toISOString().split('T')[0];
+
+      // 查询 ERP 产品数据
+      const productQuery = `
+        SELECT PRD_NO,
+               CAST(NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS NAME,
+               CAST(SPC COLLATE Chinese_PRC_CI_AS AS NVARCHAR(MAX)) AS SPC,
+               MARK_NO,
+               RECORD_DD
+        FROM PRDT
+        WHERE MARK_NO IS NOT NULL AND MARK_NO <> ''
+          AND RECORD_DD >= '${sinceDateStr}'
+      `;
+
+      const productsResult = await pool.request().query<{
+        PRD_NO: string;
+        NAME: string;
+        SPC: string | null;
+        MARK_NO: string | null;
+        RECORD_DD: Date;
+      }>(productQuery);
+      const products = productsResult.recordset;
+
+      if (products.length === 0) {
+        return {
+          success: true,
+          groups: [],
+          totalGroups: 0,
+          totalSkus: 0,
+          newGroups: 0,
+          newSkus: 0,
+        };
+      }
+
+      // 获取所有相关的特征组
+      const markNos = [...new Set(products.map(p => p.MARK_NO).filter(Boolean))];
+      const marksResult = await pool.request().query<{
+        MARK_NO: string;
+        MARK_NAME: string;
+        REM: string | null;
+      }>(`
+        SELECT MARK_NO,
+               CAST(MARK_NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS MARK_NAME,
+               CAST(REM COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS REM
+        FROM MARKS
+        WHERE MARK_NO IN ('${markNos.join("','")}')
+      `);
+      const marksMap = new Map(marksResult.recordset.map(m => [m.MARK_NO, m]));
+
+      // 按品名前缀分组产品
+      const groupedProducts = new Map<string, typeof products>();
+      for (const product of products) {
+        const prefix = this.extractPrefix(product.NAME);
+        if (!groupedProducts.has(prefix)) {
+          groupedProducts.set(prefix, []);
+        }
+        groupedProducts.get(prefix)!.push(product);
+      }
+
+      // 获取现有的产品组和SKU
+      const existingGroups = await this.prisma.productGroup.findMany({
+        select: { prefix: true },
+      });
+      const existingGroupPrefixes = new Set(existingGroups.map(g => g.prefix));
+
+      const existingSkus = await this.prisma.productSku.findMany({
+        select: { productCode: true },
+      });
+      const existingSkuCodes = new Set(existingSkus.map(s => s.productCode));
+
+      // 获取所有分类
+      const categories = await this.prisma.category.findMany({
+        select: { code: true },
+      });
+      const categoryCodes = new Set(categories.map(c => c.code));
+
+      // 构建预览结果
+      const previewGroups: ProductPreviewGroup[] = [];
+      let totalSkus = 0;
+      let newGroups = 0;
+      let newSkus = 0;
+
+      for (const [prefix, groupProducts] of groupedProducts) {
+        const firstProduct = groupProducts[0];
+        const markNo = firstProduct.MARK_NO;
+        const mark = markNo ? marksMap.get(markNo) : null;
+        const categoryCode = this.extractCategoryCode(prefix);
+        const categoryExists = categoryCodes.has(categoryCode);
+        const isNewGroup = !existingGroupPrefixes.has(prefix);
+
+        const skus: ProductPreviewSku[] = groupProducts.map(product => {
+          const isNewSku = !existingSkuCodes.has(product.PRD_NO);
+          if (isNewSku) newSkus++;
+          totalSkus++;
+          return {
+            productCode: product.PRD_NO,
+            productName: product.NAME,
+            specification: product.SPC,
+            isNew: isNewSku,
+          };
+        });
+
+        if (isNewGroup) newGroups++;
+
+        previewGroups.push({
+          prefix,
+          groupName: mark?.MARK_NAME || prefix,
+          categoryCode,
+          categoryExists,
+          isNew: isNewGroup,
+          skus,
+        });
+      }
+
+      // 按前缀排序
+      previewGroups.sort((a, b) => a.prefix.localeCompare(b.prefix));
+
+      return {
+        success: true,
+        groups: previewGroups,
+        totalGroups: previewGroups.length,
+        totalSkus,
+        newGroups,
+        newSkus,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[产品预览] 失败: ${errorMessage}`);
+      return {
+        success: false,
+        groups: [],
+        totalGroups: 0,
+        totalSkus: 0,
+        newGroups: 0,
+        newSkus: 0,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
+   * 选择性同步产品
+   * @param selectedGroups 选中的产品组前缀列表
+   * @param selectedSkus 选中的SKU编码列表（按产品组分组）
+   */
+  async syncSelectedProducts(
+    selectedGroups: string[],
+    selectedSkus: Record<string, string[]>,
+  ): Promise<ProductSyncResult> {
+    const startTime = Date.now();
+    const syncConfig = getErpSyncConfig();
+
+    if (!syncConfig.enabled) {
+      return {
+        success: false,
+        groupsCreated: 0,
+        groupsUpdated: 0,
+        skusCreated: 0,
+        skusUpdated: 0,
+        skipped: 0,
+        skippedProducts: [],
+        duration: Date.now() - startTime,
+        error: 'ERP 同步未启用',
+      };
+    }
+
+    let groupsCreated = 0;
+    let groupsUpdated = 0;
+    let skusCreated = 0;
+    let skusUpdated = 0;
+    let skipped = 0;
+    const skippedProducts: string[] = [];
+
+    try {
+      const pool = await this.getPool();
+
+      // 获取同步基准时间
+      const baselineTime = await this.getSyncBaselineTime();
+      const sinceDateStr = baselineTime.toISOString().split('T')[0];
+
+      // 查询 ERP 产品数据
+      const productQuery = `
+        SELECT PRD_NO,
+               CAST(NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS NAME,
+               CAST(SPC COLLATE Chinese_PRC_CI_AS AS NVARCHAR(MAX)) AS SPC,
+               MARK_NO,
+               RECORD_DD
+        FROM PRDT
+        WHERE MARK_NO IS NOT NULL AND MARK_NO <> ''
+          AND RECORD_DD >= '${sinceDateStr}'
+      `;
+
+      const productsResult = await pool.request().query<{
+        PRD_NO: string;
+        NAME: string;
+        SPC: string | null;
+        MARK_NO: string | null;
+        RECORD_DD: Date;
+      }>(productQuery);
+      const products = productsResult.recordset;
+
+      // 获取特征组信息
+      const markNos = [...new Set(products.map(p => p.MARK_NO).filter(Boolean))];
+      const marksResult = await pool.request().query<{
+        MARK_NO: string;
+        MARK_NAME: string;
+        REM: string | null;
+      }>(`
+        SELECT MARK_NO,
+               CAST(MARK_NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS MARK_NAME,
+               CAST(REM COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS REM
+        FROM MARKS
+        WHERE MARK_NO IN ('${markNos.join("','")}')
+      `);
+      const marksMap = new Map(marksResult.recordset.map(m => [m.MARK_NO, m]));
+
+      // 获取附加属性
+      const prdMarksResult = await pool.request().query<{
+        MARK_NO: string;
+        PRD_MARK: string;
+        MARK_NAME: string;
+      }>(`
+        SELECT MARK_NO,
+               CAST(PRD_MARK COLLATE Chinese_PRC_CI_AS AS NVARCHAR(255)) AS PRD_MARK,
+               CAST(MARK_NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(100)) AS MARK_NAME
+        FROM PRD_MARKS
+        WHERE MARK_NO IN ('${markNos.join("','")}')
+      `);
+      const prdMarksMap = new Map<string, typeof prdMarksResult.recordset>();
+      for (const pm of prdMarksResult.recordset) {
+        if (!prdMarksMap.has(pm.MARK_NO)) {
+          prdMarksMap.set(pm.MARK_NO, []);
+        }
+        prdMarksMap.get(pm.MARK_NO)!.push(pm);
+      }
+
+      // 按品名前缀分组
+      const groupedProducts = new Map<string, typeof products>();
+      for (const product of products) {
+        const prefix = this.extractPrefix(product.NAME);
+        if (!groupedProducts.has(prefix)) {
+          groupedProducts.set(prefix, []);
+        }
+        groupedProducts.get(prefix)!.push(product);
+      }
+
+      // 只处理选中的产品组
+      for (const prefix of selectedGroups) {
+        const groupProducts = groupedProducts.get(prefix);
+        if (!groupProducts) continue;
+
+        const firstProduct = groupProducts[0];
+        const markNo = firstProduct.MARK_NO;
+        const mark = markNo ? marksMap.get(markNo) : null;
+        const prdMarks = markNo ? prdMarksMap.get(markNo) || [] : [];
+
+        // 构建附加属性
+        const optionalAttributes = prdMarks.map(pm => ({
+          nameZh: pm.PRD_MARK,
+          nameEn: pm.MARK_NAME || pm.PRD_MARK,
+        }));
+
+        // 提取分类代码
+        const categoryCode = this.extractCategoryCode(prefix);
+
+        // 查找分类
+        const category = await this.prisma.category.findUnique({
+          where: { code: categoryCode },
+        });
+
+        if (!category) {
+          const selectedSkuCodes = selectedSkus[prefix] || [];
+          skippedProducts.push(...selectedSkuCodes);
+          skipped += selectedSkuCodes.length;
+          this.logger.warn(`[产品同步] 跳过产品组 ${prefix}：分类 ${categoryCode} 不存在`);
+          continue;
+        }
+
+        // 查找或创建产品组
+        let productGroup = await this.prisma.productGroup.findUnique({
+          where: { prefix },
+        });
+
+        if (productGroup) {
+          await this.prisma.productGroup.update({
+            where: { id: productGroup.id },
+            data: {
+              categoryId: category.id,
+              categoryCode: category.code,
+              optionalAttributes: optionalAttributes.length > 0 ? optionalAttributes : undefined,
+            },
+          });
+          groupsUpdated++;
+        } else {
+          productGroup = await this.prisma.productGroup.create({
+            data: {
+              prefix,
+              groupNameZh: mark?.MARK_NAME || prefix,
+              groupNameEn: mark?.MARK_NAME || prefix,
+              categoryId: category.id,
+              categoryCode: category.code,
+              optionalAttributes: optionalAttributes.length > 0 ? optionalAttributes : undefined,
+              descriptionZh: mark?.REM || null,
+            },
+          });
+          groupsCreated++;
+        }
+
+        // 同步选中的SKU
+        const selectedSkuCodes = selectedSkus[prefix] || [];
+        for (const product of groupProducts) {
+          // 只同步选中的SKU
+          if (!selectedSkuCodes.includes(product.PRD_NO)) continue;
+
+          const existingSku = await this.prisma.productSku.findUnique({
+            where: { productCode: product.PRD_NO },
+          });
+
+          if (existingSku) {
+            await this.prisma.productSku.update({
+              where: { id: existingSku.id },
+              data: {
+                productName: product.NAME,
+                specification: product.SPC || null,
+                groupId: productGroup.id,
+              },
+            });
+            skusUpdated++;
+          } else {
+            await this.prisma.productSku.create({
+              data: {
+                productCode: product.PRD_NO,
+                productName: product.NAME,
+                specification: product.SPC || null,
+                groupId: productGroup.id,
+                importDate: product.RECORD_DD,
+                status: 'ACTIVE',
+              },
+            });
+            skusCreated++;
+          }
+        }
+      }
+
+      // 更新产品组的计算字段
+      await this.updateGroupCalculatedFields();
+
+      const duration = Date.now() - startTime;
+      this.logger.log(
+        `[产品同步] 完成! 产品组: 新增${groupsCreated}/更新${groupsUpdated}, SKU: 新增${skusCreated}/更新${skusUpdated}, 跳过${skipped}, 耗时${duration}ms`,
+      );
+
+      // 记录同步时间
+      await this.recordSyncTime();
+
+      return {
+        success: true,
+        groupsCreated,
+        groupsUpdated,
+        skusCreated,
+        skusUpdated,
+        skipped,
+        skippedProducts,
+        duration,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[产品同步] 失败: ${errorMessage}`);
+
+      return {
+        success: false,
+        groupsCreated,
+        groupsUpdated,
+        skusCreated,
+        skusUpdated,
+        skipped,
+        skippedProducts,
+        duration: Date.now() - startTime,
+        error: errorMessage,
+      };
+    }
   }
 }
