@@ -318,43 +318,43 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                     )}
-                    {customer.contactPerson && (
+                    {(customer as any).contactPerson && (
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">联系人</label>
                         <div className="py-2 bg-gray-50 rounded text-sm">
-                          {customer.contactPerson}
+                          {(customer as any).contactPerson}
                         </div>
                       </div>
                     )}
-                    {customer.email && (
+                    {(customer as any).email && (
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">邮箱</label>
                         <div className="py-2 bg-gray-50 rounded text-sm">
-                          {customer.email}
+                          {(customer as any).email}
                         </div>
                       </div>
                     )}
-                    {customer.phone && (
+                    {(customer as any).phone && (
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">电话</label>
                         <div className="py-2 bg-gray-50 rounded text-sm">
-                          {customer.phone}
+                          {(customer as any).phone}
                         </div>
                       </div>
                     )}
-                    {customer.country && (
+                    {(customer as any).country && (
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">国家</label>
                         <div className="py-2 bg-gray-50 rounded text-sm">
-                          {customer.country}
+                          {(customer as any).country}
                         </div>
                       </div>
                     )}
-                    {customer.address && (
+                    {(customer as any).address && (
                       <div className="col-span-2">
                         <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">地址</label>
                         <div className="py-2 bg-gray-50 rounded text-sm">
-                          {customer.address}
+                          {(customer as any).address}
                         </div>
                       </div>
                     )}
