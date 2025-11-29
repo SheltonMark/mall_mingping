@@ -325,12 +325,13 @@ export class OrderService {
       where: { id },
       include: {
         customer: true,
+        erpCustomer: true,
         salesperson: {
           select: {
             id: true,
             accountId: true,
             chineseName: true,
-            
+
           },
         },
         items: {
