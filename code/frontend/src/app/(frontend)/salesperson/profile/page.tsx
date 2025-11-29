@@ -584,7 +584,7 @@ export default function SalespersonProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-6">
         {/* 业务员信息卡片 */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
           <div className="flex items-center gap-6">
