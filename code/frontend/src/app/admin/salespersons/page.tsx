@@ -1,19 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { salespersonApi } from '@/lib/adminApi';
+import { salespersonApi, erpApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
-import { Plus, Edit2, Trash2, Search, X, User, Lock, Hash } from 'lucide-react';
+import { Edit2, Trash2, Search, X, Lock, RefreshCw, Building2 } from 'lucide-react';
 import PageHeader from '@/components/admin/PageHeader';
 
 interface Salesperson {
   id: string;
   accountId: string;
   chineseName: string;
+  englishName?: string;
+  department?: string;
+  position?: string;
+  erpSyncAt?: string;
   createdAt: string;
   _count?: {
     customers: number;
+    erpCustomers: number;
+    orders: number;
   };
 }
 
@@ -27,21 +33,22 @@ export default function SalespersonsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [salespersonToDelete, setSalespersonToDelete] = useState<Salesperson | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string>('');
   const [formData, setFormData] = useState({
-    accountId: '',
-    chineseName: '',
     password: '',
   });
 
   useEffect(() => {
     loadSalespersons();
+    loadLastSyncTime();
   }, []);
 
   const loadSalespersons = async () => {
     try {
       setLoading(true);
-      const response = await salespersonApi.getAll({ limit: 1000 });
-      setSalespersons(Array.isArray(response) ? response : response.data || []);
+      const response = await erpApi.getErpSalespersons({ limit: 1000 });
+      setSalespersons(response.data || []);
     } catch (error: any) {
       console.error('Failed to load salespersons:', error);
       toast.error('加载业务员列表失败');
@@ -50,22 +57,39 @@ export default function SalespersonsPage() {
     }
   };
 
-  const handleAdd = () => {
-    setEditingSalesperson(null);
-    setFormData({
-      accountId: '',
-      chineseName: '',
-      password: '',
-    });
-    setIsModalOpen(true);
+  const loadLastSyncTime = async () => {
+    try {
+      const response = await erpApi.getErpSalespersonLastSyncTime();
+      setLastSyncTime(response.lastSyncTimeFormatted || '从未同步');
+    } catch (error) {
+      console.error('Failed to load last sync time:', error);
+    }
+  };
+
+  // 同步ERP业务员
+  const handleSyncErp = async () => {
+    setSyncing(true);
+    try {
+      const result = await erpApi.syncErpSalespersons();
+      if (result.success) {
+        toast.success(`同步成功！新增 ${result.created} 个，更新 ${result.updated} 个，共 ${result.total} 个业务员`);
+        loadSalespersons();
+        loadLastSyncTime();
+      } else {
+        toast.error(result.error || '同步失败');
+      }
+    } catch (error: any) {
+      console.error('Failed to sync ERP salespersons:', error);
+      toast.error(error.message || '同步ERP业务员失败');
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const handleEdit = (salesperson: Salesperson) => {
     setEditingSalesperson(salesperson);
     setFormData({
-      accountId: salesperson.accountId,
-      chineseName: salesperson.chineseName,
-      password: '', // 编辑时不显示密码
+      password: '',
     });
     setIsModalOpen(true);
   };
@@ -73,58 +97,27 @@ export default function SalespersonsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 验证必填字段
-    if (!formData.accountId.trim()) {
-      toast.error('请输入工号');
+    if (!formData.password.trim()) {
+      toast.error('请输入新密码');
       return;
     }
-    if (!formData.chineseName.trim()) {
-      toast.error('请输入中文名');
-      return;
-    }
-    if (!editingSalesperson && !formData.password.trim()) {
-      toast.error('请输入密码');
-      return;
-    }
-    if (!editingSalesperson && formData.password.length < 6) {
+    if (formData.password.length < 6) {
       toast.error('密码至少6位');
       return;
     }
 
     setSubmitting(true);
     try {
-      if (editingSalesperson) {
-        // 更新业务员
-        const updateData: any = {
-          accountId: formData.accountId,
-          chineseName: formData.chineseName,
-        };
-        // 只有填写了新密码才更新密码
-        if (formData.password.trim()) {
-          updateData.password = formData.password;
-        }
-        await salespersonApi.update(editingSalesperson.id, updateData);
-        toast.success('业务员信息已更新');
-      } else {
-        // 新增业务员
-        await salespersonApi.create({
-          accountId: formData.accountId,
-          chineseName: formData.chineseName,
-          password: formData.password,
-        });
-        toast.success('业务员已创建');
-      }
+      await salespersonApi.update(editingSalesperson!.id, {
+        password: formData.password,
+      });
+      toast.success('密码已更新');
       setIsModalOpen(false);
       setEditingSalesperson(null);
-      setFormData({
-        accountId: '',
-        chineseName: '',
-        password: '',
-      });
-      loadSalespersons();
+      setFormData({ password: '' });
     } catch (error: any) {
       console.error('Submit error:', error);
-      toast.error(error.message || (editingSalesperson ? '更新失败' : '创建失败'));
+      toast.error(error.message || '更新失败');
     } finally {
       setSubmitting(false);
     }
@@ -153,7 +146,8 @@ export default function SalespersonsPage() {
   const filteredSalespersons = salespersons.filter(
     (sp) =>
       sp.accountId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sp.chineseName.toLowerCase().includes(searchTerm.toLowerCase())
+      sp.chineseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (sp.englishName && sp.englishName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -162,9 +156,24 @@ export default function SalespersonsPage() {
       <PageHeader
         title="业务员管理"
         subtitle={`共 ${salespersons.length} 个业务员`}
+        actions={
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-500">
+              上次同步: {lastSyncTime}
+            </span>
+            <button
+              onClick={handleSyncErp}
+              disabled={syncing}
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
+            >
+              <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+              {syncing ? '同步中...' : '同步ERP业务员'}
+            </button>
+          </div>
+        }
       />
 
-      {/* 搜索栏和新增按钮 */}
+      {/* 搜索栏 */}
       <div className="flex items-center justify-between gap-4">
         <div className="relative max-w-md flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -172,17 +181,14 @@ export default function SalespersonsPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="搜索工号、姓名..."
+            placeholder="搜索工号、中文名、英文名..."
             className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
         </div>
-        <button
-          onClick={handleAdd}
-          className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
-        >
-          <Plus size={18} />
-          新增业务员
-        </button>
+        <div className="text-sm text-gray-500 flex items-center gap-2">
+          <Building2 size={16} />
+          业务员数据来自ERP系统同步
+        </div>
       </div>
 
       {/* 业务员列表 */}
@@ -198,49 +204,74 @@ export default function SalespersonsPage() {
           <div className="p-16 text-center">
             <div className="text-8xl mb-6">👔</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-3">还没有业务员</h3>
-            <p className="text-gray-600 mb-8 text-lg">点击上方按钮添加第一个业务员</p>
+            <p className="text-gray-600 mb-8 text-lg">点击"同步ERP业务员"从ERP系统获取业务员数据</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">工号</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">姓名</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">客户数量</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">创建时间</th>
-                  <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">操作</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">工号</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">中文名</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">英文名</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">部门</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">职位</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">客户数</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">订单数</th>
+                  <th className="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">同步时间</th>
+                  <th className="px-4 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredSalespersons.map((salesperson) => (
                   <tr key={salesperson.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-semibold text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className="text-sm font-semibold text-blue-600 font-mono bg-blue-50 px-2 py-1 rounded">
                         {salesperson.accountId}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="text-sm font-medium text-gray-900">
                         {salesperson.chineseName}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {salesperson._count?.customers || 0} 个客户
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {salesperson.englishName || '-'}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {salesperson.department || '-'}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {salesperson.position || '-'}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm">
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          网站: {salesperson._count?.customers || 0}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                          ERP: {salesperson._count?.erpCustomers || 0}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {salesperson._count?.orders || 0} 单
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(salesperson.createdAt).toLocaleDateString('zh-CN')}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {salesperson.erpSyncAt
+                        ? new Date(salesperson.erpSyncAt).toLocaleString('zh-CN')
+                        : '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleEdit(salesperson)}
                           className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                          title="编辑"
+                          title="修改密码"
                         >
-                          <Edit2 size={18} />
+                          <Lock size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(salesperson)}
@@ -259,14 +290,14 @@ export default function SalespersonsPage() {
         )}
       </div>
 
-      {/* 新增/编辑模态框 */}
-      {isModalOpen && (
+      {/* 修改密码模态框 */}
+      {isModalOpen && editingSalesperson && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white">
-                  {editingSalesperson ? '编辑业务员' : '新增业务员'}
+                  修改密码
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -278,48 +309,28 @@ export default function SalespersonsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="px-6 py-6 space-y-5">
-              {/* 工号 */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  工号 <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="text"
-                    value={formData.accountId}
-                    onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
-                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-mono"
-                    placeholder="例如: SP001"
-                    required
-                    disabled={!!editingSalesperson} // 编辑时不能修改工号
-                  />
+              {/* 业务员信息（只读） */}
+              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">工号：</span>
+                  <span className="text-sm font-mono font-semibold text-blue-600">{editingSalesperson.accountId}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">姓名：</span>
+                  <span className="text-sm font-medium">{editingSalesperson.chineseName}</span>
+                </div>
+                {editingSalesperson.department && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">部门：</span>
+                    <span className="text-sm">{editingSalesperson.department}</span>
+                  </div>
+                )}
               </div>
 
-              {/* 中文名 */}
+              {/* 新密码 */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  中文名 <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="text"
-                    value={formData.chineseName}
-                    onChange={(e) => setFormData({ ...formData, chineseName: e.target.value })}
-                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="例如: 张三"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* 密码 */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  密码 {!editingSalesperson && <span className="text-red-500">*</span>}
-                  {editingSalesperson && <span className="text-gray-500 text-xs">(留空则不修改)</span>}
+                  新密码 <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -328,8 +339,8 @@ export default function SalespersonsPage() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder={editingSalesperson ? "留空则不修改密码" : "至少6位"}
-                    required={!editingSalesperson}
+                    placeholder="请输入新密码（至少6位）"
+                    required
                   />
                 </div>
               </div>
@@ -350,10 +361,10 @@ export default function SalespersonsPage() {
                   {submitting ? (
                     <>
                       <ButtonLoader />
-                      <span>{editingSalesperson ? '更新中...' : '创建中...'}</span>
+                      <span>更新中...</span>
                     </>
                   ) : (
-                    <span>{editingSalesperson ? '更新' : '创建'}</span>
+                    <span>确认修改</span>
                   )}
                 </button>
               </div>
