@@ -122,11 +122,8 @@ export default function OrderConfirmationPage() {
       const token = localStorage.getItem('salesperson_token')
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
-      // 加载当前业务员的ERP客户
-      const salespersonId = salesperson?.id
-      const url = salespersonId
-        ? `${API_URL}/erp/erp-customers?salespersonId=${salespersonId}&limit=1000`
-        : `${API_URL}/erp/erp-customers?limit=1000`
+      // 加载所有ERP客户（内网系统不限制业务员）
+      const url = `${API_URL}/erp/erp-customers?limit=1000`
 
       const response = await fetch(url, {
         headers: {
