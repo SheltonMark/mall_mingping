@@ -15,7 +15,7 @@ import { ErpProductSyncService } from './erp-product-sync.service';
 import { ErpEntitySyncService } from './erp-entity-sync.service';
 import { ErpCustomerSyncService } from './erp-customer-sync.service';
 import { ErpSalespersonSyncService } from './erp-salesperson-sync.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { InternalAuthGuard } from '../common/guards/internal-auth.guard';
 
 // DTO 定义
 class CreateMappingDto {
@@ -69,7 +69,7 @@ class SalespersonSyncSelectedDto {
 }
 
 @Controller('erp')
-@UseGuards(JwtAuthGuard)
+@UseGuards(InternalAuthGuard)
 export class ErpController {
   constructor(
     private readonly erpOrderSyncService: ErpOrderSyncService,
