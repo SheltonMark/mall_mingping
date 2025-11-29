@@ -384,7 +384,7 @@ export class ProductService {
             orderBy: { createdAt: 'desc' },
           },
         },
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { updatedAt: 'desc' },
       }),
       this.prisma.productGroup.count({ where }),
     ]);

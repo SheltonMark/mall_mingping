@@ -131,43 +131,29 @@ export default function ProductsPage() {
     type: 'danger' | 'warning';
   } | null>(null);
 
-  // 新增标识相关状态
-  const [lastViewedAt, setLastViewedAt] = useState<string | null>(null);
+  // 新增标识相关状态 - 记录本次同步开始的时间
+  const [syncStartTime, setSyncStartTime] = useState<string | null>(null);
 
-  // 从localStorage加载上次查看时间
-  useEffect(() => {
-    const stored = localStorage.getItem('products_last_viewed_at');
-    if (stored) {
-      setLastViewedAt(stored);
-    } else {
-      // 首次访问时，设置为1小时前，这样最近1小时内新增的产品会被标记为新
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      setLastViewedAt(oneHourAgo);
-    }
-  }, []);
-
-  // 判断是否为新增的产品组（基于updatedAt，同步时会更新）
+  // 判断是否为本次同步新增/更新的产品组
   const isNewGroup = (group: ProductGroup): boolean => {
-    if (!lastViewedAt) return false;
-    return new Date(group.updatedAt).getTime() > new Date(lastViewedAt).getTime();
+    if (!syncStartTime) return false;
+    return new Date(group.updatedAt).getTime() >= new Date(syncStartTime).getTime();
   };
 
-  // 判断是否为新增的SKU
+  // 判断是否为本次同步新增的SKU
   const isNewSku = (sku: ProductSku): boolean => {
-    if (!lastViewedAt) return false;
-    return new Date(sku.createdAt).getTime() > new Date(lastViewedAt).getTime();
+    if (!syncStartTime) return false;
+    return new Date(sku.createdAt).getTime() >= new Date(syncStartTime).getTime();
   };
 
   // 计算新增数量
   const newGroupsCount = groups.filter(isNewGroup).length;
   const newSkusCount = skus.filter(isNewSku).length;
 
-  // 标记全部已读
+  // 清除新增标记
   const handleMarkAllRead = () => {
-    const now = new Date().toISOString();
-    localStorage.setItem('products_last_viewed_at', now);
-    setLastViewedAt(now);
-    toast.success('已标记全部为已读');
+    setSyncStartTime(null);
+    toast.success('已清除新增标记');
   };
 
   useEffect(() => {
@@ -326,6 +312,9 @@ export default function ProductsPage() {
       return;
     }
 
+    // 记录同步开始时间（用于标记新同步的产品）
+    const syncStart = new Date().toISOString();
+
     setSyncing(true);
     try {
       const result = await erpApi.syncSelectedProducts({
@@ -338,6 +327,8 @@ export default function ProductsPage() {
       setShowSyncResult(true);
 
       if (result.success) {
+        // 同步成功后设置同步开始时间，用于标记新产品
+        setSyncStartTime(syncStart);
         toast.success(`同步成功！新增 ${result.groupsCreated} 个产品组，${result.skusCreated} 个SKU`);
         await loadData();
         await loadLastSyncTime();
