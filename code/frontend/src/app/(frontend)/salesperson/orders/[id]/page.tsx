@@ -290,70 +290,68 @@ export default function OrderDetailPage() {
             {/* 客户信息 */}
             <div className="mb-12">
               <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">客户信息</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">客户名称</label>
-                  <div className="py-2 bg-gray-50 rounded text-sm">
-                    {order.customer.name}
-                  </div>
-                </div>
-                {order.customer.companyName && (
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">公司名称</label>
-                    <div className="py-2 bg-gray-50 rounded text-sm">
-                      {order.customer.companyName}
+              {(() => {
+                const customer = order.customer || order.erpCustomer;
+                if (!customer) return <div className="text-gray-500">暂无客户信息</div>;
+                return (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">客户名称</label>
+                      <div className="py-2 bg-gray-50 rounded text-sm">
+                        {customer.name}
+                      </div>
                     </div>
+                    {(customer as any).cusNo && (
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">客户编号</label>
+                        <div className="py-2 bg-gray-50 rounded text-sm font-mono">
+                          {(customer as any).cusNo}
+                        </div>
+                      </div>
+                    )}
+                    {customer.contactPerson && (
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">联系人</label>
+                        <div className="py-2 bg-gray-50 rounded text-sm">
+                          {customer.contactPerson}
+                        </div>
+                      </div>
+                    )}
+                    {customer.email && (
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">邮箱</label>
+                        <div className="py-2 bg-gray-50 rounded text-sm">
+                          {customer.email}
+                        </div>
+                      </div>
+                    )}
+                    {customer.phone && (
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">电话</label>
+                        <div className="py-2 bg-gray-50 rounded text-sm">
+                          {customer.phone}
+                        </div>
+                      </div>
+                    )}
+                    {customer.country && (
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">国家</label>
+                        <div className="py-2 bg-gray-50 rounded text-sm">
+                          {customer.country}
+                        </div>
+                      </div>
+                    )}
+                    {customer.address && (
+                      <div className="col-span-2">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">地址</label>
+                        <div className="py-2 bg-gray-50 rounded text-sm">
+                          {customer.address}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-                {order.customer.contactPerson && (
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">联系人</label>
-                    <div className="py-2 bg-gray-50 rounded text-sm">
-                      {order.customer.contactPerson}
-                    </div>
-                  </div>
-                )}
-                {(order.customer.email || order.customer.contactEmail) && (
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">邮箱</label>
-                    <div className="py-2 bg-gray-50 rounded text-sm">
-                      {order.customer.email || order.customer.contactEmail}
-                    </div>
-                  </div>
-                )}
-                {(order.customer.phone || order.customer.contactPhone) && (
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">电话</label>
-                    <div className="py-2 bg-gray-50 rounded text-sm">
-                      {order.customer.phone || order.customer.contactPhone}
-                    </div>
-                  </div>
-                )}
-                {order.customer.country && (
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">国家</label>
-                    <div className="py-2 bg-gray-50 rounded text-sm">
-                      {order.customer.country}
-                    </div>
-                  </div>
-                )}
-                {order.customer.address && (
-                  <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">地址</label>
-                    <div className="py-2 bg-gray-50 rounded text-sm">
-                      {order.customer.address}
-                    </div>
-                  </div>
-                )}
-                {order.customer.remarks && (
-                  <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">备注</label>
-                    <div className="py-2 bg-gray-50 rounded text-sm">
-                      {order.customer.remarks}
-                    </div>
-                  </div>
-                )}
-              </div>
+                );
+              })()}
             </div>
 
             {/* 订单商品明细 */}
