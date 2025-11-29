@@ -162,12 +162,14 @@ export default function OrderConfirmationPage() {
       }
     }
 
-    // 从购物车加载选中的商品
+    // 从购物车加载选中的商品（保留购物车中填写的所有字段）
     if (cartItems && cartItems.length > 0 && selectedItems && selectedItems.length > 0) {
       const selected = cartItems.filter(item => selectedItems.includes(item.skuId)).map(item => ({
         ...item,
-        price: undefined, // 单价默认为空，让业务员自己填写
-        productCategory: 'new' // 默认值
+        // 保留购物车中的单价，如果没有则为undefined
+        price: item.price || undefined,
+        // 保留购物车中的产品类别，如果没有则默认'new'
+        productCategory: item.productCategory || 'new'
       }))
       setOrderItems(selected)
     }
