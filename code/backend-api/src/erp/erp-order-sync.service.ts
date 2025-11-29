@@ -279,7 +279,14 @@ export class ErpOrderSyncService {
         // 7.1 写入 TF_POS 主表
         // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
         // 用truncateByBytes确保中文字符串不超过字段的字节限制
-        // 注意：不传税相关字段(AMT/AMTN/TAX/TAX_RTO)，让ERP自己计算
+        // 税率固定13%，计算AMT和AMTN
+        const qty = item.quantity;
+        const up = item.price.toNumber();
+        const amt = qty * up; // 含税金额
+        const taxRto = 13; // 税率13%
+        const amtn = amt / (1 + taxRto / 100) * (1 + taxRto / 100); // 本位币金额（这里等于amt）
+        const tax = 0; // 税额设为0（根据已有订单的模式）
+
         const tfPosRequest = new sql.Request(transaction);
         await tfPosRequest
           .input('OS_NO', sql.NVarChar(20), erpOrderNo)
@@ -295,8 +302,12 @@ export class ErpOrderSyncService {
             sql.NVarChar(255),
             truncateByBytes(chineseAttribute, 255),
           )
-          .input('QTY', sql.Numeric(28, 8), item.quantity)
-          .input('UP', sql.Numeric(28, 8), item.price.toNumber())
+          .input('QTY', sql.Numeric(28, 8), qty)
+          .input('UP', sql.Numeric(28, 8), up)
+          .input('AMT', sql.Numeric(28, 8), amt)
+          .input('AMTN', sql.Numeric(28, 8), amtn)
+          .input('TAX', sql.Numeric(28, 8), tax)
+          .input('TAX_RTO', sql.Numeric(28, 8), taxRto)
           .input('SPC', sql.NVarChar(2000), truncateByBytes(String(item.productSpec || ''), 2000))
           .input(
             'ATTR',
@@ -331,7 +342,7 @@ export class ErpOrderSyncService {
           .input('OS_DD', sql.DateTime, order.orderDate).query(`
             INSERT INTO TF_POS (
               OS_ID, OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK,
-              QTY, UP,
+              QTY, UP, AMT, AMTN, TAX, TAX_RTO,
               SPC, ATTR, PAK_UNIT, PAK_EXC,
               PAK_NW, PAK_GW, PAK_WEIGHT_UNIT,
               PAK_MEAST, PAK_MEAST_UNIT,
@@ -339,7 +350,7 @@ export class ErpOrderSyncService {
               WH, UNIT
             ) VALUES (
               'SO', @OS_NO, @ITM, @PRD_NO, @PRD_NAME, @PRD_MARK,
-              @QTY, @UP,
+              @QTY, @UP, @AMT, @AMTN, @TAX, @TAX_RTO,
               @SPC, @ATTR, @PAK_UNIT, @PAK_EXC,
               @PAK_NW, @PAK_GW, @PAK_WEIGHT_UNIT,
               @PAK_MEAST, 'm³',
