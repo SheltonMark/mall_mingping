@@ -376,12 +376,13 @@ export class ErpController {
   }
 
   /**
-   * 获取单个 ERP 客户
-   * GET /erp/erp-customers/:id
+   * 预览待同步的客户（不实际同步）
+   * GET /erp/erp-customers/preview
+   * 注意：此路由必须在 :id 路由之前声明
    */
-  @Get('erp-customers/:id')
-  async getErpCustomer(@Param('id') id: string) {
-    return this.erpCustomerSyncService.findOne(id);
+  @Get('erp-customers/preview')
+  async previewErpCustomers() {
+    return this.erpCustomerSyncService.previewCustomers();
   }
 
   /**
@@ -394,12 +395,13 @@ export class ErpController {
   }
 
   /**
-   * 预览待同步的客户（不实际同步）
-   * GET /erp/erp-customers/preview
+   * 获取单个 ERP 客户
+   * GET /erp/erp-customers/:id
+   * 注意：此路由必须在具体路径路由之后声明
    */
-  @Get('erp-customers/preview')
-  async previewErpCustomers() {
-    return this.erpCustomerSyncService.previewCustomers();
+  @Get('erp-customers/:id')
+  async getErpCustomer(@Param('id') id: string) {
+    return this.erpCustomerSyncService.findOne(id);
   }
 
   /**
