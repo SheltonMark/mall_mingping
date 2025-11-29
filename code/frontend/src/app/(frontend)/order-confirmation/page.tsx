@@ -99,7 +99,6 @@ export default function OrderConfirmationPage() {
     // 加载客户列表和订单商品
     loadCustomers()
     loadOrderItems()
-    loadAboutConfig()
   }, [isAuthenticated, isLoading])
 
   // 加载关于我们配置
@@ -435,11 +434,11 @@ export default function OrderConfirmationPage() {
               <SearchableSelect
                 options={customers.map(c => ({
                   value: c.id,
-                  label: `${c.name} (${c.email})`
+                  label: `${c.name} (${c.cusNo})`
                 }))}
                 value={selectedCustomerId}
                 onChange={handleCustomerChange}
-                placeholder="搜索客户名称或邮箱"
+                placeholder="搜索客户名称或编号"
               />
             </div>
 
