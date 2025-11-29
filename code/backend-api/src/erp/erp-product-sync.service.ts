@@ -601,7 +601,7 @@ export class ErpProductSyncService {
       });
       const categoryCodes = new Set(categories.map(c => c.code));
 
-      // 构建预览结果
+      // 构建预览结果 - 只显示包含新SKU的产品组
       const previewGroups: ProductPreviewGroup[] = [];
       let totalSkus = 0;
       let newGroups = 0;
@@ -615,15 +615,22 @@ export class ErpProductSyncService {
         const categoryExists = categoryCodes.has(categoryCode);
         const isNewGroup = !existingGroupPrefixes.has(prefix);
 
-        const skus: ProductPreviewSku[] = groupProducts.map(product => {
-          const isNewSku = !existingSkuCodes.has(product.PRD_NO);
-          if (isNewSku) newSkus++;
+        // 只筛选新的SKU（未同步的）
+        const newSkuProducts = groupProducts.filter(product => !existingSkuCodes.has(product.PRD_NO));
+
+        // 如果这个产品组没有新的SKU，跳过
+        if (newSkuProducts.length === 0) {
+          continue;
+        }
+
+        const skus: ProductPreviewSku[] = newSkuProducts.map(product => {
+          newSkus++;
           totalSkus++;
           return {
             productCode: product.PRD_NO,
             productName: product.NAME,
             specification: product.SPC,
-            isNew: isNewSku,
+            isNew: true, // 这里的SKU都是新的
           };
         });
 
@@ -835,6 +842,7 @@ export class ErpProductSyncService {
 
         // 同步选中的SKU
         const selectedSkuCodes = selectedSkus[prefix] || [];
+        let skuAddedOrUpdated = false;
         for (const product of groupProducts) {
           // 只同步选中的SKU
           if (!selectedSkuCodes.includes(product.PRD_NO)) continue;
@@ -853,6 +861,7 @@ export class ErpProductSyncService {
               },
             });
             skusUpdated++;
+            skuAddedOrUpdated = true;
           } else {
             await this.prisma.productSku.create({
               data: {
@@ -865,7 +874,16 @@ export class ErpProductSyncService {
               },
             });
             skusCreated++;
+            skuAddedOrUpdated = true;
           }
+        }
+
+        // 如果有SKU被添加或更新，强制更新产品组的updatedAt
+        if (skuAddedOrUpdated) {
+          await this.prisma.productGroup.update({
+            where: { id: productGroup.id },
+            data: { updatedAt: new Date() },
+          });
         }
       }
 

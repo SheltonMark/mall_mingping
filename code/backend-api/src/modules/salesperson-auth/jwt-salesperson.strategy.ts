@@ -17,10 +17,15 @@ export class JwtSalespersonStrategy extends PassportStrategy(Strategy, 'jwt-sale
   async validate(payload: any) {
     // Only validate if this is a salesperson token
     if (payload.type !== 'salesperson') {
-      return null; // Return null to let other strategies try
+      throw new UnauthorizedException('无效的业务员令牌');
     }
 
     const salesperson = await this.salespersonAuthService.validateSalesperson(payload.sub);
-    return salesperson;
+    if (!salesperson) {
+      throw new UnauthorizedException('业务员不存在');
+    }
+
+    // 返回包含 sub 字段的用户对象，以便 controller 使用
+    return { ...salesperson, sub: payload.sub };
   }
 }

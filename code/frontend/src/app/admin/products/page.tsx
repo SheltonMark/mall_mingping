@@ -139,13 +139,17 @@ export default function ProductsPage() {
     const stored = localStorage.getItem('products_last_viewed_at');
     if (stored) {
       setLastViewedAt(stored);
+    } else {
+      // 首次访问时，设置为1小时前，这样最近1小时内新增的产品会被标记为新
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      setLastViewedAt(oneHourAgo);
     }
   }, []);
 
-  // 判断是否为新增的产品组
+  // 判断是否为新增的产品组（基于updatedAt，同步时会更新）
   const isNewGroup = (group: ProductGroup): boolean => {
     if (!lastViewedAt) return false;
-    return new Date(group.createdAt).getTime() > new Date(lastViewedAt).getTime();
+    return new Date(group.updatedAt).getTime() > new Date(lastViewedAt).getTime();
   };
 
   // 判断是否为新增的SKU
