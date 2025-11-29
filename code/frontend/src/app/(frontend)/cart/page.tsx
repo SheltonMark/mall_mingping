@@ -363,7 +363,7 @@ export default function CartPage() {
                           <span>|</span>
                           <span>{language === 'zh' ? '未税本位币' : 'Untaxed'}: {formatValue(item.untaxedLocalCurrency)}</span>
                           <span>|</span>
-                          <span>{language === 'zh' ? '预交日' : 'Delivery'}: {formatValue(item.expectedDeliveryDate)}</span>
+                          <span>{language === 'zh' ? '预交日' : 'Delivery'}: {item.expectedDeliveryDate ? item.expectedDeliveryDate.split('T')[0] : '-'}</span>
                         </div>
                       </div>
                       <button
