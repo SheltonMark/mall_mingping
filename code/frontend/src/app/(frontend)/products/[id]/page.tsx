@@ -103,9 +103,23 @@ export default function ProductDetailPage() {
       if (field === 'packingQuantity' && typeof value === 'number' && value > 0) {
         updated.cartonQuantity = Math.ceil(quantity / value)
       }
+      // 如果修改单价，自动计算未税本位币 = 数量 × 单价
+      if (field === 'price' && typeof value === 'number') {
+        updated.untaxedLocalCurrency = quantity * value
+      }
       return updated
     })
   }
+
+  // 当数量变化时，同步更新未税本位币
+  useEffect(() => {
+    if (cartFormData.price !== undefined && cartFormData.price > 0) {
+      setCartFormData(prev => ({
+        ...prev,
+        untaxedLocalCurrency: quantity * (prev.price || 0)
+      }))
+    }
+  }, [quantity])
 
   useEffect(() => {
     const fetchProduct = async () => {

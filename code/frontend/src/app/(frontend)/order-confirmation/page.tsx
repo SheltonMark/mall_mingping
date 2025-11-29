@@ -213,6 +213,16 @@ export default function OrderConfirmationPage() {
       }
     }
 
+    // 如果修改的是单价或数量，自动计算未税本位币 = 数量 × 单价
+    if (field === 'price' || field === 'quantity') {
+      const item = newItems[index]
+      const qty = field === 'quantity' ? value : item.quantity
+      const price = field === 'price' ? value : item.price
+      if (qty > 0 && price && price > 0) {
+        newItems[index].untaxedLocalCurrency = qty * price
+      }
+    }
+
     setOrderItems(newItems)
   }
 
