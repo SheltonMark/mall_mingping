@@ -1108,7 +1108,7 @@ export default function AdminOrdersPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">未税本位币</label>
                               <div className="text-lg font-bold text-primary bg-white px-3 py-2 border rounded">
                                 ¥{formatAmount((Number(editingData.price) || 0) * (Number(editingData.quantity) || 0))}
                               </div>
@@ -1126,7 +1126,7 @@ export default function AdminOrdersPage() {
                               <div className="text-sm font-semibold text-gray-900">{item.quantity}</div>
                             </div>
                             <div>
-                              <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
+                              <label className="block text-sm font-semibold text-gray-900 mb-1">未税本位币</label>
                               <div className="text-sm font-bold text-blue-600">
                                 ¥{formatAmount(item.subtotal)}
                               </div>
@@ -1346,6 +1346,12 @@ export default function AdminOrdersPage() {
                               <div className="md:col-span-4">
                                 <label className="block text-xs font-medium text-gray-500 mb-1">摘要</label>
                                 <div className="text-sm text-gray-900">{item.summary || '-'}</div>
+                              </div>
+                              {/* 小计 - 右下角 */}
+                              <div className="md:col-span-4 flex justify-end">
+                                <span className="text-lg font-bold text-primary">
+                                  小计: ¥{formatAmount(item.subtotal)}
+                                </span>
                               </div>
                             </div>
                           )

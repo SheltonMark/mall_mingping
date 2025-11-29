@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { orderApi, customerApi, authApi } from '@/lib/salespersonApi'
 import { useToast } from '@/components/common/ToastContainer'
-import { User, Package, Users, Eye, Edit2, Save, X, Clock, CheckCircle, XCircle, AlertCircle, Check, RefreshCw, Lock, History } from 'lucide-react'
+import { User, Package, Users, Eye, Edit2, Save, X, Clock, CheckCircle, XCircle, AlertCircle, Check, RefreshCw, Lock, History, ChevronDown, ChevronUp } from 'lucide-react'
 
 // 订单状态类型
 type OrderStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SYNCED' | 'SYNC_FAILED'
@@ -110,6 +110,7 @@ export default function SalespersonProfilePage() {
   const [editingCustomerData, setEditingCustomerData] = useState<EditingCustomer | null>(null)
   const [savingCustomer, setSavingCustomer] = useState(false)
   const [resubmittingOrderId, setResubmittingOrderId] = useState<string | null>(null)
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   // 历史订单相关状态
   const [sessionOrderIds, setSessionOrderIds] = useState<string[]>([])
@@ -374,6 +375,18 @@ export default function SalespersonProfilePage() {
     setEditingData({})
   }
 
+  const toggleItemExpand = (itemId: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(itemId)) {
+        next.delete(itemId)
+      } else {
+        next.add(itemId)
+      }
+      return next
+    })
+  }
+
   // 客户编辑功能
   const handleEditCustomer = (customer: Customer) => {
     setEditingCustomerId(customer.id)
@@ -491,74 +504,327 @@ export default function SalespersonProfilePage() {
         )}
 
         {/* 订单商品列表 */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {order.items.map((item) => (
-            <div key={item.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-              {/* 商品图片 */}
-              <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                {item.productImage ? (
-                  <img
-                    src={item.productImage}
-                    alt={item.productSku?.productCode || '商品'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <Package size={24} />
+            <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+              {/* 商品基本信息 */}
+              <div className="flex items-start gap-4 mb-4">
+                {/* 商品图片 */}
+                <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                  {item.productImage ? (
+                    <img
+                      src={item.productImage}
+                      alt={item.productSku?.productCode || '商品'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <Package size={24} />
+                    </div>
+                  )}
+                </div>
+
+                {/* 商品信息 */}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900">
+                    品号: <span className="font-mono text-primary">{item.productSku?.productCode || '-'}</span>
                   </div>
-                )}
-              </div>
-
-              {/* 商品信息 */}
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900">
-                  {item.productSku?.productCode || '-'}
-                </div>
-                {item.productSpec && (
-                  <div className="text-sm text-gray-600 mt-1">{item.productSpec}</div>
-                )}
-                {item.customerProductCode && (
-                  <div className="text-sm text-gray-500">客户货号: {item.customerProductCode}</div>
-                )}
-              </div>
-
-              {/* 数量和价格 */}
-              <div className="text-right">
-                <div className="text-sm text-gray-600">
-                  数量: <span className="font-medium text-gray-900">{item.quantity}</span>
-                </div>
-                <div className="text-sm text-gray-600">
-                  单价: <span className="font-medium text-gray-900">${formatAmount(item.price)}</span>
-                </div>
-                <div className="text-sm font-medium text-primary">
-                  小计: ${formatAmount(item.subtotal)}
-                </div>
-              </div>
-
-              {/* 编辑按钮 - 任何状态都可编辑 */}
-              <div className="flex-shrink-0">
-                {editingItemId === item.id ? (
-                  <div className="flex gap-1">
-                    <button
-                      onClick={handleSaveItem}
-                      className="p-2 text-green-600 hover:bg-green-50 rounded"
-                    >
-                      <Save size={16} />
-                    </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="p-2 text-gray-600 hover:bg-gray-100 rounded"
-                    >
-                      <X size={16} />
-                    </button>
+                  <div className="text-sm text-gray-700 mt-1">
+                    品名: {item.productSku?.productName || item.productSku?.productNameEn || '-'}
                   </div>
+                  {item.productSpec && (
+                    <div className="text-sm text-gray-600 mt-1">{item.productSpec}</div>
+                  )}
+                  {item.customerProductCode && (
+                    <div className="text-sm text-gray-500">客户货号: {item.customerProductCode}</div>
+                  )}
+                </div>
+              </div>
+
+              {/* 价格和数量区域 - 可编辑 */}
+              <div className="grid grid-cols-3 gap-4 mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                {editingItemId === item.id && expandedItems.has(item.id) ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-1">单价 *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editingData.price ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setEditingData({...editingData, price: val ? parseFloat(val) : 0})
+                        }}
+                        className="w-full px-3 py-2 border rounded text-sm font-semibold"
+                        placeholder="请输入单价"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-1">数量 *</label>
+                      <input
+                        type="number"
+                        step="1"
+                        min="1"
+                        value={editingData.quantity ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          const newQuantity = val ? parseInt(val) : 1
+                          const newData = {...editingData, quantity: newQuantity}
+                          // 自动计算箱数
+                          if (editingData.packingQuantity && newQuantity) {
+                            newData.cartonQuantity = Math.ceil(newQuantity / editingData.packingQuantity)
+                          }
+                          setEditingData(newData)
+                        }}
+                        className="w-full px-3 py-2 border rounded text-sm font-semibold"
+                        placeholder="请输入数量"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-1">未税本位币</label>
+                      <div className="text-lg font-bold text-primary bg-white px-3 py-2 border rounded">
+                        ¥{formatAmount((Number(editingData.price) || 0) * (Number(editingData.quantity) || 0))}
+                      </div>
+                    </div>
+                  </>
                 ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-1">单价</label>
+                      <div className="text-sm font-semibold text-gray-900">¥{formatAmount(item.price)}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-1">数量</label>
+                      <div className="text-sm font-semibold text-gray-900">{item.quantity}</div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-900 mb-1">未税本位币</label>
+                      <div className="text-sm font-bold text-primary">¥{formatAmount(item.untaxedLocalCurrency ?? item.subtotal)}</div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* 包装信息展开/收起 */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
                   <button
-                    onClick={() => handleEditItem(item)}
-                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded"
+                    onClick={() => toggleItemExpand(item.id)}
+                    className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
                   >
-                    <Edit2 size={16} />
+                    {expandedItems.has(item.id) ? (
+                      <>
+                        <ChevronUp size={16} />
+                        <span>收起包装信息</span>
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={16} />
+                        <span>展开包装信息</span>
+                      </>
+                    )}
                   </button>
+                  {expandedItems.has(item.id) && editingItemId !== item.id && (
+                    <button
+                      onClick={() => handleEditItem(item)}
+                      className="flex items-center gap-1 px-3 py-1 text-sm text-primary border border-primary rounded hover:bg-primary/5"
+                    >
+                      <Edit2 size={14} />
+                      编辑
+                    </button>
+                  )}
+                </div>
+
+                {expandedItems.has(item.id) && (
+                  editingItemId === item.id ? (
+                    // 编辑模式
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="grid grid-cols-4 gap-3 mb-4">
+                        <div>
+                          <label className="text-xs text-gray-600">装箱数</label>
+                          <input
+                            type="number"
+                            value={editingData.packingQuantity || ''}
+                            onChange={(e) => {
+                              const packingQty = parseInt(e.target.value) || undefined
+                              const newData = {...editingData, packingQuantity: packingQty}
+                              // 自动计算箱数
+                              if (packingQty && editingData.quantity) {
+                                newData.cartonQuantity = Math.ceil(editingData.quantity / packingQty)
+                              }
+                              setEditingData(newData)
+                            }}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600">箱数</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              value={editingData.cartonQuantity || ''}
+                              onChange={(e) => setEditingData({...editingData, cartonQuantity: parseInt(e.target.value) || undefined})}
+                              className={`w-full mt-1 px-2 py-1 border rounded text-sm ${
+                                editingData.packingQuantity && editingData.quantity && editingData.quantity % editingData.packingQuantity !== 0
+                                  ? 'border-orange-400 bg-orange-50'
+                                  : ''
+                              }`}
+                            />
+                            {editingData.packingQuantity && editingData.quantity && editingData.quantity % editingData.packingQuantity !== 0 && (
+                              <div className="text-xs text-orange-600 mt-1">⚠️ 不能整除</div>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600">包装方式</label>
+                          <input
+                            type="text"
+                            value={editingData.packagingMethod || ''}
+                            onChange={(e) => setEditingData({...editingData, packagingMethod: e.target.value})}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600">纸卡编码</label>
+                          <input
+                            type="text"
+                            value={editingData.paperCardCode || ''}
+                            onChange={(e) => setEditingData({...editingData, paperCardCode: e.target.value})}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600">水洗标编码</label>
+                          <input
+                            type="text"
+                            value={editingData.washLabelCode || ''}
+                            onChange={(e) => setEditingData({...editingData, washLabelCode: e.target.value})}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600">外箱编码</label>
+                          <input
+                            type="text"
+                            value={editingData.outerCartonCode || ''}
+                            onChange={(e) => setEditingData({...editingData, outerCartonCode: e.target.value})}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600">箱规 (cm)</label>
+                          <input
+                            type="text"
+                            value={editingData.cartonSpecification || ''}
+                            onChange={(e) => {
+                              const newCartonSpec = e.target.value
+                              const calculatedVolume = calculateVolumeFromCartonSpec(newCartonSpec)
+                              setEditingData({
+                                ...editingData,
+                                cartonSpecification: newCartonSpec,
+                                volume: calculatedVolume !== undefined ? calculatedVolume : editingData.volume
+                              })
+                            }}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                            placeholder="例如: 74*44*20"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600">体积 (m³)</label>
+                          <input
+                            type="number"
+                            value={editingData.volume || ''}
+                            onChange={(e) => setEditingData({...editingData, volume: parseFloat(e.target.value) || undefined})}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                          />
+                        </div>
+                        <div className="col-span-4">
+                          <label className="text-xs text-gray-600">厂商备注</label>
+                          <textarea
+                            value={editingData.supplierNote || ''}
+                            onChange={(e) => setEditingData({...editingData, supplierNote: e.target.value})}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                            rows={2}
+                          />
+                        </div>
+                        <div className="col-span-4">
+                          <label className="text-xs text-gray-600">摘要</label>
+                          <textarea
+                            value={editingData.summary || ''}
+                            onChange={(e) => setEditingData({...editingData, summary: e.target.value})}
+                            className="w-full mt-1 px-2 py-1 border rounded text-sm"
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={handleCancelEdit}
+                          className="px-3 py-1 border border-gray-300 rounded text-sm flex items-center gap-1"
+                        >
+                          <X size={14} />
+                          取消
+                        </button>
+                        <button
+                          onClick={handleSaveItem}
+                          className="px-3 py-1 bg-primary text-white rounded text-sm flex items-center gap-1"
+                        >
+                          <Save size={14} />
+                          保存
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // 查看模式
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+                      {[
+                        { key: 'customerProductCode', label: '客户料号' },
+                        { key: 'packingQuantity', label: '装箱数' },
+                        { key: 'cartonQuantity', label: '箱数', highlight: (i: any) =>
+                          i.packingQuantity && i.quantity && i.quantity % i.packingQuantity !== 0
+                        },
+                        { key: 'packagingMethod', label: '包装方式' },
+                        { key: 'paperCardCode', label: '纸卡编码' },
+                        { key: 'washLabelCode', label: '水洗标编码' },
+                        { key: 'outerCartonCode', label: '外箱编码' },
+                        { key: 'cartonSpecification', label: '箱规' },
+                        { key: 'volume', label: '体积' },
+                      ].map(({ key, label, highlight }) => (
+                        <div key={key}>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+                          <div className={`text-sm ${highlight && highlight(item) ? 'text-orange-600' : 'text-gray-900'}`}>
+                            {(item as any)[key] ?? '-'}
+                            {key === 'cartonQuantity' && item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0 && (
+                              <span className="ml-1 text-orange-600">⚠️ 不能整除</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">预交日</label>
+                        <div className="text-sm text-gray-900">
+                          {item.expectedDeliveryDate
+                            ? new Date(item.expectedDeliveryDate).toLocaleDateString('zh-CN')
+                            : '-'
+                          }
+                        </div>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">厂商备注</label>
+                        <div className="text-sm text-gray-900">{item.supplierNote || '-'}</div>
+                      </div>
+                      <div className="md:col-span-4">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">摘要</label>
+                        <div className="text-sm text-gray-900">{item.summary || '-'}</div>
+                      </div>
+                      {/* 小计 - 右下角 */}
+                      <div className="md:col-span-4 flex justify-end">
+                        <span className="text-lg font-bold text-primary">
+                          小计: ¥{formatAmount(item.subtotal)}
+                        </span>
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
             </div>

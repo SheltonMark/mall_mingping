@@ -467,20 +467,11 @@ export default function OrderDetailPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-semibold text-gray-500 mb-2">小计</label>
+                          <label className="block text-sm font-semibold text-gray-500 mb-2">未税本位币</label>
                           <div className="py-2 bg-primary/10 rounded-lg text-sm font-bold text-primary">
-                            ¥{formatAmount(item.subtotal)}
+                            ¥{formatAmount(item.untaxedLocalCurrency ?? item.subtotal)}
                           </div>
                         </div>
-
-                        {item.untaxedLocalCurrency !== null && item.untaxedLocalCurrency !== undefined && (
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-500 mb-2">未税本位币</label>
-                            <div className="py-2 bg-gray-50 rounded-lg text-sm">
-                              ¥{formatAmount(item.untaxedLocalCurrency)}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -591,6 +582,12 @@ export default function OrderDetailPage() {
                           <div className="py-2 bg-gray-50 rounded-lg text-sm min-h-[80px]">
                             {item.summary || '-'}
                           </div>
+                        </div>
+                        {/* 小计 - 右下角 */}
+                        <div className="flex justify-end">
+                          <span className="text-lg font-bold text-primary">
+                            小计: ¥{formatAmount(item.subtotal)}
+                          </span>
                         </div>
                       </div>
                     </div>
