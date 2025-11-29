@@ -178,9 +178,9 @@ export default function OrderDetailPage() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-gray-50 pt-32 pb-20">
+      <div className="min-h-screen bg-gray-50 pt-24 md:pt-32 pb-12 md:pb-20">
         {/* 返回按钮 */}
-        <div className="no-print max-w-[1440px] mx-auto px-6 mb-6">
+        <div className="no-print max-w-[1440px] mx-auto px-4 md:px-6 mb-6">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-primary transition-colors"
@@ -191,20 +191,19 @@ export default function OrderDetailPage() {
         </div>
 
         {/* 打印区域 */}
-        <div className="print-area max-w-[1440px] mx-auto px-6">
-          <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
-            {/* 公司信息 */}
-            <div className="mb-12 p-8 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl border border-primary/10">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">
+        <div className="print-area max-w-[1440px] mx-auto px-4 md:px-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 md:p-8 lg:p-12">
+            <div className="mb-8 md:mb-12 p-4 md:p-8 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl border border-primary/10">
+              <div className="text-center mb-6 md:mb-8">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-2">
                   东阳市铭品日用品有限公司
                 </h1>
                 <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 {/* 联系信息 */}
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50">
+                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-gray-200/50">
                   <div className="flex items-center gap-2 mb-4">
                     <h3 className="text-sm font-bold text-gray-700 uppercase">联系信息</h3>
                   </div>
@@ -225,7 +224,7 @@ export default function OrderDetailPage() {
                 </div>
 
                 {/* 公司Logo */}
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 flex items-center justify-center">
+                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-gray-200/50 flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center text-white text-2xl font-bold">
                       铭
@@ -235,7 +234,7 @@ export default function OrderDetailPage() {
                 </div>
 
                 {/* 业务员信息 */}
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50">
+                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-gray-200/50">
                   <div className="flex items-center gap-2 mb-4">
                     <h3 className="text-sm font-bold text-gray-700 uppercase">业务员信息</h3>
                   </div>
@@ -253,9 +252,8 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {/* 订单基本信息 */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">订单信息</h2>
+            <div className="mb-8 md:mb-12">
+              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 pb-3 border-b-2 border-primary">订单信息</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">订单号</label>
@@ -296,9 +294,8 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {/* 客户信息 */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">客户信息</h2>
+            <div className="mb-8 md:mb-12">
+              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 pb-3 border-b-2 border-primary">客户信息</h2>
               {(() => {
                 const customer = order.customer || order.erpCustomer;
                 if (!customer) return <div className="text-gray-500">暂无客户信息</div>;
@@ -363,12 +360,11 @@ export default function OrderDetailPage() {
               })()}
             </div>
 
-            {/* 订单商品明细 */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold mb-6 pb-3 border-b-2 border-primary">订单商品明细</h2>
+            <div className="mb-8 md:mb-12">
+              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 pb-3 border-b-2 border-primary">订单商品明细</h2>
 
               {order.items.map((item, index) => (
-                <div key={item.id} className="mb-8 p-6 border-2 border-gray-200 rounded-xl">
+                <div key={item.id} className="mb-6 md:mb-8 p-4 md:p-6 border-2 border-gray-200 rounded-xl">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                     <h3 className="text-lg font-bold text-primary">产品 #{item.itemNumber}</h3>
                     <span className="text-sm text-gray-500">序号: {item.itemNumber}</span>
@@ -613,17 +609,17 @@ export default function OrderDetailPage() {
           </div>
 
           {/* 底部操作按钮 - 固定显示 */}
-          <div className="no-print mt-8 flex items-center justify-center gap-4">
+          <div className="no-print mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={handlePrint}
-              className="flex items-center justify-center gap-2 w-48 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-lg font-semibold"
+              className="flex items-center justify-center gap-2 w-full sm:w-48 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-lg font-semibold"
             >
               <Printer size={24} />
               <span>打印订单</span>
             </button>
             <button
               onClick={handleBackToProfile}
-              className="flex items-center justify-center gap-2 w-48 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
+              className="flex items-center justify-center gap-2 w-full sm:w-48 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
             >
               <span>返回个人中心</span>
             </button>

@@ -517,7 +517,15 @@ MP0004  陈丹
 MP0003  汪增珍
 MP0002  吴冬萍
 
-
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+DELETE FROM SALM WHERE SAL_NO IN ('MP0035', 'MP0036');
+GO
+SELECT 'ERP 删除完成!' AS result;
+GO
+EOF
+  
 npx prisma db execute --schema=./prisma/schema.prisma --stdin <<< 'DELETE FROM erp_customer_mapping; DELETE FROM erp_salesperson_mapping;'
 
 npx prisma db execute --schema=./prisma/schema.prisma --stdin <<< 'SELECT * FROM erp_customer_mapping; SELECT * FROM erp_salesperson_mapping;'
@@ -793,8 +801,22 @@ SELECT OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK, ATTR, SPC, QTY, UP, AMT, AMTN, TA
 FROM TF_POS
 WHERE OS_NO = 'SO202511056';
 GO
+SELECT OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK, ATTR, SPC, QTY, UP, AMT, AMTN, TAX, TAX_RTO
+FROM TF_POS
+WHERE OS_NO = 'SO202511060';
+GO
 EOF
 
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT m.OS_NO, m.CUS_NO, c.NAME, c.RTO_TAX
+FROM MF_POS m
+JOIN CUST c ON m.CUS_NO = c.CUS_NO
+WHERE m.OS_NO = 'SO202511060';
+GO
+EOF
+  
 tsql -S MSSQL -U sa -P '1q!' <<'EOF'
 USE DB_MP01;
 GO
@@ -855,12 +877,30 @@ INST_ID     TEMP_ID BIL_NO  BIL_ID  BIL_DD  USR     DEP     REM     CUR_SH_USR  
 tsql -S MSSQL -U sa -P '1q!' <<'EOF'
 USE DB_MP01;
 GO
-SELECT CUS_NO, NAME, BOSS, TEL, ADD1, EMAIL FROM CUST WHERE CUS_NO = 'C0178';
-GO
-SELECT SAL_NO, NAME FROM SALM WHERE SAL_NO = 'MP0035';
+SELECT CUS_NO, NAME, BOSS, TEL, ADD1, EMAIL FROM CUST WHERE CUS_NO = 'C0121';
 GO
 EOF
 
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT TOP 20 OS_NO, OS_DD, CUS_NO
+FROM MF_POS
+WHERE OS_ID = 'SO'
+ORDER BY OS_DD DESC, OS_NO DESC;
+GO
+EOF
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT TOP 20 CUS_NO, NAME, SAL
+FROM CUST
+WHERE OBJ_ID = 1
+ORDER BY CUS_NO;
+GO
+EOF
+  
 tsql -S MSSQL -U sa -P '1q!' <<'EOF'
 USE DB_MP01;
 GO
@@ -913,7 +953,7 @@ EOF
 tsql -S MSSQL -U sa -P '1q!' <<'EOF'
 USE DB_MP01;
 GO
-SELECT SAL_NO, NAME, DEP FROM SALM WHERE SAL_NO = 'MP0035';
+SELECT SAL_NO, NAME, DEP FROM SALM WHERE SAL_NO = 'MP0034';
 GO
 EOF
   
@@ -945,6 +985,36 @@ SELECT CUS_NO, NAME, CNT_MAN1, TEL1, ADR1, E_MAIL, COUNTRY FROM CUST WHERE CUS_N
 GO
 EOF
 
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+
+-- 1. 查看 MARKS 表结构（特征组表）
+SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'MARKS';
+GO
+
+-- 2. 查看几条 MARKS 数据（看看 MARK_NAME 是什么）
+SELECT TOP 10 MARK_NO, MARK_NAME, REM FROM MARKS ORDER BY MARK_NO DESC;
+GO
+
+-- 3. 查看 PRDT 表（产品表）的数据 - 看 NAME 字段
+SELECT TOP 10 PRD_NO, NAME, MARK_NO FROM PRDT WHERE MARK_NO IS NOT NULL ORDER BY RECORD_DD DESC;
+GO
+
+-- 4. 特别查一下 TB100 相关的数据
+SELECT MARK_NO, MARK_NAME, REM FROM MARKS WHERE MARK_NAME LIKE '%TB%' OR MARK_NAME LIKE '%特征%';
+GO
+
+-- 5. 查看 CD302 相关
+SELECT MARK_NO, MARK_NAME, REM FROM MARKS WHERE MARK_NAME LIKE '%CD%';
+GO
+
+-- 6. 查看 CG 相关
+SELECT MARK_NO, MARK_NAME, REM FROM MARKS WHERE MARK_NAME LIKE '%CG%';
+GO
+
+EOF
 
 > 1> 2> 1> 2> OS_ID       OS_NO   BAT_NO  OS_DD   QT_NO   VOH_ID  VOH_NO  TRAD_MTH        PAY_MTH PAY_DAYS        CHK_DAYS        PAY_REM SEND_MTH        SEND_WH EST_DD  CUS_NO  SAL_NO  USE_DEP CUR_ID
 EXC_RTO AMTN_INT        AMT_INT DIS_CNT CLS_ID  BACK_ID HIS_PRICE      ADR     REM     PO_DEP  PO_SO_NO        SO_BY_MM        SO_OT_DD        SO_BY_DD        SO_LNG_CAS      SO_END_DD       SO_LST_DD
@@ -989,6 +1059,40 @@ ORDER BY OS_NO;
 GO
 EOF
 
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT TOP 15 CUS_NO, NAME, ID1_TAX, ID2_TAX, RTO_TAX, SJ_TAX
+FROM CUST
+WHERE CUS_NO LIKE 'C%' OR CUS_NO LIKE 'D%'
+ORDER BY CUS_NO;
+GO
+EOF
+  
+  
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT CUS_NO, NAME, RTO_TAX
+FROM CUST
+WHERE CUS_NO IN ('A0001', 'A0002', 'A0003', 'A0004', 'A0005', 'A0006', 'A0007', 'A0008', 'A0009', 'A0010')
+ORDER BY CUS_NO;
+GO
+EOF
+  
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '%SO%' OR TABLE_NAME LIKE '%ORDER%';
+GO
+EOF
+
+ tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+ USE DB_MP01;
+ GO
+ SELECT TOP 10 * FROM WD_SO_H ORDER BY 1 DESC;
+ GO
+ EOF
 
 tsql -S MSSQL -U sa -P '1q!' <<'EOF'
 USE DB_MP01;
@@ -1020,10 +1124,73 @@ ORDER BY RECORD_DD DESC;
 GO
 EOF
 
-
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT SAL_NO, NAME FROM SALM WHERE SAL_NO NOT LIKE 'MP%';
+GO
+EOF
+  
 tsql -S MSSQL -U sa -P '1q!' <<'EOF'
 USE DB_MP01;
 GO
 SELECT DISTINCT SEND_WH FROM MF_POS WHERE OS_ID = 'SO';
 GO
 EOF
+
+mysql -u lemopx -p'1q!' internal_sales -e "SHOW TABLES LIKE 'system_config%';"ig%';"
+
+
+
+
+  mysql -u lemopx -p'1q!' internal_sales -e "
+  DELETE FROM cart_items;
+  DELETE FROM order_items;
+  DELETE FROM order_custom_params;
+  DELETE FROM orders;
+  DELETE FROM customers;
+  UPDATE erp_customers SET salesperson_id = NULL;
+  DELETE FROM salespersons;
+  SELECT 'MySQL 清理完成!' AS status;
+  "
+  
+    mysql -u lemopx -p'1q!' internal_sales -e "
+  DELETE FROM cart_items;
+  DELETE FROM order_items;
+  DELETE FROM order_custom_params;
+  DELETE FROM orders;
+  DELETE FROM customers;
+  SELECT 'customers 已清空' AS status;
+  "
+  
+  mysql -u lemopx -p'1q!' internal_sales -e "
+  DELETE FROM erp_customers;
+  SELECT 'erp_customers 已清空' AS status;
+  "
+
+  
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+-- 先查看订单确认存在
+SELECT OS_NO, CUS_NO, OS_DD FROM MF_POS WHERE OS_NO = 'SO202511060';
+GO
+-- 删除扩展明细表 TF_POS_Z
+DELETE FROM TF_POS_Z WHERE OS_ID = 'SO' AND OS_NO = 'SO202511060';
+GO
+-- 删除明细表 TF_POS
+DELETE FROM TF_POS WHERE OS_ID = 'SO' AND OS_NO = 'SO202511060';
+GO
+-- 删除主表 MF_POS
+DELETE FROM MF_POS WHERE OS_ID = 'SO' AND OS_NO = 'SO202511060';
+GO
+-- 确认已删除
+SELECT OS_NO FROM MF_POS WHERE OS_NO = 'SO202511060';
+GO
+EOF
+  
+sed -i 's/@@unique(\[salespersonId, skuId, colorScheme\])/@@unique([salespersonId, skuId])/' prisma/schema.prisma
+sed -i 's/configValue\s*String?\s*@map("config_value")/configValue  String?  @db.Text @map("config_value")/' prisma/schema.prisma
+sed -i 's/configValue  String?  @map("config_value")/configValue  String?  @db.Text @map("config_value")/' prisma/schema.prisma
+sed -i 's/provider = "sqlite"/provider = "mysql"/' prisma/schema.prisma 
+pnpm prisma generate && pnpm prisma db push
