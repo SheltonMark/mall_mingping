@@ -13,6 +13,8 @@ import { IsString, IsOptional, IsBoolean, IsNumber, IsArray, IsObject } from 'cl
 import { ErpOrderSyncService } from './erp-order-sync.service';
 import { ErpProductSyncService } from './erp-product-sync.service';
 import { ErpEntitySyncService } from './erp-entity-sync.service';
+import { ErpCustomerSyncService } from './erp-customer-sync.service';
+import { ErpSalespersonSyncService } from './erp-salesperson-sync.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 // DTO 定义
@@ -61,6 +63,8 @@ export class ErpController {
     private readonly erpOrderSyncService: ErpOrderSyncService,
     private readonly erpProductSyncService: ErpProductSyncService,
     private readonly erpEntitySyncService: ErpEntitySyncService,
+    private readonly erpCustomerSyncService: ErpCustomerSyncService,
+    private readonly erpSalespersonSyncService: ErpSalespersonSyncService,
   ) {}
 
   // ============ 订单同步接口 ============
@@ -312,5 +316,111 @@ export class ErpController {
   @Post('entities/salespersons/:salespersonId/sync')
   async syncSalesperson(@Param('salespersonId') salespersonId: string) {
     return this.erpEntitySyncService.syncSalespersonToErp(salespersonId);
+  }
+
+  // ============ ERP 客户同步接口（从ERP读取到网站）============
+
+  /**
+   * 同步 ERP 客户到网站
+   * POST /erp/erp-customers/sync
+   */
+  @Post('erp-customers/sync')
+  async syncErpCustomers() {
+    return this.erpCustomerSyncService.syncCustomers();
+  }
+
+  /**
+   * 获取 ERP 客户上次同步时间
+   * GET /erp/erp-customers/last-sync
+   */
+  @Get('erp-customers/last-sync')
+  async getErpCustomerLastSyncTime() {
+    const lastSync = await this.erpCustomerSyncService.getLastSyncTime();
+    return {
+      lastSyncTime: lastSync?.toISOString() || null,
+      lastSyncTimeFormatted: lastSync
+        ? lastSync.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+        : '从未同步',
+    };
+  }
+
+  /**
+   * 获取所有 ERP 客户列表
+   * GET /erp/erp-customers
+   */
+  @Get('erp-customers')
+  async getErpCustomers(
+    @Query('search') search?: string,
+    @Query('salespersonId') salespersonId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.erpCustomerSyncService.findAll({
+      search,
+      salespersonId,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+    });
+  }
+
+  /**
+   * 获取单个 ERP 客户
+   * GET /erp/erp-customers/:id
+   */
+  @Get('erp-customers/:id')
+  async getErpCustomer(@Param('id') id: string) {
+    return this.erpCustomerSyncService.findOne(id);
+  }
+
+  /**
+   * 根据客户编号获取 ERP 客户
+   * GET /erp/erp-customers/by-cus-no/:cusNo
+   */
+  @Get('erp-customers/by-cus-no/:cusNo')
+  async getErpCustomerByCusNo(@Param('cusNo') cusNo: string) {
+    return this.erpCustomerSyncService.findByCusNo(cusNo);
+  }
+
+  // ============ ERP 业务员同步接口（从ERP读取到网站）============
+
+  /**
+   * 同步 ERP 业务员到网站
+   * POST /erp/erp-salespersons/sync
+   */
+  @Post('erp-salespersons/sync')
+  async syncErpSalespersons() {
+    return this.erpSalespersonSyncService.syncSalespersons();
+  }
+
+  /**
+   * 获取 ERP 业务员上次同步时间
+   * GET /erp/erp-salespersons/last-sync
+   */
+  @Get('erp-salespersons/last-sync')
+  async getErpSalespersonLastSyncTime() {
+    const lastSync = await this.erpSalespersonSyncService.getLastSyncTime();
+    return {
+      lastSyncTime: lastSync?.toISOString() || null,
+      lastSyncTimeFormatted: lastSync
+        ? lastSync.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+        : '从未同步',
+    };
+  }
+
+  /**
+   * 获取所有业务员列表（带统计）
+   * GET /erp/erp-salespersons
+   */
+  @Get('erp-salespersons')
+  async getErpSalespersons(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.erpSalespersonSyncService.findAll({
+      search,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+    });
   }
 }

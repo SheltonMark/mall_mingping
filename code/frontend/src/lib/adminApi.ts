@@ -612,4 +612,82 @@ export const erpApi = {
     request<any>(`/erp/mappings/salespersons/${id}`, {
       method: 'DELETE',
     }),
+
+  // ============ ERP 客户同步（从ERP读取到网站）============
+
+  // 同步 ERP 客户到网站
+  syncErpCustomers: () =>
+    request<{
+      success: boolean;
+      created: number;
+      updated: number;
+      total: number;
+      duration: number;
+      error?: string;
+    }>('/erp/erp-customers/sync', {
+      method: 'POST',
+    }),
+
+  // 获取 ERP 客户上次同步时间
+  getErpCustomerLastSyncTime: () =>
+    request<{
+      lastSyncTime: string | null;
+      lastSyncTimeFormatted: string;
+    }>('/erp/erp-customers/last-sync'),
+
+  // 获取所有 ERP 客户列表
+  getErpCustomers: (params?: {
+    search?: string;
+    salespersonId?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const query = new URLSearchParams(filterParams(params)).toString();
+    return request<{
+      data: any[];
+      meta: { total: number; page: number; limit: number; totalPages: number };
+    }>(`/erp/erp-customers${query ? `?${query}` : ''}`);
+  },
+
+  // 获取单个 ERP 客户
+  getErpCustomer: (id: string) => request<any>(`/erp/erp-customers/${id}`),
+
+  // 根据客户编号获取 ERP 客户
+  getErpCustomerByCusNo: (cusNo: string) =>
+    request<any>(`/erp/erp-customers/by-cus-no/${cusNo}`),
+
+  // ============ ERP 业务员同步（从ERP读取到网站）============
+
+  // 同步 ERP 业务员到网站
+  syncErpSalespersons: () =>
+    request<{
+      success: boolean;
+      created: number;
+      updated: number;
+      total: number;
+      duration: number;
+      error?: string;
+    }>('/erp/erp-salespersons/sync', {
+      method: 'POST',
+    }),
+
+  // 获取 ERP 业务员上次同步时间
+  getErpSalespersonLastSyncTime: () =>
+    request<{
+      lastSyncTime: string | null;
+      lastSyncTimeFormatted: string;
+    }>('/erp/erp-salespersons/last-sync'),
+
+  // 获取所有业务员列表（带统计）
+  getErpSalespersons: (params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const query = new URLSearchParams(filterParams(params)).toString();
+    return request<{
+      data: any[];
+      meta: { total: number; page: number; limit: number; totalPages: number };
+    }>(`/erp/erp-salespersons${query ? `?${query}` : ''}`);
+  },
 };

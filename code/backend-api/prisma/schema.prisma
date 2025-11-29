@@ -26,17 +26,22 @@ model Admin {
 }
 
 // ========================================
-// 业务员表（内网版本 - 简化字段）
+// 业务员表（内网版本 - ERP同步）
 // ========================================
 model Salesperson {
   id           String   @id @default(uuid())
-  accountId    String   @unique @map("account_id") // 工号，用于登录
-  chineseName  String   @map("chinese_name")       // 中文名
-  password     String                              // 密码哈希
+  accountId    String   @unique @map("account_id") // 工号（ERP SAL_NO，如 MP0001）
+  chineseName  String   @map("chinese_name")       // 中文名（ERP NAME）
+  englishName  String?  @map("english_name")       // 英文名（ERP ENG_NAME）
+  department   String?                             // 部门（ERP DEP）
+  position     String?                             // 职位（ERP POS）
+  password     String                              // 密码哈希（本地维护）
+  erpSyncAt    DateTime? @map("erp_sync_at")       // ERP同步时间
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  customers    Customer[] // 业务员的客户
+  customers    Customer[] // 业务员的客户（网站客户）
+  erpCustomers ErpCustomer[] // 业务员的ERP客户
   orders       Order[]
   cartItems    CartItem[] // 业务员的购物车
 
@@ -44,7 +49,7 @@ model Salesperson {
 }
 
 // ========================================
-// 客户表（内网版本 - 业务员创建并维护）
+// 客户表（内网版本 - 业务员创建并维护的网站客户）
 // ========================================
 model Customer {
   id              String   @id @default(uuid())
@@ -67,6 +72,30 @@ model Customer {
   orders          Order[]
 
   @@map("customers")
+}
+
+// ========================================
+// ERP客户表（从ERP同步，只读）
+// ========================================
+model ErpCustomer {
+  id              String   @id @default(uuid())
+  cusNo           String   @unique @map("cus_no")     // ERP客户编号（CUS_NO，如 C0098, D04057）
+  name            String                              // 客户全称（ERP NAME）
+  shortName       String?  @map("short_name")         // 客户简称（ERP SNM）
+  country         String?                             // 国家（ERP COUNTRY）
+  phone           String?                             // 电话（ERP TEL1）
+  email           String?                             // 邮箱（ERP E_MAIL）
+  address         String?                             // 地址（ERP ADR1）
+  contactPerson   String?  @map("contact_person")     // 联系人（ERP CNT_MAN1）
+  salespersonNo   String?  @map("salesperson_no")     // 所属业务员编号（ERP SAL）
+  salespersonId   String?  @map("salesperson_id")     // 关联的业务员ID
+  erpSyncAt       DateTime @default(now()) @map("erp_sync_at") // ERP同步时间
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  salesperson     Salesperson? @relation(fields: [salespersonId], references: [id])
+
+  @@map("erp_customers")
 }
 
 enum CustomerType {
