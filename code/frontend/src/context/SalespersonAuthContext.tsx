@@ -56,6 +56,7 @@ export function SalespersonAuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('salesperson_token')
     localStorage.removeItem('salesperson_data')
+    sessionStorage.removeItem('session_order_ids')  // 清除本次会话订单ID
     setSalesperson(null)
     setIsAuthenticated(false)
   }

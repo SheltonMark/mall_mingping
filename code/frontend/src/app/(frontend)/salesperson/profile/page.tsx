@@ -535,34 +535,32 @@ export default function SalespersonProfilePage() {
                 </div>
               </div>
 
-              {/* 编辑按钮 - 仅待审核状态可编辑 */}
-              {order.status === 'PENDING' && (
-                <div className="flex-shrink-0">
-                  {editingItemId === item.id ? (
-                    <div className="flex gap-1">
-                      <button
-                        onClick={handleSaveItem}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded"
-                      >
-                        <Save size={16} />
-                      </button>
-                      <button
-                        onClick={handleCancelEdit}
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
+              {/* 编辑按钮 - 任何状态都可编辑 */}
+              <div className="flex-shrink-0">
+                {editingItemId === item.id ? (
+                  <div className="flex gap-1">
                     <button
-                      onClick={() => handleEditItem(item)}
-                      className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded"
+                      onClick={handleSaveItem}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded"
                     >
-                      <Edit2 size={16} />
+                      <Save size={16} />
                     </button>
-                  )}
-                </div>
-              )}
+                    <button
+                      onClick={handleCancelEdit}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleEditItem(item)}
+                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -655,37 +653,37 @@ export default function SalespersonProfilePage() {
                   </div>
                 )}
 
-                {/* 历史订单区域 */}
-                {historyOrders.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-gray-300">
-                      <div className="flex items-center gap-2">
-                        <History size={20} className="text-gray-500" />
-                        <h3 className="text-lg font-bold text-gray-700">历史订单</h3>
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-sm rounded-full">
-                          {historyOrders.length}
-                        </span>
-                      </div>
-                      {showHistoryOrders ? (
-                        <button
-                          onClick={handleHideHistoryOrders}
-                          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition flex items-center gap-2"
-                        >
-                          <Lock size={16} />
-                          隐藏历史订单
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setShowPasswordModal(true)}
-                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition flex items-center gap-2"
-                        >
-                          <Lock size={16} />
-                          查看历史订单
-                        </button>
-                      )}
+                {/* 历史订单区域 - 始终显示 */}
+                <div>
+                  <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-gray-300">
+                    <div className="flex items-center gap-2">
+                      <History size={20} className="text-gray-500" />
+                      <h3 className="text-lg font-bold text-gray-700">历史订单</h3>
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-sm rounded-full">
+                        {historyOrders.length}
+                      </span>
                     </div>
-
                     {showHistoryOrders ? (
+                      <button
+                        onClick={handleHideHistoryOrders}
+                        className="px-4 py-2 text-gray-600 hover:text-gray-800 transition flex items-center gap-2"
+                      >
+                        <Lock size={16} />
+                        隐藏历史订单
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setShowPasswordModal(true)}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition flex items-center gap-2"
+                      >
+                        <Lock size={16} />
+                        查看历史订单
+                      </button>
+                    )}
+                  </div>
+
+                  {showHistoryOrders ? (
+                    historyOrders.length > 0 ? (
                       <div className="space-y-6">
                         {historyOrders.map((order) => {
                           const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.PENDING
@@ -694,17 +692,22 @@ export default function SalespersonProfilePage() {
                         })}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                        <Lock size={32} className="mb-3" />
-                        <p className="text-sm">历史订单已隐藏</p>
-                        <p className="text-xs mt-1">点击上方按钮输入密码查看</p>
+                      <div className="flex flex-col items-center justify-center py-8 text-gray-400 bg-gray-50 rounded-xl">
+                        <Package size={32} className="mb-3" />
+                        <p className="text-sm">暂无历史订单</p>
                       </div>
-                    )}
-                  </div>
-                )}
+                    )
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                      <Lock size={32} className="mb-3" />
+                      <p className="text-sm">历史订单已隐藏</p>
+                      <p className="text-xs mt-1">点击上方按钮输入密码查看</p>
+                    </div>
+                  )}
+                </div>
 
                 {/* 如果没有本次会话订单，显示提示 */}
-                {currentSessionOrders.length === 0 && historyOrders.length > 0 && !showHistoryOrders && (
+                {currentSessionOrders.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-8 text-gray-500">
                     <Package size={48} className="mb-4 text-gray-300" />
                     <p>本次会话暂无新订单</p>
