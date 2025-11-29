@@ -42,6 +42,24 @@ export class SalespersonAuthService {
     };
   }
 
+  async verifyPassword(salespersonId: string, password: string) {
+    const salesperson = await this.prisma.salesperson.findUnique({
+      where: { id: salespersonId },
+    });
+
+    if (!salesperson) {
+      throw new UnauthorizedException('业务员不存在');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, salesperson.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('密码错误');
+    }
+
+    return { verified: true };
+  }
+
   async validateSalesperson(salespersonId: string) {
     const salesperson = await this.prisma.salesperson.findUnique({
       where: { id: salespersonId },

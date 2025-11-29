@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams, useSearchParams } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { orderApi } from '@/lib/salespersonApi'
@@ -77,9 +77,7 @@ interface Order {
 export default function OrderDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const searchParams = useSearchParams()
   const orderId = params.id as string
-  const fromProfile = searchParams.get('from') === 'profile'
   const toast = useToast()
   const { salesperson, isAuthenticated, isLoading: authLoading } = useSalespersonAuth()
   const [order, setOrder] = useState<Order | null>(null)
@@ -116,7 +114,7 @@ export default function OrderDetailPage() {
     window.print()
   }
 
-  const handleSubmitOrder = () => {
+  const handleBackToProfile = () => {
     router.push('/salesperson/profile#my-orders')
   }
 
@@ -144,6 +142,12 @@ export default function OrderDetailPage() {
     <>
       <style jsx global>{`
         @media print {
+          /* 隐藏浏览器页眉页脚（URL、日期等） */
+          @page {
+            margin: 10mm;
+            size: A4;
+          }
+
           body * {
             visibility: hidden;
           }
@@ -167,7 +171,7 @@ export default function OrderDetailPage() {
 
       <div className="min-h-screen bg-gray-50 pt-32 pb-20">
         {/* 返回按钮 */}
-        <div className="no-print max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+        <div className="no-print max-w-[1440px] mx-auto px-6 mb-6">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-primary transition-colors"
@@ -178,7 +182,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* 打印区域 */}
-        <div className="print-area max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="print-area max-w-[1440px] mx-auto px-6">
           <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
             {/* 公司信息 */}
             <div className="mb-12 p-8 bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl border border-primary/10">
@@ -604,7 +608,7 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* 底部操作按钮 */}
+          {/* 底部操作按钮 - 固定显示 */}
           <div className="no-print mt-8 flex items-center justify-center gap-4">
             <button
               onClick={handlePrint}
@@ -613,21 +617,12 @@ export default function OrderDetailPage() {
               <Printer size={24} />
               <span>打印订单</span>
             </button>
-            {fromProfile ? (
-              <button
-                onClick={() => router.push('/salesperson/profile#my-orders')}
-                className="flex items-center justify-center gap-2 w-48 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
-              >
-                <span>返回个人中心</span>
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmitOrder}
-                className="flex items-center justify-center gap-2 w-48 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
-              >
-                <span>提交订单</span>
-              </button>
-            )}
+            <button
+              onClick={handleBackToProfile}
+              className="flex items-center justify-center gap-2 w-48 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-semibold"
+            >
+              <span>返回个人中心</span>
+            </button>
           </div>
         </div>
       </div>

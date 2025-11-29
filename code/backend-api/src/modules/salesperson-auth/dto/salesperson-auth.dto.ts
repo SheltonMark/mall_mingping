@@ -10,3 +10,9 @@ export class SalespersonLoginDto {
   @MinLength(6, { message: '密码至少6位' })
   password: string;
 }
+
+export class VerifyPasswordDto {
+  @IsString()
+  @IsNotEmpty({ message: '密码不能为空' })
+  password: string;
+}

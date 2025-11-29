@@ -7,7 +7,6 @@ import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { Package, User, Calendar, FileText } from 'lucide-react'
 import SearchableSelect from '@/components/common/SearchableSelect'
-import CustomSelect from '@/components/common/CustomSelect'
 import DatePicker from '@/components/common/DatePicker'
 import Link from 'next/link'
 
@@ -301,13 +300,26 @@ export default function OrderConfirmationPage() {
 
       const result = await response.json()
 
+      // 存储本次会话创建的订单ID到sessionStorage
+      const sessionOrderIds = sessionStorage.getItem('session_order_ids')
+      let orderIds: string[] = []
+      if (sessionOrderIds) {
+        try {
+          orderIds = JSON.parse(sessionOrderIds)
+        } catch (e) {
+          console.error('Failed to parse session order ids:', e)
+        }
+      }
+      orderIds.push(result.id)
+      sessionStorage.setItem('session_order_ids', JSON.stringify(orderIds))
+
       toast.success('订单创建成功！')
 
       // 清除购物车中的已选商品
       removeSelectedItems()
 
-      // 跳转到订单详情页
-      router.push(`/salesperson/orders/${result.id}`)
+      // 跳转到我的订单列表
+      router.push('/salesperson/orders')
     } catch (err: any) {
       toast.error(err.message || '创建订单失败')
     } finally {
@@ -325,7 +337,7 @@ export default function OrderConfirmationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-6">
         {/* 页面标题 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">订单确认</h1>
@@ -339,7 +351,13 @@ export default function OrderConfirmationPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-primary mb-2">
                 东阳市铭品日用品有限公司
               </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
+              <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mb-3"></div>
+              {/* 订单类型标签 */}
+              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30">
+                <span className="text-lg font-semibold text-primary">
+                  {orderType === 'FORMAL' ? '销售订单' : '报价单'}
+                </span>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -480,7 +498,7 @@ export default function OrderConfirmationPage() {
                         : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
                     }`}
                   >
-                    正式订单
+                    销售订单
                   </button>
                   <button
                     type="button"
@@ -491,7 +509,7 @@ export default function OrderConfirmationPage() {
                         : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
                     }`}
                   >
-                    意向订单
+                    报价单
                   </button>
                 </div>
               </div>
@@ -575,24 +593,17 @@ export default function OrderConfirmationPage() {
                       </div>
                     )}
 
-                    {/* 产品类别 */}
+                    {/* 产品类别 - 只读显示 */}
                     <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-2">产品类别</label>
-                      <CustomSelect
-                        options={[
-                          { value: 'new', label: '新产品' },
-                          { value: 'old', label: '老产品' },
-                          { value: 'sample', label: '样品需求' }
-                        ]}
-                        value={item.productCategory || 'new'}
-                        onChange={(value) => updateOrderItem(index, 'productCategory', value)}
-                        placeholder="选择产品类别"
-                      />
+                      <div className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                        {item.productCategory === 'new' ? '新产品' : item.productCategory === 'old' ? '老产品' : item.productCategory === 'sample' ? '样品需求' : '-'}
+                      </div>
                     </div>
 
                     {/* 订单明细字段 */}
                     <div className="space-y-6">
-                      {/* 基本信息 */}
+                      {/* 基本信息 - 只读显示 */}
                       <div>
                         <h4 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary">基本信息</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -621,34 +632,26 @@ export default function OrderConfirmationPage() {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">客户料号</label>
-                            <input
-                              type="text"
-                              value={item.customerProductCode || ''}
-                              onChange={(e) => updateOrderItem(index, 'customerProductCode', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.customerProductCode || '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">未税本位币</label>
-                            <input
-                              type="number"
-                              value={item.untaxedLocalCurrency || ''}
-                              onChange={(e) => updateOrderItem(index, 'untaxedLocalCurrency', parseFloat(e.target.value) || undefined)}
-                              step="0.01"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.untaxedLocalCurrency ?? '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">预交日</label>
-                            <DatePicker
-                              value={item.expectedDeliveryDate || ''}
-                              onChange={(value) => updateOrderItem(index, 'expectedDeliveryDate', value)}
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.expectedDeliveryDate || '-'}
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* 包装信息 */}
+                      {/* 包装信息 - 只读显示 */}
                       <div>
                         <h4 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary flex items-center gap-2">
                           <span>📦</span>
@@ -657,101 +660,56 @@ export default function OrderConfirmationPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">装箱数</label>
-                            <input
-                              type="number"
-                              value={item.packingQuantity || ''}
-                              onChange={(e) => {
-                                const packingQty = parseInt(e.target.value) || undefined
-                                updateOrderItem(index, 'packingQuantity', packingQty)
-                                // 自动计算箱数
-                                if (packingQty && item.quantity) {
-                                  const calculatedCartons = Math.ceil(item.quantity / packingQty)
-                                  updateOrderItem(index, 'cartonQuantity', calculatedCartons)
-                                }
-                              }}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.packingQuantity ?? '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">箱数</label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                value={item.cartonQuantity || ''}
-                                onChange={(e) => updateOrderItem(index, 'cartonQuantity', parseInt(e.target.value) || undefined)}
-                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
-                                  item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0
-                                    ? 'border-orange-400 bg-orange-50'
-                                    : 'border-gray-300'
-                                }`}
-                              />
-                              {item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0 && (
-                                <div className="absolute -bottom-5 left-0 text-xs text-orange-600">
-                                  ⚠️ 箱数不能整除，请确认
-                                </div>
-                              )}
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.cartonQuantity ?? '-'}
                             </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">包装方式</label>
-                            <input
-                              type="text"
-                              value={item.packagingMethod || ''}
-                              onChange={(e) => updateOrderItem(index, 'packagingMethod', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.packagingMethod || '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">纸卡编码</label>
-                            <input
-                              type="text"
-                              value={item.paperCardCode || ''}
-                              onChange={(e) => updateOrderItem(index, 'paperCardCode', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.paperCardCode || '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">水洗标编码</label>
-                            <input
-                              type="text"
-                              value={item.washLabelCode || ''}
-                              onChange={(e) => updateOrderItem(index, 'washLabelCode', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.washLabelCode || '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">外箱编码</label>
-                            <input
-                              type="text"
-                              value={item.outerCartonCode || ''}
-                              onChange={(e) => updateOrderItem(index, 'outerCartonCode', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.outerCartonCode || '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">箱规 (cm)</label>
-                            <input
-                              type="text"
-                              value={item.cartonSpecification || ''}
-                              onChange={(e) => updateOrderItem(index, 'cartonSpecification', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                              placeholder="例如: 74*44*20"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.cartonSpecification || '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">体积 (m³)</label>
-                            <input
-                              type="number"
-                              value={item.volume || ''}
-                              onChange={(e) => updateOrderItem(index, 'volume', parseFloat(e.target.value) || undefined)}
-                              step="0.01"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px]">
+                              {item.volume ?? '-'}
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* 备注信息 */}
+                      {/* 备注信息 - 只读显示 */}
                       <div>
                         <h4 className="text-sm font-bold text-gray-900 mb-3 pb-2 border-b-2 border-primary flex items-center gap-2">
                           <span>📝</span>
@@ -760,21 +718,15 @@ export default function OrderConfirmationPage() {
                         <div className="space-y-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">厂商备注</label>
-                            <textarea
-                              value={item.supplierNote || ''}
-                              onChange={(e) => updateOrderItem(index, 'supplierNote', e.target.value)}
-                              rows={2}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[42px] whitespace-pre-wrap">
+                              {item.supplierNote || '-'}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">摘要</label>
-                            <textarea
-                              value={item.summary || ''}
-                              onChange={(e) => updateOrderItem(index, 'summary', e.target.value)}
-                              rows={3}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                            />
+                            <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[60px] whitespace-pre-wrap">
+                              {item.summary || '-'}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -814,7 +766,7 @@ export default function OrderConfirmationPage() {
               disabled={submitting || !selectedCustomerId || orderItems.length === 0}
               className="flex-1 py-3 px-4 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/30"
             >
-              {submitting ? '提交中...' : '确认订单'}
+              {submitting ? '提交中...' : '提交订单'}
             </button>
           </div>
         </form>

@@ -185,4 +185,11 @@ export const authApi = {
       method: 'PUT',
       body: JSON.stringify({ oldPassword, newPassword }),
     }),
+
+  // 验证密码（用于解锁历史订单等敏感操作）
+  verifyPassword: (password: string) =>
+    request<{ verified: boolean }>('/salesperson-auth/verify-password', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
 };

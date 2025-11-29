@@ -1,6 +1,7 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import { SalespersonAuthService } from './salesperson-auth.service';
-import { SalespersonLoginDto } from './dto/salesperson-auth.dto';
+import { SalespersonLoginDto, VerifyPasswordDto } from './dto/salesperson-auth.dto';
+import { SalespersonAuthGuard } from './salesperson-auth.guard';
 
 @Controller('salesperson-auth')
 export class SalespersonAuthController {
@@ -10,5 +11,12 @@ export class SalespersonAuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: SalespersonLoginDto) {
     return this.salespersonAuthService.login(loginDto);
+  }
+
+  @Post('verify-password')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(SalespersonAuthGuard)
+  async verifyPassword(@Request() req, @Body() verifyDto: VerifyPasswordDto) {
+    return this.salespersonAuthService.verifyPassword(req.user.sub, verifyDto.password);
   }
 }

@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
-import { orderApi, customerApi } from '@/lib/salespersonApi'
+import { orderApi, customerApi, authApi } from '@/lib/salespersonApi'
 import { useToast } from '@/components/common/ToastContainer'
-import { User, Package, Users, Eye, Edit2, Save, X, Clock, CheckCircle, XCircle, AlertCircle, Check, RefreshCw } from 'lucide-react'
+import { User, Package, Users, Eye, Edit2, Save, X, Clock, CheckCircle, XCircle, AlertCircle, Check, RefreshCw, Lock, History } from 'lucide-react'
 
 // 订单状态类型
 type OrderStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SYNCED' | 'SYNC_FAILED'
@@ -111,6 +111,13 @@ export default function SalespersonProfilePage() {
   const [savingCustomer, setSavingCustomer] = useState(false)
   const [resubmittingOrderId, setResubmittingOrderId] = useState<string | null>(null)
 
+  // 历史订单相关状态
+  const [sessionOrderIds, setSessionOrderIds] = useState<string[]>([])
+  const [showHistoryOrders, setShowHistoryOrders] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [password, setPassword] = useState('')
+  const [verifyingPassword, setVerifyingPassword] = useState(false)
+
   useEffect(() => {
     if (authLoading) return
 
@@ -118,6 +125,16 @@ export default function SalespersonProfilePage() {
       toast.warning('请先登录')
       router.push('/login')
       return
+    }
+
+    // 从sessionStorage加载本次会话创建的订单ID
+    const storedSessionOrderIds = sessionStorage.getItem('session_order_ids')
+    if (storedSessionOrderIds) {
+      try {
+        setSessionOrderIds(JSON.parse(storedSessionOrderIds))
+      } catch (e) {
+        console.error('Failed to parse session order ids:', e)
+      }
     }
 
     loadOrders()
@@ -144,6 +161,36 @@ export default function SalespersonProfilePage() {
       toast.error(error.message || '加载客户失败')
     }
   }
+
+  // 验证密码解锁历史订单
+  const handleVerifyPassword = async () => {
+    if (!password.trim()) {
+      toast.warning('请输入密码')
+      return
+    }
+
+    setVerifyingPassword(true)
+    try {
+      await authApi.verifyPassword(password)
+      setShowHistoryOrders(true)
+      setShowPasswordModal(false)
+      setPassword('')
+      toast.success('验证成功')
+    } catch (error: any) {
+      toast.error(error.message || '密码错误')
+    } finally {
+      setVerifyingPassword(false)
+    }
+  }
+
+  // 关闭历史订单
+  const handleHideHistoryOrders = () => {
+    setShowHistoryOrders(false)
+  }
+
+  // 分类订单：本次会话订单 和 历史订单
+  const currentSessionOrders = orders.filter(order => sessionOrderIds.includes(order.id))
+  const historyOrders = orders.filter(order => !sessionOrderIds.includes(order.id))
 
   // 重新提交审核（被驳回的订单）
   const handleResubmit = async (orderId: string) => {
@@ -374,6 +421,161 @@ export default function SalespersonProfilePage() {
     setEditingCustomerData(null)
   }
 
+  // 渲染订单卡片
+  const renderOrderCard = (order: Order, statusConfig: { label: string; color: string; bgColor: string; icon: any }, StatusIcon: any) => {
+    return (
+      <div key={order.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+        {/* 订单头部信息 */}
+        <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-bold text-gray-900">{order.orderNumber}</span>
+                <span className={`px-2 py-0.5 text-xs rounded-full ${
+                  order.orderType === 'FORMAL' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
+                }`}>
+                  {order.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
+                </span>
+              </div>
+              <div className="text-sm text-gray-600">
+                客户: {order.customer?.name || '-'} | 日期: {formatDate(order.orderDate)}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 ${statusConfig.bgColor} ${statusConfig.color}`}>
+              <StatusIcon size={14} />
+              <span className="text-sm font-medium">{statusConfig.label}</span>
+            </div>
+            {order.status === 'REJECTED' && (
+              <button
+                onClick={() => handleResubmit(order.id)}
+                disabled={resubmittingOrderId === order.id}
+                className="px-3 py-1.5 bg-primary text-white rounded-lg text-sm flex items-center gap-1 disabled:opacity-50"
+              >
+                <RefreshCw size={14} className={resubmittingOrderId === order.id ? 'animate-spin' : ''} />
+                {resubmittingOrderId === order.id ? '提交中...' : '重新提交'}
+              </button>
+            )}
+            <button
+              onClick={() => viewOrderDetail(order.id)}
+              className="px-4 py-2 border border-primary text-primary rounded-lg text-sm flex items-center gap-1 hover:bg-primary/5"
+            >
+              <Eye size={16} />
+              查看详情
+            </button>
+          </div>
+        </div>
+
+        {/* 驳回原因 */}
+        {order.status === 'REJECTED' && order.rejectReason && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <XCircle size={16} className="text-red-500 mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-red-700">驳回原因</div>
+                <div className="text-sm text-red-600">{order.rejectReason}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ERP单号 */}
+        {order.erpOrderNo && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="text-sm">
+              <span className="text-green-700 font-medium">ERP单号: </span>
+              <span className="text-green-800">{order.erpOrderNo}</span>
+            </div>
+          </div>
+        )}
+
+        {/* 订单商品列表 */}
+        <div className="space-y-3">
+          {order.items.map((item) => (
+            <div key={item.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+              {/* 商品图片 */}
+              <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                {item.productImage ? (
+                  <img
+                    src={item.productImage}
+                    alt={item.productSku?.productCode || '商品'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <Package size={24} />
+                  </div>
+                )}
+              </div>
+
+              {/* 商品信息 */}
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-gray-900">
+                  {item.productSku?.productCode || '-'}
+                </div>
+                {item.productSpec && (
+                  <div className="text-sm text-gray-600 mt-1">{item.productSpec}</div>
+                )}
+                {item.customerProductCode && (
+                  <div className="text-sm text-gray-500">客户货号: {item.customerProductCode}</div>
+                )}
+              </div>
+
+              {/* 数量和价格 */}
+              <div className="text-right">
+                <div className="text-sm text-gray-600">
+                  数量: <span className="font-medium text-gray-900">{item.quantity}</span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  单价: <span className="font-medium text-gray-900">${formatAmount(item.price)}</span>
+                </div>
+                <div className="text-sm font-medium text-primary">
+                  小计: ${formatAmount(item.subtotal)}
+                </div>
+              </div>
+
+              {/* 编辑按钮 - 仅待审核状态可编辑 */}
+              {order.status === 'PENDING' && (
+                <div className="flex-shrink-0">
+                  {editingItemId === item.id ? (
+                    <div className="flex gap-1">
+                      <button
+                        onClick={handleSaveItem}
+                        className="p-2 text-green-600 hover:bg-green-50 rounded"
+                      >
+                        <Save size={16} />
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleEditItem(item)}
+                      className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* 订单金额 */}
+        <div className="mt-4 pt-4 border-t border-gray-100 text-right">
+          <span className="text-gray-600">订单总额: </span>
+          <span className="text-xl font-bold text-primary">${formatAmount(order.totalAmount)}</span>
+        </div>
+      </div>
+    )
+  }
+
   if (authLoading || !isAuthenticated || !salesperson) {
     return <div className="min-h-screen flex items-center justify-center">
       <p className="text-gray-600">加载中...</p>
@@ -432,391 +634,82 @@ export default function SalespersonProfilePage() {
                 <p>暂无订单</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                {orders.map((order) => {
-                  const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.PENDING
-                  const StatusIcon = statusConfig.icon
-                  return (
-                  <div
-                    key={order.id}
-                    className={`border-2 rounded-xl overflow-hidden ${
-                      order.status === 'REJECTED' ? 'border-red-300' :
-                      order.status === 'SYNCED' ? 'border-green-300' :
-                      'border-gray-200'
-                    }`}
-                  >
-                    {/* 订单头部 */}
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-4">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            订单号: {order.orderNumber}
-                          </h3>
-                          <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                            order.orderType === 'FORMAL'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-purple-100 text-purple-800'
-                          }`}>
-                            {order.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
-                          </span>
-                          {/* 订单状态标签 */}
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
-                            <StatusIcon size={12} />
-                            {statusConfig.label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-6">
-                          <div className="text-sm text-gray-600">{formatDate(order.orderDate)}</div>
-                          <div className="text-xl font-bold text-primary">¥{formatAmount(order.totalAmount)}</div>
-                          <button
-                            onClick={() => viewOrderDetail(order.id)}
-                            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
-                          >
-                            <Eye size={16} />
-                            查看详情
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 驳回原因提示 */}
-                      {order.status === 'REJECTED' && order.rejectReason && (
-                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-2 flex-1">
-                              <XCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
-                              <div>
-                                <p className="text-sm font-medium text-red-800">订单已被驳回</p>
-                                <p className="text-sm text-red-600 mt-1">{order.rejectReason}</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => handleResubmit(order.id)}
-                              disabled={resubmittingOrderId === order.id}
-                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                            >
-                              <RefreshCw size={14} className={resubmittingOrderId === order.id ? 'animate-spin' : ''} />
-                              {resubmittingOrderId === order.id ? '提交中...' : '重新提交审核'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* ERP订单号显示 */}
-                      {order.status === 'SYNCED' && order.erpOrderNo && (
-                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle size={18} className="text-green-500" />
-                            <p className="text-sm text-green-800">
-                              已同步到ERP系统，ERP订单号: <span className="font-mono font-semibold">{order.erpOrderNo}</span>
-                            </p>
-                          </div>
-                        </div>
-                      )}
+              <div className="space-y-8">
+                {/* 本次会话订单 */}
+                {currentSessionOrders.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4 pb-2 border-b-2 border-primary">
+                      <Package size={20} className="text-primary" />
+                      <h3 className="text-lg font-bold text-gray-900">本次订单</h3>
+                      <span className="px-2 py-0.5 bg-primary/10 text-primary text-sm rounded-full">
+                        {currentSessionOrders.length}
+                      </span>
                     </div>
-
-                    {/* 订单商品列表 */}
-                    <div className="p-6 space-y-4">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-start gap-4 flex-1">
-                              {item.productImage && (
-                                <img
-                                  src={item.productImage}
-                                  alt="产品"
-                                  className="w-20 h-20 object-cover rounded"
-                                />
-                              )}
-                              <div className="flex-1">
-                                <p className="text-sm text-gray-500 mb-1">
-                                  品号: <span className="font-mono font-semibold text-primary">{item.productSku?.productCode || '-'}</span>
-                                </p>
-                                <p className="text-sm text-gray-700 mb-2">
-                                  品名: {item.productSku?.productName || item.productSku?.productNameEn || '-'}
-                                </p>
-                                <p className="text-sm text-gray-600 mb-1">
-                                  单价: <span className="font-bold text-primary">¥{formatAmount(item.price)}</span>
-                                </p>
-                                {item.customerProductCode && (
-                                  <p className="text-sm text-gray-600 font-mono mb-1">
-                                    客户料号: {item.customerProductCode}
-                                  </p>
-                                )}
-                                {item.expectedDeliveryDate && (
-                                  <div className="text-xs text-orange-600 mt-1">
-                                    期望交期: {formatDate(item.expectedDeliveryDate)}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-right flex flex-col items-end">
-                              <div className="text-lg font-bold text-primary mb-2">¥{formatAmount(item.subtotal)}</div>
-                              <div className="text-sm text-gray-500">x{item.quantity}</div>
-                            </div>
-                          </div>
-
-                          {/* 货品规格 */}
-                          {item.productSpec && (
-                            <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                              <p className="text-xs text-gray-500 mb-1 font-semibold">货品规格:</p>
-                              <div className="text-sm text-gray-700 whitespace-pre-line">
-                                {item.productSpec}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 附加属性 */}
-                          {item.additionalAttributes && Object.keys(item.additionalAttributes).length > 0 && (
-                            <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <p className="text-xs text-gray-500 mb-1 font-semibold">附加属性:</p>
-                              <div className="text-sm text-gray-900">
-                                {(() => {
-                                  try {
-                                    const attrs = typeof item.additionalAttributes === 'string'
-                                      ? JSON.parse(item.additionalAttributes)
-                                      : item.additionalAttributes;
-
-                                    if (attrs.nameZh) {
-                                      return attrs.nameZh;
-                                    } else if (attrs.nameEn) {
-                                      return attrs.nameEn;
-                                    } else {
-                                      return JSON.stringify(attrs);
-                                    }
-                                  } catch (e) {
-                                    return String(item.additionalAttributes);
-                                  }
-                                })()}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 包装信息 - 可编辑 */}
-                          {editingItemId === item.id ? (
-                            <div className="mt-4 pt-4 border-t border-gray-200">
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-semibold text-gray-700">编辑订单项</h4>
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={handleSaveItem}
-                                    className="px-3 py-1 bg-primary text-white rounded text-sm flex items-center gap-1"
-                                  >
-                                    <Save size={14} />
-                                    保存
-                                  </button>
-                                  <button
-                                    onClick={handleCancelEdit}
-                                    className="px-3 py-1 border border-gray-300 rounded text-sm flex items-center gap-1"
-                                  >
-                                    <X size={14} />
-                                    取消
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* 单价和数量 - 高亮显示 */}
-                              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <div className="grid grid-cols-3 gap-4">
-                                  <div>
-                                    <label className="block text-sm font-semibold text-gray-900 mb-1">单价 *</label>
-                                    <input
-                                      type="number"
-                                      step="0.01"
-                                      value={editingData.price || ''}
-                                      onChange={(e) => {
-                                        const price = e.target.value
-                                        if (price && isNaN(parseFloat(price))) {
-                                          return // 不更新无效数字
-                                        }
-                                        setEditingData({...editingData, price: price ? parseFloat(price) : 0})
-                                      }}
-                                      className="w-full px-3 py-2 border rounded text-sm font-semibold"
-                                      placeholder="请输入单价"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm font-semibold text-gray-900 mb-1">数量 *</label>
-                                    <input
-                                      type="number"
-                                      step="1"
-                                      min="1"
-                                      value={editingData.quantity || ''}
-                                      onChange={(e) => {
-                                        const quantity = e.target.value
-                                        if (quantity && isNaN(parseInt(quantity))) {
-                                          return // 不更新无效数字
-                                        }
-                                        setEditingData({...editingData, quantity: quantity ? parseInt(quantity) : 1})
-                                      }}
-                                      className="w-full px-3 py-2 border rounded text-sm font-semibold"
-                                      placeholder="请输入数量"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm font-semibold text-gray-900 mb-1">小计</label>
-                                    <div className="text-lg font-bold text-primary bg-white px-3 py-2 border rounded">
-                                      ¥{formatAmount((editingData.price || 0) * (editingData.quantity || 0))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <h5 className="text-sm font-semibold text-gray-700 mb-2">包装信息</h5>
-                              <div className="grid grid-cols-4 gap-3">
-                                <div>
-                                  <label className="text-xs text-gray-600">装箱数</label>
-                                  <input
-                                    type="number"
-                                    value={editingData.packingQuantity || ''}
-                                    onChange={(e) => {
-                                      const packingQty = parseInt(e.target.value) || undefined
-                                      const newData = {...editingData, packingQuantity: packingQty}
-                                      // 自动计算箱数
-                                      if (packingQty && editingData.quantity) {
-                                        newData.cartonQuantity = Math.ceil(editingData.quantity / packingQty)
-                                      }
-                                      setEditingData(newData)
-                                    }}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">箱数</label>
-                                  <div className="relative">
-                                    <input
-                                      type="number"
-                                      value={editingData.cartonQuantity || ''}
-                                      onChange={(e) => setEditingData({...editingData, cartonQuantity: parseInt(e.target.value) || undefined})}
-                                      className={`w-full mt-1 px-2 py-1 border rounded text-sm ${
-                                        editingData.packingQuantity && editingData.quantity && editingData.quantity % editingData.packingQuantity !== 0
-                                          ? 'border-orange-400 bg-orange-50'
-                                          : ''
-                                      }`}
-                                    />
-                                    {editingData.packingQuantity && editingData.quantity && editingData.quantity % editingData.packingQuantity !== 0 && (
-                                      <div className="text-xs text-orange-600 mt-1">⚠️ 不能整除</div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">包装方式</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.packagingMethod || ''}
-                                    onChange={(e) => setEditingData({...editingData, packagingMethod: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">纸卡编号</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.paperCardCode || ''}
-                                    onChange={(e) => setEditingData({...editingData, paperCardCode: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">水洗标编号</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.washLabelCode || ''}
-                                    onChange={(e) => setEditingData({...editingData, washLabelCode: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">外箱编号</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.outerCartonCode || ''}
-                                    onChange={(e) => setEditingData({...editingData, outerCartonCode: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">箱规 (cm)</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.cartonSpecification || ''}
-                                    onChange={(e) => {
-                                      const newCartonSpec = e.target.value
-                                      const calculatedVolume = calculateVolumeFromCartonSpec(newCartonSpec)
-                                      setEditingData({
-                                        ...editingData,
-                                        cartonSpecification: newCartonSpec,
-                                        volume: calculatedVolume !== undefined ? calculatedVolume : editingData.volume
-                                      })
-                                    }}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                    placeholder="例如: 74*44*20"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">体积 (m³)</label>
-                                  <input
-                                    type="number"
-                                    value={editingData.volume || ''}
-                                    onChange={(e) => setEditingData({...editingData, volume: parseFloat(e.target.value)})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <label className="text-xs text-gray-600">厂商备注</label>
-                                  <textarea
-                                    value={editingData.supplierNote || ''}
-                                    onChange={(e) => setEditingData({...editingData, supplierNote: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                    rows={2}
-                                  />
-                                </div>
-                                <div className="col-span-4">
-                                  <label className="text-xs text-gray-600">摘要</label>
-                                  <textarea
-                                    value={editingData.summary || ''}
-                                    onChange={(e) => setEditingData({...editingData, summary: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                    rows={2}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="mt-3">
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 mb-3">
-                                <div>装箱数: {item.packingQuantity ?? '-'}</div>
-                                <div className={item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0 ? 'text-orange-600' : ''}>
-                                  箱数: {item.cartonQuantity ?? '-'}
-                                  {item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0 && (
-                                    <span className="ml-1">⚠️</span>
-                                  )}
-                                </div>
-                                <div>包装方式: {item.packagingMethod || '-'}</div>
-                                <div>纸卡: {item.paperCardCode || '-'}</div>
-                                <div>水洗标: {item.washLabelCode || '-'}</div>
-                                <div>外箱: {item.outerCartonCode || '-'}</div>
-                                <div>箱规: {item.cartonSpecification || '-'}</div>
-                                <div>体积: {item.volume ?? '-'}</div>
-                                <div className="col-span-2">厂商备注: {item.supplierNote || '-'}</div>
-                                <div className="col-span-2">摘要: {item.summary || '-'}</div>
-                              </div>
-                              <div className="flex justify-end">
-                                <button
-                                  onClick={() => handleEditItem(item)}
-                                  className="px-3 py-1 border border-primary text-primary rounded text-sm flex items-center gap-1 hover:bg-primary/5"
-                                >
-                                  <Edit2 size={14} />
-                                  编辑
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                    <div className="space-y-6">
+                      {currentSessionOrders.map((order) => {
+                        const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.PENDING
+                        const StatusIcon = statusConfig.icon
+                        return renderOrderCard(order, statusConfig, StatusIcon)
+                      })}
                     </div>
                   </div>
-                  );
-                })}
+                )}
+
+                {/* 历史订单区域 */}
+                {historyOrders.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-gray-300">
+                      <div className="flex items-center gap-2">
+                        <History size={20} className="text-gray-500" />
+                        <h3 className="text-lg font-bold text-gray-700">历史订单</h3>
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-sm rounded-full">
+                          {historyOrders.length}
+                        </span>
+                      </div>
+                      {showHistoryOrders ? (
+                        <button
+                          onClick={handleHideHistoryOrders}
+                          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition flex items-center gap-2"
+                        >
+                          <Lock size={16} />
+                          隐藏历史订单
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowPasswordModal(true)}
+                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition flex items-center gap-2"
+                        >
+                          <Lock size={16} />
+                          查看历史订单
+                        </button>
+                      )}
+                    </div>
+
+                    {showHistoryOrders ? (
+                      <div className="space-y-6">
+                        {historyOrders.map((order) => {
+                          const statusConfig = orderStatusConfig[order.status] || orderStatusConfig.PENDING
+                          const StatusIcon = statusConfig.icon
+                          return renderOrderCard(order, statusConfig, StatusIcon)
+                        })}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-8 text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                        <Lock size={32} className="mb-3" />
+                        <p className="text-sm">历史订单已隐藏</p>
+                        <p className="text-xs mt-1">点击上方按钮输入密码查看</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 如果没有本次会话订单，显示提示 */}
+                {currentSessionOrders.length === 0 && historyOrders.length > 0 && !showHistoryOrders && (
+                  <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                    <Package size={48} className="mb-4 text-gray-300" />
+                    <p>本次会话暂无新订单</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1030,6 +923,66 @@ export default function SalespersonProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* 密码验证模态框 */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <Lock size={24} className="text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">验证身份</h3>
+                <p className="text-sm text-gray-500">请输入您的登录密码以查看历史订单</p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">密码</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleVerifyPassword()
+                  }
+                }}
+                placeholder="请输入密码"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false)
+                  setPassword('')
+                }}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleVerifyPassword}
+                disabled={verifyingPassword}
+                className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {verifyingPassword ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    验证中...
+                  </>
+                ) : (
+                  '确认'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
