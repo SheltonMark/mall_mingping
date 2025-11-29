@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { orderApi, salespersonApi, customerApi } from '@/lib/adminApi';
+import { orderApi, salespersonApi, erpApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
 import {
@@ -33,11 +33,19 @@ interface Order {
     chineseName?: string;
     accountId: string;
   };
-  customer: {
+  customer?: {
     id: string;
     name: string;
     email?: string;
     phone?: string;
+  };
+  erpCustomer?: {
+    id: string;
+    cusNo: string;
+    name: string;
+    contactPerson?: string;
+    phone?: string;
+    address?: string;
   };
   items: OrderItem[];
   createdAt: string;
@@ -93,6 +101,8 @@ interface Customer {
   id: string;
   name: string;
   email?: string;
+  cusNo?: string;  // ERP客户编号
+  isErpCustomer?: boolean;  // 标记是否为ERP客户
 }
 
 // 格式化金额
@@ -194,15 +204,22 @@ export default function AdminOrdersPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [ordersRes, salespersonsRes, customersRes] = await Promise.all([
+      const [ordersRes, salespersonsRes, erpCustomersRes] = await Promise.all([
         orderApi.getAll({ limit: 1000 }),
         salespersonApi.getAll({ limit: 1000 }),
-        customerApi.getAll({ limit: 1000 }),
+        erpApi.getErpCustomers({ limit: 1000 }),
       ]);
 
       setOrders(Array.isArray(ordersRes) ? ordersRes : ordersRes.data || []);
       setSalespersons(Array.isArray(salespersonsRes) ? salespersonsRes : salespersonsRes.data || []);
-      setCustomers(Array.isArray(customersRes) ? customersRes : customersRes.data || []);
+      // 转换 ERP 客户格式
+      const erpCustomers = erpCustomersRes.data || [];
+      setCustomers(erpCustomers.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        cusNo: c.cusNo,
+        isErpCustomer: true,
+      })));
     } catch (error: any) {
       console.error('Failed to load data:', error);
       toast.error(error.message || '加载数据失败');
@@ -541,8 +558,8 @@ export default function AdminOrdersPage() {
       return false;
     }
 
-    // 客户过滤
-    if (filterCustomer && order.customer?.id !== filterCustomer) {
+    // 客户过滤 - 同时支持网站客户和ERP客户
+    if (filterCustomer && order.customer?.id !== filterCustomer && order.erpCustomer?.id !== filterCustomer) {
       return false;
     }
 
@@ -620,7 +637,7 @@ export default function AdminOrdersPage() {
                 { value: '', label: '全部客户' },
                 ...customers.map((customer) => ({
                   value: customer.id,
-                  label: customer.name
+                  label: customer.cusNo ? `${customer.name} (${customer.cusNo})` : customer.name
                 }))
               ]}
               value={filterCustomer}
@@ -799,7 +816,14 @@ export default function AdminOrdersPage() {
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <Building className="w-4 h-4 text-gray-400" />
-                        <div className="text-sm text-gray-900 max-w-[150px] truncate">{order.customer?.name || '-'}</div>
+                        <div>
+                          <div className="text-sm text-gray-900 max-w-[150px] truncate">
+                            {order.customer?.name || order.erpCustomer?.name || '-'}
+                          </div>
+                          {order.erpCustomer?.cusNo && (
+                            <div className="text-xs text-gray-500">{order.erpCustomer.cusNo}</div>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -929,24 +953,42 @@ export default function AdminOrdersPage() {
                     <Building className="w-4 h-4" />
                     客户信息
                   </h4>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-gray-600">客户名称：</span>
-                      <span className="font-medium text-gray-900">{selectedOrder.customer?.name || '-'}</span>
-                    </div>
-                    {selectedOrder.customer.email && (
-                      <div>
-                        <span className="text-gray-600">邮箱：</span>
-                        <span className="font-medium text-gray-900">{selectedOrder.customer.email}</span>
+                  {(() => {
+                    const customer = selectedOrder.customer || selectedOrder.erpCustomer;
+                    if (!customer) return <div className="text-sm text-gray-500">暂无客户信息</div>;
+                    return (
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-gray-600">客户名称：</span>
+                          <span className="font-medium text-gray-900">{customer.name || '-'}</span>
+                        </div>
+                        {(customer as any).cusNo && (
+                          <div>
+                            <span className="text-gray-600">客户编号：</span>
+                            <span className="font-medium text-gray-900 font-mono">{(customer as any).cusNo}</span>
+                          </div>
+                        )}
+                        {(customer as any).contactPerson && (
+                          <div>
+                            <span className="text-gray-600">联系人：</span>
+                            <span className="font-medium text-gray-900">{(customer as any).contactPerson}</span>
+                          </div>
+                        )}
+                        {(customer as any).email && (
+                          <div>
+                            <span className="text-gray-600">邮箱：</span>
+                            <span className="font-medium text-gray-900">{(customer as any).email}</span>
+                          </div>
+                        )}
+                        {(customer as any).phone && (
+                          <div>
+                            <span className="text-gray-600">电话：</span>
+                            <span className="font-medium text-gray-900">{(customer as any).phone}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {selectedOrder.customer.phone && (
-                      <div>
-                        <span className="text-gray-600">电话：</span>
-                        <span className="font-medium text-gray-900">{selectedOrder.customer.phone}</span>
-                      </div>
-                    )}
-                  </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -1376,7 +1418,7 @@ export default function AdminOrdersPage() {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-gray-500">客户：</span>
-                    <span className="font-medium">{reviewModalOrder.customer?.name}</span>
+                    <span className="font-medium">{reviewModalOrder.customer?.name || reviewModalOrder.erpCustomer?.name || '-'}</span>
                   </div>
                   <div>
                     <span className="text-gray-500">业务员：</span>
