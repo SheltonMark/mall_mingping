@@ -331,7 +331,7 @@ export default function OrderConfirmationPage() {
       removeSelectedItems()
 
       // 跳转到我的订单列表
-      router.push('/salesperson/orders')
+      router.push('/salesperson/profile#my-orders')
     } catch (err: any) {
       toast.error(err.message || '创建订单失败')
     } finally {
