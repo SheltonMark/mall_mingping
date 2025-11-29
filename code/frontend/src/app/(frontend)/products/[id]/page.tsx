@@ -187,33 +187,6 @@ export default function ProductDetailPage() {
     toast.success(language === 'zh' ? '已加入购物车' : 'Added to cart')
   }
 
-  const handleBuyNow = () => {
-    if (!selectedSku || !productGroup) {
-      toast.error(language === 'zh' ? '请先选择品名' : 'Please select a product name first')
-      return
-    }
-
-    const orderData = {
-      items: [{
-        skuId: selectedSku.id,
-        sku: selectedSku.productCode,
-        groupName: `${productGroup.groupNameZh}/${productGroup.groupNameEn}`,
-        productName: selectedSku.productName,
-        productNameEn: selectedSku.productNameEn,
-        specification: selectedSku.specification,
-        specificationEn: selectedSku.specificationEn,
-        optionalAttributes: selectedAttribute,
-        colorCombination: selectedAttribute ? { attribute: selectedAttribute } : {},
-        quantity: quantity,
-        price: selectedSku.price,
-        mainImage: images[0] || '/images/placeholder.jpg'
-      }]
-    }
-
-    sessionStorage.setItem('pendingOrder', JSON.stringify(orderData))
-    router.push('/order-form?type=buy-now')
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
@@ -603,20 +576,6 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                {/* 立即购买按钮 */}
-                <button
-                  onClick={handleBuyNow}
-                  onMouseEnter={() => {
-                    if (!selectedSku) {
-                      setShowSpecHint(true)
-                      setTimeout(() => setShowSpecHint(false), 2000)
-                    }
-                  }}
-                  disabled={!selectedSku}
-                  className={`w-full h-12 lg:h-14 font-bold text-primary text-base lg:text-lg transition-all flex items-center justify-center gap-2 lg:gap-3 border-2 border-primary hover:bg-primary/5 disabled:opacity-50 active:scale-98 ${!selectedSku ? 'cursor-default' : ''}`}
-                >
-                  {language === 'zh' ? '立即购买' : 'Buy Now'}
-                </button>
               </div>
             </div>
 

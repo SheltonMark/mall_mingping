@@ -9,6 +9,8 @@ export interface ProductSyncResult {
   groupsUpdated: number;
   skusCreated: number;
   skusUpdated: number;
+  skipped: number; // 跳过的产品数（分类不存在）
+  skippedProducts: string[]; // 跳过的产品名称列表
   duration: number; // 毫秒
   error?: string;
 }
@@ -145,6 +147,8 @@ export class ErpProductSyncService {
         groupsUpdated: 0,
         skusCreated: 0,
         skusUpdated: 0,
+        skipped: 0,
+        skippedProducts: [],
         duration: Date.now() - startTime,
         error: 'ERP 同步未启用',
       };
@@ -154,6 +158,8 @@ export class ErpProductSyncService {
     let groupsUpdated = 0;
     let skusCreated = 0;
     let skusUpdated = 0;
+    let skipped = 0;
+    const skippedProducts: string[] = [];
 
     try {
       const pool = await this.getPool();
@@ -199,6 +205,8 @@ export class ErpProductSyncService {
           groupsUpdated: 0,
           skusCreated: 0,
           skusUpdated: 0,
+          skipped: 0,
+          skippedProducts: [],
           duration: Date.now() - startTime,
         };
       }
@@ -260,21 +268,18 @@ export class ErpProductSyncService {
         // 提取分类代码
         const categoryCode = this.extractCategoryCode(prefix);
 
-        // 查找或创建分类
-        let category = await this.prisma.category.findUnique({
+        // 查找分类（不自动创建，分类由网站自行维护）
+        const category = await this.prisma.category.findUnique({
           where: { code: categoryCode },
         });
 
+        // 如果分类不存在，跳过该产品组并记录
         if (!category) {
-          category = await this.prisma.category.create({
-            data: {
-              code: categoryCode,
-              nameZh: categoryCode,
-              nameEn: categoryCode,
-              isAutoCreated: true,
-            },
-          });
-          this.logger.log(`[产品同步] 自动创建分类: ${categoryCode}`);
+          const skippedNames = groupProducts.map(p => p.NAME);
+          skippedProducts.push(...skippedNames);
+          skipped += groupProducts.length;
+          this.logger.warn(`[产品同步] 跳过产品组 ${prefix}：分类 ${categoryCode} 不存在，共 ${groupProducts.length} 个产品`);
+          continue;
         }
 
         // 查找或创建产品组
@@ -348,8 +353,13 @@ export class ErpProductSyncService {
 
       const duration = Date.now() - startTime;
       this.logger.log(
-        `[产品同步] 完成! 产品组: 新增${groupsCreated}/更新${groupsUpdated}, SKU: 新增${skusCreated}/更新${skusUpdated}, 耗时${duration}ms`,
+        `[产品同步] 完成! 产品组: 新增${groupsCreated}/更新${groupsUpdated}, SKU: 新增${skusCreated}/更新${skusUpdated}, 跳过${skipped}, 耗时${duration}ms`,
       );
+
+      // 如果有跳过的产品，在日志中记录
+      if (skipped > 0) {
+        this.logger.warn(`[产品同步] 跳过的产品（分类不存在）: ${skippedProducts.slice(0, 10).join(', ')}${skippedProducts.length > 10 ? '...' : ''}`);
+      }
 
       return {
         success: true,
@@ -357,6 +367,8 @@ export class ErpProductSyncService {
         groupsUpdated,
         skusCreated,
         skusUpdated,
+        skipped,
+        skippedProducts,
         duration,
       };
     } catch (error) {
@@ -369,6 +381,8 @@ export class ErpProductSyncService {
         groupsUpdated,
         skusCreated,
         skusUpdated,
+        skipped,
+        skippedProducts,
         duration: Date.now() - startTime,
         error: errorMessage,
       };

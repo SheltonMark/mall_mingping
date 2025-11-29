@@ -1129,85 +1129,39 @@ export default function AdminOrdersPage() {
                             <div className="pt-4 border-t border-gray-200">
                               <div className="grid grid-cols-4 gap-3 mb-4">
                                 <div>
-                                  <label className="text-xs text-gray-600">包装换算</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.packagingConversion || ''}
-                                    onChange={(e) => setEditingData({...editingData, packagingConversion: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">包装单位</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.packagingUnit || ''}
-                                    onChange={(e) => setEditingData({...editingData, packagingUnit: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">重量单位</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.weightUnit || ''}
-                                    onChange={(e) => setEditingData({...editingData, weightUnit: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">净重</label>
-                                  <input
-                                    type="number"
-                                    value={editingData.netWeight || ''}
-                                    onChange={(e) => setEditingData({...editingData, netWeight: parseFloat(e.target.value) || undefined})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">毛重</label>
-                                  <input
-                                    type="number"
-                                    value={editingData.grossWeight || ''}
-                                    onChange={(e) => setEditingData({...editingData, grossWeight: parseFloat(e.target.value) || undefined})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">包装类型</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.packagingType || ''}
-                                    onChange={(e) => setEditingData({...editingData, packagingType: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">包装尺寸</label>
-                                  <input
-                                    type="text"
-                                    value={editingData.packagingSize || ''}
-                                    onChange={(e) => setEditingData({...editingData, packagingSize: e.target.value})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-xs text-gray-600">装箱数量</label>
+                                  <label className="text-xs text-gray-600">装箱数</label>
                                   <input
                                     type="number"
                                     value={editingData.packingQuantity || ''}
-                                    onChange={(e) => setEditingData({...editingData, packingQuantity: parseInt(e.target.value) || undefined})}
+                                    onChange={(e) => {
+                                      const packingQty = parseInt(e.target.value) || undefined;
+                                      const newData = {...editingData, packingQuantity: packingQty};
+                                      // 自动计算箱数
+                                      if (packingQty && editingData.quantity) {
+                                        newData.cartonQuantity = Math.ceil(editingData.quantity / packingQty);
+                                      }
+                                      setEditingData(newData);
+                                    }}
                                     className="w-full mt-1 px-2 py-1 border rounded text-sm"
                                   />
                                 </div>
                                 <div>
-                                  <label className="text-xs text-gray-600">外箱数量</label>
-                                  <input
-                                    type="number"
-                                    value={editingData.cartonQuantity || ''}
-                                    onChange={(e) => setEditingData({...editingData, cartonQuantity: parseInt(e.target.value) || undefined})}
-                                    className="w-full mt-1 px-2 py-1 border rounded text-sm"
-                                  />
+                                  <label className="text-xs text-gray-600">箱数</label>
+                                  <div className="relative">
+                                    <input
+                                      type="number"
+                                      value={editingData.cartonQuantity || ''}
+                                      onChange={(e) => setEditingData({...editingData, cartonQuantity: parseInt(e.target.value) || undefined})}
+                                      className={`w-full mt-1 px-2 py-1 border rounded text-sm ${
+                                        editingData.packingQuantity && editingData.quantity && editingData.quantity % editingData.packingQuantity !== 0
+                                          ? 'border-orange-400 bg-orange-50'
+                                          : ''
+                                      }`}
+                                    />
+                                    {editingData.packingQuantity && editingData.quantity && editingData.quantity % editingData.packingQuantity !== 0 && (
+                                      <div className="text-xs text-orange-600 mt-1">⚠️ 不能整除</div>
+                                    )}
+                                  </div>
                                 </div>
                                 <div>
                                   <label className="text-xs text-gray-600">包装方式</label>
@@ -1313,25 +1267,25 @@ export default function AdminOrdersPage() {
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
                               {[
                                 { key: 'customerProductCode', label: '客户料号' },
-                                { key: 'packagingConversion', label: '包装换算' },
-                                { key: 'packagingUnit', label: '包装单位' },
-                                { key: 'weightUnit', label: '重量单位' },
-                                { key: 'netWeight', label: '包装净重' },
-                                { key: 'grossWeight', label: '包装毛重' },
-                                { key: 'packagingType', label: '包装类型' },
-                                { key: 'packagingSize', label: '包装大小' },
                                 { key: 'packingQuantity', label: '装箱数' },
-                                { key: 'cartonQuantity', label: '箱数' },
+                                { key: 'cartonQuantity', label: '箱数', highlight: (item: any) =>
+                                  item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0
+                                },
                                 { key: 'packagingMethod', label: '包装方式' },
                                 { key: 'paperCardCode', label: '纸卡编码' },
                                 { key: 'washLabelCode', label: '水洗标编码' },
                                 { key: 'outerCartonCode', label: '外箱编码' },
                                 { key: 'cartonSpecification', label: '箱规' },
                                 { key: 'volume', label: '体积' },
-                              ].map(({ key, label }) => (
+                              ].map(({ key, label, highlight }) => (
                                 <div key={key}>
                                   <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
-                                  <div className="text-sm text-gray-900">{(item as any)[key] ?? '-'}</div>
+                                  <div className={`text-sm ${highlight && highlight(item) ? 'text-orange-600' : 'text-gray-900'}`}>
+                                    {(item as any)[key] ?? '-'}
+                                    {key === 'cartonQuantity' && item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0 && (
+                                      <span className="ml-1 text-orange-600">⚠️ 不能整除</span>
+                                    )}
+                                  </div>
                                 </div>
                               ))}
                               <div>

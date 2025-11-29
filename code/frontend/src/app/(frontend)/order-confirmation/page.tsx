@@ -656,91 +656,41 @@ export default function OrderConfirmationPage() {
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">包装换算</label>
-                            <input
-                              type="number"
-                              value={item.packagingConversion || ''}
-                              onChange={(e) => updateOrderItem(index, 'packagingConversion', parseFloat(e.target.value) || undefined)}
-                              step="0.01"
-                              placeholder="如: 24"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">包装单位</label>
-                            <input
-                              type="text"
-                              value={item.packagingUnit || ''}
-                              onChange={(e) => updateOrderItem(index, 'packagingUnit', e.target.value)}
-                              placeholder="如: 箱"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">重量单位</label>
-                            <input
-                              type="text"
-                              value={item.weightUnit || ''}
-                              onChange={(e) => updateOrderItem(index, 'weightUnit', e.target.value)}
-                              placeholder="如: kg"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">包装净重</label>
-                            <input
-                              type="number"
-                              value={item.netWeight || ''}
-                              onChange={(e) => updateOrderItem(index, 'netWeight', parseFloat(e.target.value) || undefined)}
-                              step="0.01"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">包装毛重</label>
-                            <input
-                              type="number"
-                              value={item.grossWeight || ''}
-                              onChange={(e) => updateOrderItem(index, 'grossWeight', parseFloat(e.target.value) || undefined)}
-                              step="0.01"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">包装类型</label>
-                            <input
-                              type="text"
-                              value={item.packagingType || ''}
-                              onChange={(e) => updateOrderItem(index, 'packagingType', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">包装大小</label>
-                            <input
-                              type="text"
-                              value={item.packagingSize || ''}
-                              onChange={(e) => updateOrderItem(index, 'packagingSize', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
-                          </div>
-                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">装箱数</label>
                             <input
                               type="number"
                               value={item.packingQuantity || ''}
-                              onChange={(e) => updateOrderItem(index, 'packingQuantity', parseInt(e.target.value) || undefined)}
+                              onChange={(e) => {
+                                const packingQty = parseInt(e.target.value) || undefined
+                                updateOrderItem(index, 'packingQuantity', packingQty)
+                                // 自动计算箱数
+                                if (packingQty && item.quantity) {
+                                  const calculatedCartons = Math.ceil(item.quantity / packingQty)
+                                  updateOrderItem(index, 'cartonQuantity', calculatedCartons)
+                                }
+                              }}
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">箱数</label>
-                            <input
-                              type="number"
-                              value={item.cartonQuantity || ''}
-                              onChange={(e) => updateOrderItem(index, 'cartonQuantity', parseInt(e.target.value) || undefined)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                            />
+                            <div className="relative">
+                              <input
+                                type="number"
+                                value={item.cartonQuantity || ''}
+                                onChange={(e) => updateOrderItem(index, 'cartonQuantity', parseInt(e.target.value) || undefined)}
+                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
+                                  item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0
+                                    ? 'border-orange-400 bg-orange-50'
+                                    : 'border-gray-300'
+                                }`}
+                              />
+                              {item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0 && (
+                                <div className="absolute -bottom-5 left-0 text-xs text-orange-600">
+                                  ⚠️ 箱数不能整除，请确认
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">包装方式</label>

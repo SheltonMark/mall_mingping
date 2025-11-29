@@ -473,7 +473,7 @@ export default function OrderDetailPage() {
                       </div>
                     </div>
 
-                    {/* 包装信息 - 始终显示所有字段 */}
+                    {/* 包装信息 - 精简显示 */}
                     <div className="md:col-span-3 mt-4">
                       <h4 className="text-md font-bold text-gray-700 mb-3 flex items-center gap-2">
                         <span className="text-primary">📦</span>
@@ -481,57 +481,22 @@ export default function OrderDetailPage() {
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">包装换算</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
-                            {item.packagingConversion || '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">包装单位</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
-                            {item.packagingUnit || '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">重量单位</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
-                            {item.weightUnit || '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">净重</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
-                            {item.netWeight ?? '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">毛重</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
-                            {item.grossWeight ?? '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">包装类型</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
-                            {item.packagingType || '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">包装尺寸</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
-                            {item.packagingSize || '-'}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">装箱数量</label>
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">装箱数</label>
                           <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.packingQuantity ?? '-'}
                           </div>
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">外箱数量</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm">
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">箱数</label>
+                          <div className={`py-2 rounded text-sm ${
+                            item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0
+                              ? 'bg-orange-50 border border-orange-200'
+                              : 'bg-gray-50'
+                          }`}>
                             {item.cartonQuantity ?? '-'}
+                            {item.packingQuantity && item.quantity && item.quantity % item.packingQuantity !== 0 && (
+                              <span className="text-xs text-orange-600 ml-1">⚠️ 不能整除</span>
+                            )}
                           </div>
                         </div>
                         <div>
@@ -541,13 +506,13 @@ export default function OrderDetailPage() {
                           </div>
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">外箱规格</label>
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">箱规</label>
                           <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.cartonSpecification || '-'}
                           </div>
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">体积</label>
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">体积 (m³)</label>
                           <div className="py-2 bg-gray-50 rounded text-sm">
                             {item.volume ?? '-'}
                           </div>
