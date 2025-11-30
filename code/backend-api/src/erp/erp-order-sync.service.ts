@@ -169,6 +169,7 @@ export class ErpOrderSyncService {
     cusNo: string,
   ): Promise<{
     curId: string;      // 币别
+    curName: string;    // 币别名称
     excRto: number;     // 汇率
     payDays: number;    // 付款天数
     chkDays: number;    // 结账天数
@@ -177,6 +178,7 @@ export class ErpOrderSyncService {
   }> {
     const defaults = {
       curId: 'USD',
+      curName: '美元',
       excRto: 7.0,
       payDays: 30,
       chkDays: 30,
@@ -185,26 +187,42 @@ export class ErpOrderSyncService {
     };
 
     try {
-      const result = await pool.request()
+      // 1. 从客户表获取基本财务信息和币别
+      const custResult = await pool.request()
         .input('CUS_NO', sql.NVarChar(12), cusNo)
         .query(`SELECT CUR, MM_END, CHK_DD, CHK_MAN, DEP_NO FROM CUST WHERE CUS_NO = @CUS_NO`);
 
-      if (result.recordset.length > 0) {
-        const row = result.recordset[0];
-        const info = {
-          curId: row.CUR || defaults.curId,
-          excRto: defaults.excRto, // 汇率暂用默认值
-          payDays: row.MM_END != null ? parseInt(row.MM_END) : defaults.payDays,
-          chkDays: row.CHK_DD != null ? parseInt(row.CHK_DD) : defaults.chkDays,
-          chkMan: row.CHK_MAN || defaults.chkMan,
-          useDep: row.DEP_NO || defaults.useDep,
-        };
-        this.logger.log(`[ERP Sync] 客户 ${cusNo} 财务信息: CUR=${info.curId}, PAY_DAYS=${info.payDays}, CHK_DAYS=${info.chkDays}, CHK_MAN=${info.chkMan}, USE_DEP=${info.useDep}`);
-        return info;
+      if (custResult.recordset.length === 0) {
+        this.logger.warn(`[ERP Sync] 客户 ${cusNo} 未找到，使用默认值`);
+        return defaults;
       }
 
-      this.logger.warn(`[ERP Sync] 客户 ${cusNo} 未找到财务信息，使用默认值`);
-      return defaults;
+      const custRow = custResult.recordset[0];
+      const curId = custRow.CUR || defaults.curId;
+
+      // 2. 从CUR_ID表获取汇率（取最新记录）
+      const curResult = await pool.request()
+        .input('CUR_ID', sql.NVarChar(10), curId)
+        .query(`SELECT TOP 1 EXC_RTO, NAME FROM CUR_ID WHERE CUR_ID = @CUR_ID ORDER BY IJ_DD DESC`);
+
+      let excRto = defaults.excRto;
+      let curName = defaults.curName;
+      if (curResult.recordset.length > 0) {
+        excRto = parseFloat(curResult.recordset[0].EXC_RTO) || defaults.excRto;
+        curName = curResult.recordset[0].NAME || defaults.curName;
+      }
+
+      const info = {
+        curId,
+        curName,
+        excRto,
+        payDays: custRow.MM_END != null ? parseInt(custRow.MM_END) : defaults.payDays,
+        chkDays: custRow.CHK_DD != null ? parseInt(custRow.CHK_DD) : defaults.chkDays,
+        chkMan: custRow.CHK_MAN || defaults.chkMan,
+        useDep: custRow.DEP_NO || defaults.useDep,
+      };
+      this.logger.log(`[ERP Sync] 客户 ${cusNo} 财务信息: CUR=${info.curId}(${info.curName}), EXC_RTO=${info.excRto}, PAY_DAYS=${info.payDays}, CHK_DAYS=${info.chkDays}, CHK_MAN=${info.chkMan}, USE_DEP=${info.useDep}`);
+      return info;
     } catch (error) {
       this.logger.error(`[ERP Sync] 获取客户财务信息失败: ${error.message}，使用默认值`);
       return defaults;
@@ -377,12 +395,14 @@ export class ErpOrderSyncService {
         // 9.1 写入 TF_POS 主表
         // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
         // 用truncateByBytes确保中文字符串不超过字段的字节限制
-        // 从客户获取税率，计算AMT和AMTN
+        // 计算AMT和AMTN
+        // AMTN = 未税本位币（人民币），业务员在网站填写的
+        // AMT = 外币金额 = AMTN / 汇率
         const qty = item.quantity;
         const up = item.price.toNumber();
-        const amt = qty * up; // 含税金额
+        const amtn = item.untaxedLocalCurrency?.toNumber() || (qty * up * financeInfo.excRto); // 未税本位币（人民币）
+        const amt = amtn / financeInfo.excRto; // 外币金额 = 人民币 / 汇率
         const taxRto = customerTaxRate; // 从客户获取的税率
-        const amtn = amt / (1 + taxRto / 100) * (1 + taxRto / 100); // 本位币金额（这里等于amt）
         const tax = 0; // 税额设为0（根据已有订单的模式）
 
         const tfPosRequest = new sql.Request(transaction);
@@ -435,7 +455,7 @@ export class ErpOrderSyncService {
             item.volume?.toNumber() || 0,
           )
           .input('EST_DD', sql.DateTime, item.expectedDeliveryDate || null)
-          .input('REM', sql.NVarChar(1000), truncateByBytes(item.supplierNote || '', 1000))
+          .input('REM', sql.NVarChar(1000), truncateByBytes(item.summary || '', 1000))
           .input('BZ_KND', sql.NVarChar(20), truncateByBytes(item.packagingType || '', 20))
           .input('OS_DD', sql.DateTime, order.orderDate).query(`
             INSERT INTO TF_POS (
@@ -457,7 +477,21 @@ export class ErpOrderSyncService {
             )
           `);
 
-        // 9.2 写入 TF_POS_Z 扩展表（7个包装字段）
+        // 9.2 写入 TF_POS_Z 扩展表（包装字段 + 体积TJ + 厂商备注CSBZ）
+        // 体积计算：从箱规(XG)解析长*宽*高，单位是cm，结果是cm³
+        // 箱规格式：74*72*12 或 74×72×12
+        let volumeCm3: number | null = null;
+        if (item.cartonSpecification) {
+          const match = item.cartonSpecification.match(/^(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)\s*[*×xX]\s*(\d+(?:\.\d+)?)/);
+          if (match) {
+            volumeCm3 = parseFloat(match[1]) * parseFloat(match[2]) * parseFloat(match[3]);
+          }
+        }
+        // 如果箱规解析失败，但有volume字段（m³），则转换为cm³
+        if (volumeCm3 === null && item.volume) {
+          volumeCm3 = item.volume.toNumber() * 1000000;
+        }
+
         const tfPosZRequest = new sql.Request(transaction);
         await tfPosZRequest
           .input('OS_NO', sql.NVarChar(20), erpOrderNo)
@@ -468,15 +502,17 @@ export class ErpOrderSyncService {
           .input('DKBM', sql.NVarChar(50), truncateByBytes(item.paperCardCode || '', 50))
           .input('WXBM', sql.NVarChar(50), truncateByBytes(item.washLabelCode || '', 50))
           .input('SXBBM', sql.NVarChar(255), truncateByBytes(item.outerCartonCode || '', 255))
-          .input('XG', sql.NVarChar(50), truncateByBytes(item.cartonSpecification || '', 50)).query(`
+          .input('XG', sql.NVarChar(50), truncateByBytes(item.cartonSpecification || '', 50))
+          .input('TJ', sql.Int, volumeCm3)
+          .input('CSBZ', sql.NVarChar(sql.MAX), item.supplierNote || null).query(`
             INSERT INTO TF_POS_Z (
               OS_ID, OS_NO, ITM,
               PQTY1, PQTY2, BZFS,
-              DKBM, WXBM, SXBBM, XG
+              DKBM, WXBM, SXBBM, XG, TJ, CSBZ
             ) VALUES (
               'SO', @OS_NO, @ITM,
               @PQTY1, @PQTY2, @BZFS,
-              @DKBM, @WXBM, @SXBBM, @XG
+              @DKBM, @WXBM, @SXBBM, @XG, @TJ, @CSBZ
             )
           `);
 
