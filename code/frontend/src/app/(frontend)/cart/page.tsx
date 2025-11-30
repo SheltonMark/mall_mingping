@@ -321,7 +321,7 @@ export default function CartPage() {
                               }
                             }}
                             min="1"
-                            className="w-16 h-8 text-center font-bold text-gray-900 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            className="w-16 h-8 text-center font-bold text-gray-900 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <button
                             onClick={() => updateQuantity(item.skuId, item.quantity + 1)}

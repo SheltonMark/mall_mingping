@@ -638,35 +638,8 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* 数量和购买按钮区域 - 移动端直接在内容流中，桌面端sticky */}
+            {/* 购买按钮区域 - 移动端直接在内容流中，桌面端sticky */}
             <div className="lg:sticky lg:bottom-0 bg-white border-t border-gray-200 pt-5 pb-2 lg:p-6 lg:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-              {/* 数量选择器 */}
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-gray-700 font-medium text-base whitespace-nowrap">
-                  {language === 'zh' ? '数量' : 'Quantity'}:
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center text-xl font-bold active:scale-95"
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-20 h-10 text-center text-lg font-bold border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center text-xl font-bold active:scale-95"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
               {/* 按钮组 */}
               <div className="space-y-3">
                 {/* 加入购物车按钮 */}
@@ -772,6 +745,35 @@ export default function ProductDetailPage() {
                   {language === 'zh' ? '基本信息' : 'Basic Information'}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '数量' : 'Quantity'} *
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => {
+                        const newQuantity = Math.max(1, parseInt(e.target.value) || 1)
+                        setQuantity(newQuantity)
+                        // 自动计算未税本位币
+                        if (cartFormData.price !== undefined && cartFormData.price > 0) {
+                          setCartFormData(prev => ({
+                            ...prev,
+                            untaxedLocalCurrency: newQuantity * (prev.price || 0)
+                          }))
+                        }
+                        // 自动计算箱数
+                        if (cartFormData.packingQuantity !== undefined && cartFormData.packingQuantity > 0) {
+                          setCartFormData(prev => ({
+                            ...prev,
+                            cartonQuantity: Math.ceil(newQuantity / (prev.packingQuantity || 1))
+                          }))
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {language === 'zh' ? '单价' : 'Unit Price'}
