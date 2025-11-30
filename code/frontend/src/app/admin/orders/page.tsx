@@ -175,6 +175,7 @@ export default function AdminOrdersPage() {
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshingCustomers, setRefreshingCustomers] = useState(false);
 
   // 筛选条件
   const [searchTerm, setSearchTerm] = useState('');
@@ -226,6 +227,27 @@ export default function AdminOrdersPage() {
       toast.error(error.message || '加载数据失败');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 刷新客户列表
+  const refreshCustomers = async () => {
+    try {
+      setRefreshingCustomers(true);
+      const erpCustomersRes = await erpApi.getErpCustomers({ limit: 1000 });
+      const erpCustomers = erpCustomersRes.data || [];
+      setCustomers(erpCustomers.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        cusNo: c.cusNo,
+        isErpCustomer: true,
+      })));
+      toast.success(`客户列表已刷新，共 ${erpCustomers.length} 个客户`);
+    } catch (error: any) {
+      console.error('Failed to refresh customers:', error);
+      toast.error('刷新客户列表失败');
+    } finally {
+      setRefreshingCustomers(false);
     }
   };
 
@@ -635,7 +657,19 @@ export default function AdminOrdersPage() {
 
           {/* 客户筛选 */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">客户</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium text-gray-700">客户 ({customers.length})</label>
+              <button
+                type="button"
+                onClick={refreshCustomers}
+                disabled={refreshingCustomers}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary transition disabled:opacity-50"
+                title="刷新客户列表"
+              >
+                <RefreshCw size={12} className={refreshingCustomers ? 'animate-spin' : ''} />
+                刷新
+              </button>
+            </div>
             <SearchableSelect
               options={[
                 { value: '', label: '全部客户' },
