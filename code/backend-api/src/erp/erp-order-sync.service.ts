@@ -159,6 +159,59 @@ export class ErpOrderSyncService {
   }
 
   /**
+   * 从 ERP 客户表获取财务信息（用于 MF_POS 表）
+   * @param pool 数据库连接池
+   * @param cusNo ERP 客户编号
+   * @returns 客户财务信息
+   */
+  private async getCustomerFinanceInfo(
+    pool: sql.ConnectionPool,
+    cusNo: string,
+  ): Promise<{
+    curId: string;      // 币别
+    excRto: number;     // 汇率
+    payDays: number;    // 付款天数
+    chkDays: number;    // 结账天数
+    chkMan: string;     // 审核人
+    useDep: string;     // 使用部门
+  }> {
+    const defaults = {
+      curId: 'USD',
+      excRto: 7.0,
+      payDays: 30,
+      chkDays: 30,
+      chkMan: 'MP0001',
+      useDep: '0000',
+    };
+
+    try {
+      const result = await pool.request()
+        .input('CUS_NO', sql.NVarChar(12), cusNo)
+        .query(`SELECT CUR, MM_END, CHK_DD, CHK_MAN, DEP_NO FROM CUST WHERE CUS_NO = @CUS_NO`);
+
+      if (result.recordset.length > 0) {
+        const row = result.recordset[0];
+        const info = {
+          curId: row.CUR || defaults.curId,
+          excRto: defaults.excRto, // 汇率暂用默认值
+          payDays: row.MM_END != null ? parseInt(row.MM_END) : defaults.payDays,
+          chkDays: row.CHK_DD != null ? parseInt(row.CHK_DD) : defaults.chkDays,
+          chkMan: row.CHK_MAN || defaults.chkMan,
+          useDep: row.DEP_NO || defaults.useDep,
+        };
+        this.logger.log(`[ERP Sync] 客户 ${cusNo} 财务信息: CUR=${info.curId}, PAY_DAYS=${info.payDays}, CHK_DAYS=${info.chkDays}, CHK_MAN=${info.chkMan}, USE_DEP=${info.useDep}`);
+        return info;
+      }
+
+      this.logger.warn(`[ERP Sync] 客户 ${cusNo} 未找到财务信息，使用默认值`);
+      return defaults;
+    } catch (error) {
+      this.logger.error(`[ERP Sync] 获取客户财务信息失败: ${error.message}，使用默认值`);
+      return defaults;
+    }
+  }
+
+  /**
    * 获取 ERP 业务员编号
    */
   private async getErpSalespersonNo(
@@ -266,7 +319,10 @@ export class ErpOrderSyncService {
         {} as Record<string, string | null>,
       );
 
-      // 6. 写入主表 MF_POS
+      // 6. 获取客户财务信息（用于 MF_POS 表）
+      const financeInfo = await this.getCustomerFinanceInfo(pool, erpCustomerNo);
+
+      // 7. 写入主表 MF_POS
       // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
       const mfPosRequest = new sql.Request(transaction);
       await mfPosRequest
@@ -285,24 +341,32 @@ export class ErpOrderSyncService {
           sql.DateTime,
           order.items[0]?.expectedDeliveryDate || null,
         )
-        .input('REM', sql.NVarChar(sql.MAX), JSON.stringify(customParamsJson)).query(`
+        .input('REM', sql.NVarChar(sql.MAX), JSON.stringify(customParamsJson))
+        .input('USE_DEP', sql.NVarChar(10), financeInfo.useDep)
+        .input('CUR_ID', sql.NVarChar(10), financeInfo.curId)
+        .input('EXC_RTO', sql.Numeric(28, 8), financeInfo.excRto)
+        .input('PAY_DAYS', sql.Int, financeInfo.payDays)
+        .input('CHK_DAYS', sql.Int, financeInfo.chkDays)
+        .input('CHK_MAN', sql.NVarChar(12), financeInfo.chkMan).query(`
           INSERT INTO MF_POS (
             OS_ID, OS_NO, OS_DD, CUS_NO, SAL_NO,
             AMTN_INT, USR, RECORD_DD, CLS_ID,
-            EST_DD, SEND_MTH, SEND_WH, PAY_MTH, REM
+            EST_DD, SEND_MTH, SEND_WH, PAY_MTH, REM,
+            USE_DEP, CUR_ID, EXC_RTO, PAY_DAYS, CHK_DAYS, CHK_MAN
           ) VALUES (
             'SO', @OS_NO, @OS_DD, @CUS_NO, @SAL_NO,
             @AMTN_INT, @USR, GETDATE(), 'F',
-            @EST_DD, '1', '${syncConfig.defaultWarehouse}', '1', @REM
+            @EST_DD, '1', '${syncConfig.defaultWarehouse}', '1', @REM,
+            @USE_DEP, @CUR_ID, @EXC_RTO, @PAY_DAYS, @CHK_DAYS, @CHK_MAN
           )
         `);
 
       this.logger.log(`[ERP Sync] MF_POS 写入成功`);
 
-      // 7. 获取客户税率
+      // 8. 获取客户税率
       const customerTaxRate = await this.getCustomerTaxRate(pool, erpCustomerNo);
 
-      // 8. 写入明细表 TF_POS 和扩展表 TF_POS_Z
+      // 9. 写入明细表 TF_POS 和扩展表 TF_POS_Z
       for (let i = 0; i < order.items.length; i++) {
         const item = order.items[i];
         const itemNumber = item.itemNumber || i + 1;
@@ -310,7 +374,7 @@ export class ErpOrderSyncService {
         // 提取中文附加属性
         const chineseAttribute = extractChineseAttribute(item.additionalAttributes);
 
-        // 8.1 写入 TF_POS 主表
+        // 9.1 写入 TF_POS 主表
         // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
         // 用truncateByBytes确保中文字符串不超过字段的字节限制
         // 从客户获取税率，计算AMT和AMTN
@@ -393,7 +457,7 @@ export class ErpOrderSyncService {
             )
           `);
 
-        // 8.2 写入 TF_POS_Z 扩展表（7个包装字段）
+        // 9.2 写入 TF_POS_Z 扩展表（7个包装字段）
         const tfPosZRequest = new sql.Request(transaction);
         await tfPosZRequest
           .input('OS_NO', sql.NVarChar(20), erpOrderNo)
@@ -419,11 +483,11 @@ export class ErpOrderSyncService {
         this.logger.log(`[ERP Sync] 明细 ${itemNumber} 写入成功`);
       }
 
-      // 9. 提交事务
+      // 10. 提交事务
       await transaction.commit();
       this.logger.log(`[ERP Sync] 订单同步完成: ${erpOrderNo}`);
 
-      // 10. 更新网站订单的 ERP 同步状态
+      // 11. 更新网站订单的 ERP 同步状态
       await this.prisma.order.update({
         where: { id: orderId },
         data: {
