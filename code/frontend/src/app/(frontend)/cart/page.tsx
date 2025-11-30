@@ -71,6 +71,26 @@ export default function CartPage() {
     setSelectedItems([])
   }
 
+  // 处理数量变化（同时更新未税本位币和箱数）
+  const handleQuantityChange = (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) return
+    updateQuantity(item.skuId, newQuantity)
+    // 同时更新相关计算值
+    const updates: Partial<CartItem> = {}
+    // 自动计算未税本位币
+    if (item.price && item.price > 0) {
+      updates.untaxedLocalCurrency = newQuantity * item.price
+    }
+    // 自动计算箱数
+    if (item.packingQuantity && item.packingQuantity > 0) {
+      updates.cartonQuantity = Math.ceil(newQuantity / item.packingQuantity)
+    }
+    // 如果有更新，调用updateItem
+    if (Object.keys(updates).length > 0) {
+      updateItem(item.skuId, updates)
+    }
+  }
+
   // 打开编辑模态框
   const openEditModal = (item: CartItem, section: EditSection) => {
     setEditingItem(item)
@@ -127,6 +147,11 @@ export default function CartPage() {
       // 如果修改装箱数，自动计算箱数
       if (field === 'packingQuantity' && typeof value === 'number' && value > 0 && editingItem) {
         updated.cartonQuantity = Math.ceil(editingItem.quantity / value)
+      }
+      // 如果修改单价，自动计算未税本位币
+      if (field === 'price' && editingItem) {
+        const price = typeof value === 'number' ? value : 0
+        updated.untaxedLocalCurrency = price * editingItem.quantity
       }
       return updated
     })
@@ -306,7 +331,7 @@ export default function CartPage() {
                         <div className="flex items-center gap-3">
                           <span className="text-sm text-gray-600">{language === 'zh' ? '数量' : 'Quantity'}:</span>
                           <button
-                            onClick={() => updateQuantity(item.skuId, Math.max(1, item.quantity - 1))}
+                            onClick={() => handleQuantityChange(item, Math.max(1, item.quantity - 1))}
                             className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center"
                           >
                             <Minus className="w-4 h-4" />
@@ -317,14 +342,14 @@ export default function CartPage() {
                             onChange={(e) => {
                               const val = parseInt(e.target.value)
                               if (!isNaN(val) && val >= 1) {
-                                updateQuantity(item.skuId, val)
+                                handleQuantityChange(item, val)
                               }
                             }}
                             min="1"
                             className="w-16 h-8 text-center font-bold text-gray-900 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <button
-                            onClick={() => updateQuantity(item.skuId, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center"
                           >
                             <Plus className="w-4 h-4" />
