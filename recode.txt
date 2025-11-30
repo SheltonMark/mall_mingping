@@ -822,7 +822,17 @@ USE DB_MP01;
 GO
 SELECT OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK, QTY, UP, AMT, AMTN, TAX, TAX_RTO
 FROM TF_POS
-WHERE OS_NO = 'SO202511059';
+WHERE OS_NO = 'SO202511060';
+GO
+EOF
+
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT OS_NO, CUS_NO, SAL_NO, AMTN_INT
+FROM MF_POS
+WHERE OS_NO IN ('SO202511058', 'SO202511060');
 GO
 EOF
   
@@ -1140,8 +1150,87 @@ EOF
 
 mysql -u lemopx -p'1q!' internal_sales -e "SHOW TABLES LIKE 'system_config%';"ig%';"
 
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT * FROM MF_POS WHERE OS_NO IN ('SO202511058', 'SO202511060');
+GO
+EOF
 
+# 对比 TF_POS 明细表的关键字段
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT OS_NO, ITM, PRD_NO, QTY, UP, AMT, AMTN, WH, UNIT, CLS_ID, OS_DD
+FROM TF_POS
+WHERE OS_NO IN ('SO202511058', 'SO202511060');
+GO
+EOF
 
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'CUST' ORDER BY ORDINAL_POSITION;
+GO
+EOF
+
+  或者直接查看客户 MPH027 的所有字段：
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT * FROM CUST WHERE CUS_NO = 'MPH027';
+GO
+EOF
+
+# 检查 TF_POS_Z 扩展表
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT * FROM TF_POS_Z WHERE OS_NO IN ('SO202511058', 'SO202511060');
+GO
+EOF
+
+sing default charset "UTF-8"
+1> 2> 1> 2> OS_ID       OS_NO   BAT_NO  OS_DD   QT_NO   VOH_ID  VOH_NO  TRAD_MTH        PAY_MTH PAY_DAYS        CHK_DAYS        PAY_REM SEND_MTH        SEND_WH EST_DD  CUS_NO  SAL_NO  USE_DEP CUR_ID
+EXC_RTO AMTN_INT        AMT_INT DIS_CNT CLS_ID  BACK_ID HIS_PRICE     ADR     REM     PO_DEP  PO_SO_NO        SO_BY_MM        SO_OT_DD        SO_BY_DD        SO_LNG_CAS      SO_END_DD       SO_LST_DD
+ INV_DIS_ID      INV_NO  TAX_ID  RP_NO   OLD_INV_NO      AMTN_NET        TAX     PAY_DD  CHK_DD  INT_DAYS        USR  CHK_MAN  CONTRACT        PRT_SW  CPY_SW  BIL_NO  LC_NO   AMTN_DIS        CLS_MP_ID
+  CLS_REM BIL_ID  RK_CLS_ID       PRE_ID  IS_POS  POS_NO  CLS_DATE        PCL_ID  CUS_OS_NO       BZ_NO   HS_ID   RK_ID   BIL_TYPE        LOCK_MAN        FIN_DD  EFF_DD  CLEAR_ID      CO_NO   RECORD_DD
+   DEF_NO  YX_NO   CHK_MAN1        VALID_ID        MAN_CLS MAN_RK_CLS      IS_TRANS        FORCAST ZHANG_ID        OBJ_NO  OBJ_CLASS       SHOP_NO TRADE_ID        EMAIL_ID        TB_NO   AMTN_FY PCLS
+AFFECT_SQ       COPY_NO BUYERNO       SALERNO INVOICETYPE     INVOICEKIND
+SO      SO202511058     NULL    Nov 29 2025 12:00AM     NULL    NULL    NULL    NULL    1       1       30      结帐期:2025-12-01; 票据到期日:2026-01-01        1       01      Dec 30 1899 12:00AM
+MPH027  MP0033  0000    USD     7.00000000      NULL    NULL 0.00000000       F       NULL    T       NULL    NULL    0000    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    1
+         NULL    NULL    NULL    Dec  1 2025 12:00AM     Jan  1 2026 12:00AM     30      MP0013  MP0001  NULL    N    NULL     NULL    NULL    NULL    NULL            NULL    F       T       NULL    NULL
+  Nov 30 2025 12:00AM     NULL    NULL    NULL    F       NULL    NULL    NULL    NULL    Nov 30 2025 03:48PM     NULL    NULL    Nov 29 2025 02:52PM     NULL    NULL    NULL NULL     NULL    NULL    NULL
+   NULL    1       NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL
+SO      SO202511060     NULL    Nov 29 2025 08:00AM     NULL    NULL    NULL    NULL    1       NULL    NULL    NULL    1       01      NULL    A0001   MP0036  NULL    NULL    NULL    14.99000000     NULL
+   NULL    F       NULL    NULL    NULL    {}      NULL NULL     NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    MP0036  NULL
+    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL NULL     NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    Nov
+ 30 2025 03:56PM     NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL NULL     NULL    NULL    NULL
+(2 rows affected)
+1> locale is "C.UTF-8"
+locale charset is "UTF-8"
+using default charset "UTF-8"
+Msg 207 (severity 16, state 1) from MP01 Line 1:
+        "Invalid column name 'CLS_ID'."
+1> 2> 1> 2> 3> 4> 1> locale is "C.UTF-8"
+locale charset is "UTF-8"
+using default charset "UTF-8"
+1> 2> 1> 2> OS_NO       OS_ID   ITM     ZS      ZC      ZG      ZM1     BZ1     ZP      JHKH    PQTY2   SXBBM   DKBM    WXBM    XG      PQTY3   PQTY1   BZFS    CSHH    CSBZ    TJ
+SO202511058     SO      1       NULL    NULL    NULL    NULL    NULL    NULL    NULL    732     FLORA   FLORAF351       FLORAF351       44*32*23        NULL    40      3紫4灰3蓝/中包  NULL    F351    32384
+SO202511058     SO      2       NULL    NULL    NULL    NULL    NULL    NULL    NULL    500     FLORA   FLORAF352       FLORAF352       54*32*23        NULL    40      3紫4灰3蓝/中包  NULL    F352    39744
+SO202511058     SO      3       NULL    NULL    NULL    NULL    NULL    NULL    NULL    300     FLORA   FLORAF353       FLORAF353       64*32*23        NULL    40      3紫4灰3蓝/中包  NULL    F353    47104
+SO202511060     SO      1       NULL    NULL    NULL    NULL    NULL    NULL    NULL    NULL                                    NULL    NULL            NULL    NULL    NULL
+(4 rows affected)
+
+tsql -S MSSQL -U sa -P '1q!' <<'EOF'
+USE DB_MP01;
+GO
+SELECT CUS_NO, CUR_ID, EXC_RTO, PAY_DAYS, CHK_DAYS, DEP_ID
+FROM CUST
+WHERE CUS_NO IN ('MPH027', 'A0001');
+GO
+EOF
 
   mysql -u lemopx -p'1q!' internal_sales -e "
   DELETE FROM cart_items;

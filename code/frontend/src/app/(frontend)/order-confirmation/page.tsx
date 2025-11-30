@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSalespersonAuth } from '@/context/SalespersonAuthContext'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
-import { Package, User, Calendar, FileText, RefreshCw } from 'lucide-react'
+import { Package, User, Calendar, FileText } from 'lucide-react'
 import SearchableSelect from '@/components/common/SearchableSelect'
 import DatePicker from '@/components/common/DatePicker'
 import Link from 'next/link'
@@ -81,7 +81,9 @@ export default function OrderConfirmationPage() {
   // UI 状态
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [refreshingCustomers, setRefreshingCustomers] = useState(false)
+
+  // 记录上次加载客户列表时的时间戳
+  const lastCustomerLoadRef = useRef<string>('')
 
   // 初始化
   useEffect(() => {
@@ -102,6 +104,22 @@ export default function OrderConfirmationPage() {
     loadOrderItems()
   }, [isAuthenticated, isLoading])
 
+  // 监听页面可见性变化，自动刷新客户列表
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const updatedAt = localStorage.getItem('erp_customers_updated') || ''
+        if (updatedAt && updatedAt !== lastCustomerLoadRef.current) {
+          console.log('检测到客户列表更新，自动刷新...')
+          loadCustomers()
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
   // 加载关于我们配置
   const loadAboutConfig = async () => {
     try {
@@ -117,13 +135,11 @@ export default function OrderConfirmationPage() {
   }
 
   // 加载ERP客户列表
-  const loadCustomers = async (showRefreshToast = false) => {
+  const loadCustomers = async () => {
     try {
-      if (showRefreshToast) setRefreshingCustomers(true)
       const token = localStorage.getItem('salesperson_token')
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
-      // 加载所有ERP客户（内网系统不限制业务员）
       const url = `${API_URL}/erp/erp-customers?limit=1000`
 
       const response = await fetch(url, {
@@ -135,13 +151,11 @@ export default function OrderConfirmationPage() {
       if (response.ok) {
         const data = await response.json()
         setCustomers(data.data || [])
-        if (showRefreshToast) toast.success(`客户列表已刷新，共 ${data.data?.length || 0} 个客户`)
+        // 记录当前的更新时间戳
+        lastCustomerLoadRef.current = localStorage.getItem('erp_customers_updated') || ''
       }
     } catch (err) {
       console.error('加载客户列表失败:', err)
-      if (showRefreshToast) toast.error('刷新客户列表失败')
-    } finally {
-      setRefreshingCustomers(false)
     }
   }
 
@@ -428,27 +442,14 @@ export default function OrderConfirmationPage() {
 
           {/* 客户信息 */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <User className="text-primary" size={24} />
-                <h2 className="text-xl font-bold text-gray-900">客户信息</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => loadCustomers(true)}
-                disabled={refreshingCustomers}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-primary hover:bg-primary/5 rounded-lg transition disabled:opacity-50"
-                title="刷新客户列表"
-              >
-                <RefreshCw size={16} className={refreshingCustomers ? 'animate-spin' : ''} />
-                {refreshingCustomers ? '刷新中...' : '刷新列表'}
-              </button>
+            <div className="flex items-center gap-3 mb-6">
+              <User className="text-primary" size={24} />
+              <h2 className="text-xl font-bold text-gray-900">客户信息</h2>
             </div>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 选择客户 <span className="text-red-500">*</span>
-                <span className="ml-2 text-xs text-gray-500">({customers.length} 个客户)</span>
               </label>
               <SearchableSelect
                 options={customers.map(c => ({

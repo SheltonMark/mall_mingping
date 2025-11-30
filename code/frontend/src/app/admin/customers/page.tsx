@@ -261,6 +261,8 @@ export default function CustomersPage() {
         toast.success(`同步成功！新增 ${result.created} 个，更新 ${result.updated} 个，共 ${result.total} 个客户`);
         loadErpCustomers();
         loadLastSyncTime();
+        // 通知其他页面客户列表已更新
+        localStorage.setItem('erp_customers_updated', Date.now().toString());
       } else {
         toast.error(`同步失败: ${result.error}`);
       }

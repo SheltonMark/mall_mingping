@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { orderApi, salespersonApi, erpApi } from '@/lib/adminApi';
 import { useToast } from '@/components/common/ToastContainer';
 import { ButtonLoader } from '@/components/common/Loader';
@@ -175,7 +175,9 @@ export default function AdminOrdersPage() {
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshingCustomers, setRefreshingCustomers] = useState(false);
+
+  // 记录上次加载客户列表时的时间戳
+  const lastCustomerLoadRef = useRef<string>('');
 
   // 筛选条件
   const [searchTerm, setSearchTerm] = useState('');
@@ -203,6 +205,22 @@ export default function AdminOrdersPage() {
     loadData();
   }, []);
 
+  // 监听页面可见性变化，自动刷新客户列表
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const updatedAt = localStorage.getItem('erp_customers_updated') || '';
+        if (updatedAt && updatedAt !== lastCustomerLoadRef.current) {
+          console.log('检测到客户列表更新，自动刷新...');
+          loadCustomersOnly();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -222,6 +240,8 @@ export default function AdminOrdersPage() {
         cusNo: c.cusNo,
         isErpCustomer: true,
       })));
+      // 记录当前的更新时间戳
+      lastCustomerLoadRef.current = localStorage.getItem('erp_customers_updated') || '';
     } catch (error: any) {
       console.error('Failed to load data:', error);
       toast.error(error.message || '加载数据失败');
@@ -230,10 +250,9 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // 刷新客户列表
-  const refreshCustomers = async () => {
+  // 仅刷新客户列表（用于自动刷新）
+  const loadCustomersOnly = async () => {
     try {
-      setRefreshingCustomers(true);
       const erpCustomersRes = await erpApi.getErpCustomers({ limit: 1000 });
       const erpCustomers = erpCustomersRes.data || [];
       setCustomers(erpCustomers.map((c: any) => ({
@@ -242,12 +261,9 @@ export default function AdminOrdersPage() {
         cusNo: c.cusNo,
         isErpCustomer: true,
       })));
-      toast.success(`客户列表已刷新，共 ${erpCustomers.length} 个客户`);
+      lastCustomerLoadRef.current = localStorage.getItem('erp_customers_updated') || '';
     } catch (error: any) {
       console.error('Failed to refresh customers:', error);
-      toast.error('刷新客户列表失败');
-    } finally {
-      setRefreshingCustomers(false);
     }
   };
 
@@ -657,19 +673,7 @@ export default function AdminOrdersPage() {
 
           {/* 客户筛选 */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-medium text-gray-700">客户 ({customers.length})</label>
-              <button
-                type="button"
-                onClick={refreshCustomers}
-                disabled={refreshingCustomers}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary transition disabled:opacity-50"
-                title="刷新客户列表"
-              >
-                <RefreshCw size={12} className={refreshingCustomers ? 'animate-spin' : ''} />
-                刷新
-              </button>
-            </div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">客户</label>
             <SearchableSelect
               options={[
                 { value: '', label: '全部客户' },
