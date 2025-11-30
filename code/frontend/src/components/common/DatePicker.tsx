@@ -144,7 +144,7 @@ export default function DatePicker({ value, onChange, className = '', required =
 
       {/* 日历弹出框 */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 bg-white border-2 border-primary rounded-xl shadow-xl p-4 w-80 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute z-[9999] mt-2 bg-white border-2 border-primary rounded-xl shadow-xl p-4 w-80 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* 月份选择 */}
           <div className="flex items-center justify-between mb-4">
             <button
