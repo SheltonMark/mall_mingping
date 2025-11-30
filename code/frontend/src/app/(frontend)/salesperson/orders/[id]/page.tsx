@@ -275,7 +275,7 @@ export default function OrderDetailPage() {
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-purple-100 text-purple-800'
                     }`}>
-                      {order.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
+                      {order.orderType === 'FORMAL' ? '销售订单' : '报价单'}
                     </span>
                   </div>
                 </div>

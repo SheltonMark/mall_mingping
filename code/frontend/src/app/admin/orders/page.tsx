@@ -842,7 +842,7 @@ export default function AdminOrdersPage() {
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-purple-100 text-purple-800'
                       }`}>
-                        {order.orderType === 'FORMAL' ? '正式' : '意向'}
+                        {order.orderType === 'FORMAL' ? '销售' : '报价'}
                       </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -1007,7 +1007,7 @@ export default function AdminOrdersPage() {
                         ? 'bg-blue-100 text-blue-800'
                         : 'bg-purple-100 text-purple-800'
                     }`}>
-                      {selectedOrder.orderType === 'FORMAL' ? '正式订单' : '意向订单'}
+                      {selectedOrder.orderType === 'FORMAL' ? '销售订单' : '报价单'}
                     </span>
                   </div>
                   <div>
