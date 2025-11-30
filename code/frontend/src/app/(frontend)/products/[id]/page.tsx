@@ -789,17 +789,6 @@ export default function ProductDetailPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {language === 'zh' ? '客户料号' : 'Customer Product Code'}
-                    </label>
-                    <input
-                      type="text"
-                      value={cartFormData.customerProductCode}
-                      onChange={(e) => updateCartFormField('customerProductCode', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       {language === 'zh' ? '未税本位币' : 'Untaxed Local Currency'}
                     </label>
                     <input
@@ -829,6 +818,17 @@ export default function ProductDetailPage() {
                   <span>{language === 'zh' ? '包装信息' : 'Packaging Information'}</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {language === 'zh' ? '客户料号' : 'Customer Product Code'}
+                    </label>
+                    <input
+                      type="text"
+                      value={cartFormData.customerProductCode}
+                      onChange={(e) => updateCartFormField('customerProductCode', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {language === 'zh' ? '装箱数' : 'Packing Quantity'}

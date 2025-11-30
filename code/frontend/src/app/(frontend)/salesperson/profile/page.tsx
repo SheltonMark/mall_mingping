@@ -536,9 +536,6 @@ export default function SalespersonProfilePage() {
                   {item.productSpec && (
                     <div className="text-sm text-gray-600 mt-1">{item.productSpec}</div>
                   )}
-                  {item.customerProductCode && (
-                    <div className="text-sm text-gray-500">客户货号: {item.customerProductCode}</div>
-                  )}
                 </div>
               </div>
 

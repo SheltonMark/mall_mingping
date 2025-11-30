@@ -398,14 +398,6 @@ export default function OrderDetailPage() {
                             {item.productSku?.productName || item.productSku?.productNameEn || '-'}
                           </div>
                         </div>
-                        {item.customerProductCode && (
-                          <div>
-                            <label className="block text-xs font-semibold text-gray-500 mb-1">客户料号</label>
-                            <div className="py-2 bg-gray-50 rounded text-sm font-mono">
-                              {item.customerProductCode}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -478,6 +470,12 @@ export default function OrderDetailPage() {
                         包装信息
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">客户料号</label>
+                          <div className="py-2 bg-gray-50 rounded text-sm font-mono">
+                            {item.customerProductCode || '-'}
+                          </div>
+                        </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">装箱数</label>
                           <div className="py-2 bg-gray-50 rounded text-sm">
@@ -553,12 +551,6 @@ export default function OrderDetailPage() {
                         其他信息
                       </h4>
                       <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-gray-500 mb-1">客户料号</label>
-                          <div className="py-2 bg-gray-50 rounded text-sm font-mono">
-                            {item.customerProductCode || '-'}
-                          </div>
-                        </div>
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 mb-1">期望交期</label>
                           <div className="py-2 bg-gray-50 rounded text-sm">
