@@ -99,16 +99,31 @@ export default function IOSPicker({
     })
   }
 
-  // 处理鼠标滚轮
-  const handleWheel = (e: React.WheelEvent) => {
-    if (disabled) return
-    e.preventDefault()
-    const delta = Math.sign(e.deltaY)
-    const newIndex = selectedIndex + delta
-    if (newIndex >= 0 && newIndex < options.length) {
-      scrollToIndex(newIndex)
+  // 处理鼠标滚轮 - 使用原生事件监听器以支持 preventDefault
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const handleWheel = (e: WheelEvent) => {
+      if (disabled) return
+      // 阻止默认行为和事件冒泡，防止页面滚动
+      e.preventDefault()
+      e.stopPropagation()
+
+      const delta = Math.sign(e.deltaY)
+      const newIndex = selectedIndex + delta
+      if (newIndex >= 0 && newIndex < options.length) {
+        scrollToIndex(newIndex)
+      }
     }
-  }
+
+    // 使用 passive: false 才能正确阻止默认滚动行为
+    container.addEventListener('wheel', handleWheel, { passive: false })
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel)
+    }
+  }, [disabled, selectedIndex, options.length])
 
   // 处理触摸/拖拽开始
   const handleDragStart = () => {
@@ -165,7 +180,6 @@ export default function IOSPicker({
           disabled ? 'border-gray-200 opacity-50' : 'border-gray-300'
         }`}
         style={{ height: VISIBLE_ITEMS * ITEM_HEIGHT }}
-        onWheel={handleWheel}
       >
         {/* 中间高亮区域 */}
         <div
