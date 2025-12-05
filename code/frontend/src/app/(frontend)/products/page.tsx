@@ -286,7 +286,7 @@ export default function ProductsPage() {
                 onClick={() => setShowMobileFilters(false)}
               />
               {/* Sidebar */}
-              <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto pt-24">
+              <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto pt-20">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-gray-900">{t('products.filters')}</h3>
