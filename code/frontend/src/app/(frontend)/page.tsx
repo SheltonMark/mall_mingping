@@ -287,7 +287,7 @@ export default function HomePage() {
                           {/* 无限循环：复制证书数组3次 */}
                           {[...certificates, ...certificates, ...certificates].map((cert, idx) => (
                             <div key={idx} className="flex-shrink-0" style={{ width: 'calc(33.333% - 16px)' }}>
-                              <div className="group relative h-full bg-white rounded-lg shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105">
+                              <div className="group relative h-full bg-white shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 hover:scale-105">
                                 <img
                                   src={cert.image}
                                   alt={`Certificate ${(idx % certificates.length) + 1}`}
@@ -357,7 +357,7 @@ export default function HomePage() {
                       <div className="w-[75%] mx-auto">
                         <div className={`flex justify-center gap-6 ${certificates.length === 1 ? 'max-w-md' : 'max-w-3xl'} mx-auto`}>
                         {certificates.map((cert, index) => (
-                          <div key={index} className="group relative h-[300px] md:h-[370px] bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden" style={{ flex: '1 1 0' }}>
+                          <div key={index} className="group relative h-[300px] md:h-[370px] bg-white shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden" style={{ flex: '1 1 0' }}>
                             <img
                               src={cert.image}
                               alt={`Certificate ${index + 1}`}
@@ -398,7 +398,7 @@ export default function HomePage() {
               <div className="md:hidden px-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
                   {certificates.map((cert, index) => (
-                    <div key={index} className="group relative bg-white rounded-lg shadow-md overflow-hidden">
+                    <div key={index} className="group relative bg-white shadow-md overflow-hidden">
                       <img
                         src={cert.image}
                         alt={`Certificate ${index + 1}`}
@@ -548,7 +548,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section - Begin Your Journey */}
-      <section className="py-32 px-6 bg-neutral-900 text-white text-center relative overflow-hidden" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+      <section className="py-16 md:py-20 px-6 bg-neutral-900 text-white text-center relative overflow-hidden" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         {/* Pulsing light effect */}
         <div
           className="absolute top-1/2 left-1/2 w-[800px] h-[800px] -translate-x-1/2 -translate-y-1/2"
@@ -560,12 +560,12 @@ export default function HomePage() {
 
         <div className="max-w-[800px] mx-auto relative z-10">
           <h2
-            className="text-5xl md:text-7xl font-light text-white mb-8"
+            className="text-4xl md:text-5xl font-light text-white mb-4 md:mb-6"
             style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
           >
             {language === 'zh' ? '开启您的旅程' : 'Begin Your Journey'}
           </h2>
-          <p className="text-xl text-neutral-500 mb-12 leading-relaxed">
+          <p className="text-lg md:text-xl text-neutral-500 mb-8 leading-relaxed">
             {language === 'zh' ? '与我们一起开启卓越清洁体验的新篇章' : 'Join us to start a new chapter of excellent cleaning experience'}
           </p>
           <Link

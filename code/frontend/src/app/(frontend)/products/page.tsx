@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { ShoppingCart, ChevronDown } from 'lucide-react'
+import { ShoppingCart, ChevronDown, SlidersHorizontal, X } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useAuth } from '@/context/AuthContext'
@@ -24,6 +24,7 @@ export default function ProductsPage() {
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high'>('newest')
   const [currentPage, setCurrentPage] = useState(1) // 当前页码
+  const [showMobileFilters, setShowMobileFilters] = useState(false) // 移动端筛选器显示状态
   const { addItem } = useCart()
 
   // State for API data
@@ -31,10 +32,6 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  // 动态价格范围
-  const [maxPrice, setMaxPrice] = useState(200)
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 200 })
 
   // Fetch data from API
   useEffect(() => {
@@ -51,12 +48,6 @@ export default function ProductsPage() {
 
         setProductGroups(groupsRes.data || [])
         setCategories(categoriesRes || [])
-
-        // 动态计算价格最大值
-        const prices = (groupsRes.data || []).map(group => Number(group.skus?.[0]?.price || 0))
-        const calculatedMaxPrice = prices.length > 0 ? Math.ceil(Math.max(...prices)) : 200
-        setMaxPrice(calculatedMaxPrice)
-        setPriceRange({ min: 0, max: calculatedMaxPrice })
       } catch (err: any) {
         console.error('Failed to load products:', err)
         setError(err.message || 'Failed to load products')
@@ -186,14 +177,8 @@ export default function ProductsPage() {
       })
     : productGroups
 
-  // Filter by price range (based on first SKU price)
-  const priceFilteredGroups = filteredProductGroups.filter(group => {
-    const firstSkuPrice = Number(group.skus?.[0]?.price || 0)
-    return firstSkuPrice >= priceRange.min && firstSkuPrice <= priceRange.max
-  })
-
   // Sort filtered products
-  const sortedProductGroups = [...priceFilteredGroups].sort((a, b) => {
+  const sortedProductGroups = [...filteredProductGroups].sort((a, b) => {
     if (sortBy === 'newest') {
       // 按 displayOrder 降序 (数值越大越新)
       return (b.displayOrder || 0) - (a.displayOrder || 0)
@@ -281,14 +266,94 @@ export default function ProductsPage() {
         </nav>
 
         <div className="flex flex-col md:flex-row gap-12">
-          {/* Filtering Sidebar - 排序框移到顶部 */}
-          <aside className="w-full md:w-56 lg:w-64 shrink-0">
+          {/* Mobile Filter Button */}
+          <div className="md:hidden flex justify-end mb-4">
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <SlidersHorizontal size={18} />
+              <span className="text-sm font-medium">{language === 'zh' ? '筛选' : 'Filter'}</span>
+            </button>
+          </div>
+
+          {/* Mobile Filter Sidebar */}
+          {showMobileFilters && (
+            <div className="md:hidden fixed inset-0 z-50">
+              {/* Backdrop */}
+              <div
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setShowMobileFilters(false)}
+              />
+              {/* Sidebar */}
+              <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-gray-900">{t('products.filters')}</h3>
+                    <button
+                      onClick={() => setShowMobileFilters(false)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-8">
+                    {/* Sort */}
+                    <div>
+                      <h4 className="font-semibold mb-4 text-gray-900">{language === 'zh' ? '排序' : 'Sort'}</h4>
+                      <CustomSelect
+                        options={[
+                          { value: 'newest', label: t('products.sort_new') },
+                          { value: 'price_low', label: t('products.sort_price_low') },
+                          { value: 'price_high', label: t('products.sort_price_high') },
+                        ]}
+                        value={sortBy}
+                        onChange={(value) => {
+                          setSortBy(value as 'newest' | 'price_low' | 'price_high')
+                          setShowMobileFilters(false)
+                        }}
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Categories */}
+                    <div>
+                      <h4 className="font-semibold mb-4 text-gray-900">{t('products.categories')}</h4>
+                      <ul className="space-y-3 text-sm">
+                        {categories.map((category) => (
+                          <li key={category.id}>
+                            <button
+                              onClick={() => {
+                                handleCategoryClick(category.code)
+                                setShowMobileFilters(false)
+                              }}
+                              className={`text-left w-full py-2 transition-colors cursor-pointer ${
+                                selectedCategoryCode === category.code
+                                  ? 'text-primary font-semibold'
+                                  : 'text-gray-600 hover:text-primary'
+                              }`}
+                            >
+                              {language === 'en' ? category.nameEn : category.nameZh}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Filtering Sidebar - Desktop Only */}
+          <aside className="hidden md:block w-56 lg:w-64 shrink-0">
             <div className="sticky top-32">
               <h3 className="text-lg font-bold mb-8 text-gray-900">{t('products.filters')}</h3>
               <div className="space-y-14">
-                {/* Sort Dropdown - 移到顶部 */}
+                {/* Sort Dropdown */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('home.hero.title').includes('Future') ? 'Sort' : '排序'}</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900">{language === 'zh' ? '排序' : 'Sort'}</h4>
                   <CustomSelect
                     options={[
                       { value: 'newest', label: t('products.sort_new') },
@@ -321,61 +386,12 @@ export default function ProductsPage() {
                     ))}
                   </ul>
                 </div>
-
-                {/* Price Range */}
-                <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.price_range')}</h4>
-                  <div className="relative pt-1">
-                    <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-lg">
-                      <div
-                        className="absolute h-2 bg-primary rounded-lg"
-                        style={{
-                          left: `${(priceRange.min / maxPrice) * 100}%`,
-                          right: `${100 - (priceRange.max / maxPrice) * 100}%`,
-                        }}
-                      />
-                      <input
-                        type="range"
-                        min="0"
-                        max={maxPrice}
-                        value={priceRange.min}
-                        onChange={(e) => setPriceRange({ ...priceRange, min: Math.min(Number(e.target.value), priceRange.max - 1) })}
-                        className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0"
-                      />
-                      <input
-                        type="range"
-                        min="0"
-                        max={maxPrice}
-                        value={priceRange.max}
-                        onChange={(e) => setPriceRange({ ...priceRange, max: Math.max(Number(e.target.value), priceRange.min + 1) })}
-                        className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-sm mt-4 text-gray-600">
-                    <span>¥{priceRange.min}</span>
-                    <span>¥{priceRange.max}</span>
-                  </div>
-                </div>
               </div>
             </div>
           </aside>
 
-          {/* Product Grid - 删除标题行，保留移动端排序 */}
+          {/* Product Grid */}
           <div className="flex-1">
-            {/* 仅在移动端显示排序下拉框 */}
-            <div className="md:hidden mb-6">
-              <CustomSelect
-                options={[
-                  { value: 'newest', label: t('products.sort_new') },
-                  { value: 'price_low', label: t('products.sort_price_low') },
-                  { value: 'price_high', label: t('products.sort_price_high') },
-                ]}
-                value={sortBy}
-                onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
-                className="w-full"
-              />
-            </div>
 
             {/* Products Grid */}
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
