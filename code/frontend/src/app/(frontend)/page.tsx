@@ -182,7 +182,7 @@ export default function HomePage() {
       <div className="mt-32 md:mt-36 pb-8 md:pb-16 bg-white">
         <div className="mx-auto px-0 md:px-32 lg:px-40 max-w-[1800px]">
           <section
-            className="relative h-[280px] sm:h-[380px] md:h-[580px] lg:h-[680px] overflow-hidden"
+            className="relative aspect-[2/1] md:aspect-auto md:h-[580px] lg:h-[680px] overflow-hidden"
             onMouseEnter={() => setIsHeroHovering(true)}
             onMouseLeave={() => setIsHeroHovering(false)}
             onTouchStart={handleHeroTouchStart}
