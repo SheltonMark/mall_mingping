@@ -29,19 +29,33 @@ export default function Footer() {
 
   return (
     <footer
-      className="bg-neutral-900 text-neutral-400 py-24 px-6 border-t border-neutral-800 print:hidden"
+      className="bg-neutral-900 text-neutral-400 py-10 md:py-14 px-4 md:px-6 border-t border-neutral-800 print:hidden"
       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif' }}
     >
       <div className="max-w-[1440px] mx-auto">
-        {/* Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-16 mb-16 items-start">
-          {/* Brand Column */}
+        {/* Brand Section - Full width on mobile */}
+        <div className="mb-6 md:hidden">
+          <Link href="/" className="inline-block mb-3">
+            <img
+              src="/images/logo-light.svg"
+              alt="LEMOPX"
+              className="h-10 w-auto"
+            />
+          </Link>
+          <p className="text-neutral-500 text-xs leading-relaxed">
+            {t('footer.tagline') || 'Crafting excellent cleaning solutions with artisan spirit, creating elegant living experiences for global clients.'}
+          </p>
+        </div>
+
+        {/* Footer Grid - Desktop */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-6 md:gap-10 mb-8 md:mb-10 items-start">
+          {/* Brand Column - Desktop only */}
           <div>
-            <Link href="/" className="inline-block mb-6">
+            <Link href="/" className="inline-block mb-4">
               <img
                 src="/images/logo-light.svg"
                 alt="LEMOPX"
-                className="h-16 md:h-18 w-auto"
+                className="h-12 md:h-14 w-auto"
               />
             </Link>
             <p className="text-neutral-500 leading-relaxed">
@@ -51,10 +65,10 @@ export default function Footer() {
 
           {/* Products Column */}
           <div>
-            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
+            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-4">
               {t('footer.products') || 'Products'}
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               <li>
                 <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
                   {t('footer.all_products') || 'Cleaning Tools'}
@@ -80,10 +94,10 @@ export default function Footer() {
 
           {/* Company Column */}
           <div>
-            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
+            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-4">
               {t('footer.company') || 'Company'}
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
                   {t('footer.about') || 'About Us'}
@@ -109,10 +123,10 @@ export default function Footer() {
 
           {/* Support Column */}
           <div>
-            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-6">
+            <h4 className="text-sm font-semibold text-white tracking-[0.1em] uppercase mb-4">
               {t('footer.support') || 'Support'}
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               <li>
                 <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors duration-250 text-[0.9375rem]">
                   {t('footer.contact_us') || 'Contact Us'}
@@ -137,10 +151,85 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Footer Grid - Mobile: 3 columns for Products/Company/Support */}
+        <div className="md:hidden grid grid-cols-3 gap-3 mb-6">
+          {/* Products Column */}
+          <div>
+            <h4 className="text-[10px] font-semibold text-white tracking-[0.05em] uppercase mb-2">
+              {t('footer.products') || 'Products'}
+            </h4>
+            <ul className="space-y-1">
+              <li>
+                <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.all_products') || 'Cleaning Tools'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.new_arrivals') || 'Kitchen Items'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.best_sellers') || 'Storage'}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company Column */}
+          <div>
+            <h4 className="text-[10px] font-semibold text-white tracking-[0.05em] uppercase mb-2">
+              {t('footer.company') || 'Company'}
+            </h4>
+            <ul className="space-y-1">
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.about') || 'About Us'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.our_story')}
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.careers') || 'Careers'}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support Column */}
+          <div>
+            <h4 className="text-[10px] font-semibold text-white tracking-[0.05em] uppercase mb-2">
+              {t('footer.support') || 'Support'}
+            </h4>
+            <ul className="space-y-1">
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.contact_us') || 'Contact'}
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.privacy_policy')}
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-neutral-500 hover:text-primary transition-colors text-[11px] leading-tight block">
+                  {t('footer.terms_of_service')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {/* Footer Bottom */}
-        <div className="border-t border-neutral-800 pt-12">
+        <div className="border-t border-neutral-800 pt-6 md:pt-8">
           {/* Social Media Icons */}
-          <div className="flex justify-center gap-4 mb-8">
+          <div className="flex justify-center gap-3 mb-4 md:mb-6">
             <a
               href={socialMedia.facebook || '#'}
               target={socialMedia.facebook ? '_blank' : undefined}
