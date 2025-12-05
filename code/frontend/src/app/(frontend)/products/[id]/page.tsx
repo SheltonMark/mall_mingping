@@ -86,15 +86,9 @@ export default function ProductDetailPage() {
     if (productGroup?.skus && productGroup.skus.length > 0 && !selectedSku) {
       const firstSku = productGroup.skus[0]
       setSelectedSku(firstSku)
-
-      // 同时自动选中第一个附加属性（如果有）
-      if (productGroup?.optionalAttributes && productGroup.optionalAttributes.length > 0) {
-        const firstAttr = productGroup.optionalAttributes[0]
-        setSelectedAttribute(firstAttr)
-        setSelectedAttributeDisplay(language === 'zh' ? firstAttr.nameZh : (firstAttr.nameEn || firstAttr.nameZh))
-      }
+      // 附加属性不自动选中，引导用户手动选择
     }
-  }, [productGroup, selectedSku, language])
+  }, [productGroup, selectedSku])
 
   // 处理品名选择
   const handleSkuSelect = (displayName: string) => {
@@ -109,15 +103,9 @@ export default function ProductDetailPage() {
     setCurrentImageIndex(0)
     setViewMode('gallery')
 
-    // 自动选中第一个附加属性（如果有）
-    if (productGroup?.optionalAttributes && productGroup.optionalAttributes.length > 0) {
-      const firstAttr = productGroup.optionalAttributes[0]
-      setSelectedAttribute(firstAttr)
-      setSelectedAttributeDisplay(language === 'zh' ? firstAttr.nameZh : (firstAttr.nameEn || firstAttr.nameZh))
-    } else {
-      setSelectedAttribute(null)
-      setSelectedAttributeDisplay('')
-    }
+    // 切换品名时清空附加属性，引导用户重新选择
+    setSelectedAttribute(null)
+    setSelectedAttributeDisplay('')
 
     // 解析图片
     let parsedImages: string[] = []

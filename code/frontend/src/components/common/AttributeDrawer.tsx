@@ -108,8 +108,8 @@ export default function AttributeDrawer({
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {/* 头部 */}
-        <div className="flex-shrink-0 bg-white border-b border-gray-200">
+        {/* 头部 - 顶部留出导航栏空间 */}
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 pt-20 lg:pt-24">
           <div className="flex items-center justify-between p-4">
             <h2 className="text-xl font-bold text-gray-900">
               {title || (language === 'zh' ? '选择附加属性' : 'Select Attribute')}
@@ -177,8 +177,8 @@ export default function AttributeDrawer({
           )}
         </div>
 
-        {/* 底部确认按钮 - 支持安全区域 */}
-        <div className="flex-shrink-0 bg-white border-t border-gray-200 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        {/* 底部确认按钮 */}
+        <div className="flex-shrink-0 bg-white border-t border-gray-200 p-4">
           <button
             onClick={handleConfirm}
             disabled={!selectedAttr}
@@ -186,6 +186,8 @@ export default function AttributeDrawer({
           >
             {language === 'zh' ? '确认选择' : 'Confirm'}
           </button>
+          {/* iOS安全区域占位 */}
+          <div className="h-[env(safe-area-inset-bottom)]"></div>
         </div>
       </div>
 

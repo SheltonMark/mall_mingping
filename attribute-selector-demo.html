@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>附加属性选择器 Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 自定义滚动条 */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    /* 遮罩动画 */
+    .drawer-overlay {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1s ease;
+    }
+    .drawer-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* 抽屉滑入 */
+    .drawer-panel {
+      transform: translateX(100%);
+      transition: transform 1s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .drawer-panel.active {
+      transform: translateX(0);
+    }
+
+    /* 选中样式 */
+    .attr-item.selected {
+      background-color: #fef3c7 !important;
+      border-color: #d97706 !important;
+    }
+
+    /* 抽屉内容淡入 */
+    .drawer-content {
+      opacity: 0;
+      transition: opacity 0.5s ease 0.5s;
+    }
+    .drawer-panel.active .drawer-content {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+
+  <!-- 触发按钮 -->
+  <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">产品详情页</h1>
+    <p class="text-gray-600 mb-6">当前已选：<span id="selectedDisplay" class="font-medium text-amber-600">无</span></p>
+    <button id="openBtn" class="px-6 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors">
+      选择附加属性
+    </button>
+  </div>
+
+  <!-- 遮罩 -->
+  <div id="overlay" class="drawer-overlay fixed inset-0 bg-black/40 z-40"></div>
+
+  <!-- 抽屉 -->
+  <div id="drawer" class="drawer-panel fixed right-0 top-0 h-full w-full max-w-md bg-gray-100 z-50 flex flex-col shadow-2xl">
+
+    <!-- 头部 -->
+    <div class="flex-shrink-0 bg-white border-b border-gray-200">
+      <div class="flex items-center justify-between p-4">
+        <h2 class="text-xl font-bold text-gray-900">选择附加属性</h2>
+        <button id="closeBtn" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 搜索框 -->
+      <div class="px-4 pb-4">
+        <div class="relative">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="搜索属性..."
+            class="w-full pl-12 pr-4 py-3 bg-gray-100 border-0 rounded-full focus:outline-none focus:ring-2 focus:ring-amber-500 text-base"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- 列表 -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar p-4">
+      <div id="attrContainer" class="space-y-2"></div>
+      <div id="noResult" class="hidden text-center text-gray-500 py-12">无匹配结果</div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="flex-shrink-0 bg-white border-t border-gray-200 p-4">
+      <button id="confirmBtn" class="w-full py-4 bg-amber-500 text-white rounded-full font-semibold hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" disabled>
+        确认选择
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Mock 50个属性（包含长内容）
+    const attributes = [
+      '刷丝：白，刷体/拷边线：3252C，其余件：18-0201TPG深灰',
+      '纱线：白色，其他部件：18-0201TPG深灰',
+      '18-0201TPG深灰',
+      '彩盒包装',
+      '吸塑包装',
+      '袋装',
+      '裸装',
+      '纸盒包装',
+      '手柄：原木色，刷头：白色，金属件：电镀银',
+      '丝印Logo（单色）',
+      '丝印Logo（双色）',
+      '热转印全覆盖',
+      'UV打印',
+      '激光雕刻',
+      '烫金工艺',
+      '刷丝：蓝色3005C，刷体：白色，手柄：灰色425C',
+      '挂钩配件',
+      '伸缩杆1.2m',
+      '伸缩杆1.5m',
+      '替换头x2',
+      '收纳袋',
+      '中英文说明书',
+      'SGS检测报告',
+      'FDA食品级认证',
+      'CE认证',
+      'BSCI验厂报告',
+      'ISO9001认证',
+      '加急生产（7个工作日）',
+      '标准交期（15个工作日）',
+      '常规交期（30个工作日）',
+      '定制周期（按需确认）',
+      '现货供应',
+      '海运整柜',
+      '海运拼柜',
+      '空运',
+      '铁路运输',
+      '国际快递',
+      '工厂自提',
+      'FOB宁波',
+      'FOB上海',
+      'CIF目的港',
+      'DDP送货上门',
+      '刷毛：PP材质，手柄：榉木',
+      '刷毛：尼龙材质，手柄：塑料',
+      '全PP材质环保款',
+      '抗菌处理',
+      '防霉处理',
+      '阻燃处理',
+      '定制PANTONE色号',
+      '来样定制颜色'
+    ];
+
+    let selectedAttr = null;
+
+    const openBtn = document.getElementById('openBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const overlay = document.getElementById('overlay');
+    const drawer = document.getElementById('drawer');
+    const searchInput = document.getElementById('searchInput');
+    const attrContainer = document.getElementById('attrContainer');
+    const noResult = document.getElementById('noResult');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const selectedDisplay = document.getElementById('selectedDisplay');
+
+    function renderList(filter = '') {
+      const filtered = attributes.filter(attr =>
+        attr.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        attrContainer.innerHTML = '';
+        noResult.classList.remove('hidden');
+        return;
+      }
+
+      noResult.classList.add('hidden');
+      attrContainer.innerHTML = filtered.map(attr => `
+        <div class="attr-item bg-white rounded-xl p-4 cursor-pointer border-2 border-transparent hover:border-amber-400 transition-all shadow-sm hover:shadow-md ${selectedAttr === attr ? 'selected' : ''}" data-attr="${attr}">
+          <span class="text-gray-800 leading-relaxed">${attr}</span>
+        </div>
+      `).join('');
+
+      // 绑定点击
+      document.querySelectorAll('.attr-item').forEach(item => {
+        item.addEventListener('click', () => {
+          selectedAttr = item.dataset.attr;
+          renderList(searchInput.value);
+          confirmBtn.disabled = false;
+        });
+      });
+
+      // 依次显示动画
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.attr-item').forEach((item, i) => {
+          setTimeout(() => item.classList.add('show'), i * 30);
+        });
+      });
+    }
+
+    function openDrawer() {
+      overlay.classList.add('active');
+      drawer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      searchInput.value = '';
+      renderList();
+    }
+
+    function closeDrawer() {
+      overlay.classList.remove('active');
+      drawer.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function confirm() {
+      if (selectedAttr) {
+        selectedDisplay.textContent = selectedAttr;
+        closeDrawer();
+      }
+    }
+
+    openBtn.addEventListener('click', openDrawer);
+    closeBtn.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+    confirmBtn.addEventListener('click', confirm);
+    searchInput.addEventListener('input', (e) => renderList(e.target.value));
+  </script>
+</body>
+</html>
