@@ -23,6 +23,7 @@ export default function HomePage() {
   const [isHeroHovering, setIsHeroHovering] = useState(false)
   const [certificates, setCertificates] = useState<Array<{image: string, label_zh?: string, label_en?: string}>>([])
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
+  const [mobileCertIndex, setMobileCertIndex] = useState(0)
   
 
   // 已取消证书自动轮播
@@ -394,26 +395,58 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Mobile: Display All Certificates */}
+              {/* Mobile: Single Certificate Carousel */}
               <div className="md:hidden px-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                  {certificates.map((cert, index) => (
-                    <div key={index} className="group relative bg-white rounded-lg shadow-md overflow-hidden">
-                      <img
-                        src={cert.image}
-                        alt={`Certificate ${index + 1}`}
-                        className="w-full h-64 object-contain p-4"
+                <div className="relative max-w-sm mx-auto">
+                  {/* Left Arrow */}
+                  <button
+                    onClick={() => setMobileCertIndex(prev => prev === 0 ? certificates.length - 1 : prev - 1)}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 flex items-center justify-center"
+                    aria-label="Previous certificate"
+                  >
+                    <ChevronLeft size={28} strokeWidth={2} className="text-primary" />
+                  </button>
+
+                  {/* Certificate Image */}
+                  <div className="relative bg-white shadow-md overflow-hidden">
+                    <img
+                      src={certificates[mobileCertIndex]?.image}
+                      alt={`Certificate ${mobileCertIndex + 1}`}
+                      className="w-full h-64 object-contain p-4"
+                    />
+                    {(certificates[mobileCertIndex]?.label_zh || certificates[mobileCertIndex]?.label_en) && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                        <p className="text-white text-sm font-medium">
+                          {language === 'zh'
+                            ? (certificates[mobileCertIndex]?.label_zh || certificates[mobileCertIndex]?.label_en)
+                            : (certificates[mobileCertIndex]?.label_en || certificates[mobileCertIndex]?.label_zh)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Arrow */}
+                  <button
+                    onClick={() => setMobileCertIndex(prev => prev === certificates.length - 1 ? 0 : prev + 1)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 flex items-center justify-center"
+                    aria-label="Next certificate"
+                  >
+                    <ChevronRight size={28} strokeWidth={2} className="text-primary" />
+                  </button>
+
+                  {/* Dots Indicator */}
+                  <div className="flex justify-center gap-1.5 mt-4">
+                    {certificates.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setMobileCertIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === mobileCertIndex ? 'bg-primary w-4' : 'bg-neutral-300'
+                        }`}
+                        aria-label={`Go to certificate ${index + 1}`}
                       />
-                      {/* 移动端也支持点击显示文字 */}
-                      {(cert.label_zh || cert.label_en) && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                          <p className="text-white text-sm font-medium">
-                            {language === 'zh' ? (cert.label_zh || cert.label_en) : (cert.label_en || cert.label_zh)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </>
