@@ -207,7 +207,7 @@ export class ErpProductSyncService {
         this.logger.log(`[产品同步] 全量同步，从基准时间 ${sinceDate.toISOString()} 开始（不同步历史数据）`);
       }
 
-      // 1. 查询 ERP 产品数据 - 必须有 MARK_NO 且在基准时间之后
+      // 1. 查询 ERP 产品数据 - 必须有 MARK_NO 且在基准时间之后，且品号以C开头（成品）
       // 使用 CAST 转换 varchar 到 nvarchar 并指定中文排序规则解决编码问题
       const sinceDateStr = sinceDate.toISOString().split('T')[0];
       const productQuery = `
@@ -219,6 +219,7 @@ export class ErpProductSyncService {
         FROM PRDT
         WHERE MARK_NO IS NOT NULL AND MARK_NO <> ''
           AND RECORD_DD >= '${sinceDateStr}'
+          AND PRD_NO LIKE 'C%'
       `;
 
       const productsResult = await pool.request().query<ErpProduct>(productQuery);
@@ -557,7 +558,7 @@ export class ErpProductSyncService {
       const baselineTime = await this.getSyncBaselineTime();
       const sinceDateStr = baselineTime.toISOString().split('T')[0];
 
-      // 查询 ERP 产品数据
+      // 查询 ERP 产品数据（只查询C开头的成品）
       const productQuery = `
         SELECT PRD_NO,
                CAST(NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS NAME,
@@ -567,6 +568,7 @@ export class ErpProductSyncService {
         FROM PRDT
         WHERE MARK_NO IS NOT NULL AND MARK_NO <> ''
           AND RECORD_DD >= '${sinceDateStr}'
+          AND PRD_NO LIKE 'C%'
       `;
 
       const productsResult = await pool.request().query<{
@@ -750,7 +752,7 @@ export class ErpProductSyncService {
       const baselineTime = await this.getSyncBaselineTime();
       const sinceDateStr = baselineTime.toISOString().split('T')[0];
 
-      // 查询 ERP 产品数据
+      // 查询 ERP 产品数据（只查询C开头的成品）
       const productQuery = `
         SELECT PRD_NO,
                CAST(NAME COLLATE Chinese_PRC_CI_AS AS NVARCHAR(200)) AS NAME,
@@ -760,6 +762,7 @@ export class ErpProductSyncService {
         FROM PRDT
         WHERE MARK_NO IS NOT NULL AND MARK_NO <> ''
           AND RECORD_DD >= '${sinceDateStr}'
+          AND PRD_NO LIKE 'C%'
       `;
 
       const productsResult = await pool.request().query<{

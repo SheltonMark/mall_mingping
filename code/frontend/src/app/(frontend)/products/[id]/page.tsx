@@ -13,6 +13,14 @@ import DatePicker from '@/components/common/DatePicker'
 
 type ViewMode = 'gallery' | 'video' | 'params'
 
+// 格式化货品规格：在字母+冒号（如A:、B:、C:）前添加换行
+const formatSpecification = (spec: string | null | undefined): string => {
+  if (!spec) return ''
+  // 在 A: B: C: 等模式前添加换行（支持英文冒号:和中文冒号：）
+  // 但不在字符串开头添加换行
+  return spec.replace(/\s+([A-Z][：:])/gi, '\n$1').trim()
+}
+
 // 购物车商品详情表单数据
 interface CartItemFormData {
   productCategory: 'new' | 'old' | 'sample'
@@ -466,7 +474,7 @@ export default function ProductDetailPage() {
                           <div className="grid grid-cols-[120px_1fr] gap-3 border-b pb-3">
                             <span className="font-semibold">{language === 'zh' ? '货品规格' : 'Specifications'}:</span>
                             <div className="whitespace-pre-line">
-                              {language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification)}
+                              {formatSpecification(language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification))}
                             </div>
                           </div>
                         )}
@@ -617,7 +625,7 @@ export default function ProductDetailPage() {
                   {language === 'zh' ? '货品规格' : 'Product Specification'}
                 </h3>
                 <div className="text-sm lg:text-base text-gray-700 whitespace-pre-line leading-relaxed">
-                  {language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification)}
+                  {formatSpecification(language === 'zh' ? selectedSku.specification : (selectedSku.specificationEn || selectedSku.specification))}
                 </div>
               </div>
             )}
