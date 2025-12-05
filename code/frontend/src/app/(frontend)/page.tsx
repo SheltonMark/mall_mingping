@@ -24,7 +24,35 @@ export default function HomePage() {
   const [certificates, setCertificates] = useState<Array<{image: string, label_zh?: string, label_en?: string}>>([])
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
   const [mobileCertIndex, setMobileCertIndex] = useState(0)
-  
+  const [touchStartX, setTouchStartX] = useState(0)
+  const [touchEndX, setTouchEndX] = useState(0)
+
+  // Hero轮播图触摸滑动处理
+  const handleHeroTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX)
+  }
+
+  const handleHeroTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX)
+  }
+
+  const handleHeroTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return
+    const distance = touchStartX - touchEndX
+    const minSwipeDistance = 50
+
+    if (Math.abs(distance) > minSwipeDistance) {
+      if (distance > 0) {
+        // 向左滑动 - 下一张
+        setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length)
+      } else {
+        // 向右滑动 - 上一张
+        setCurrentHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))
+      }
+    }
+    setTouchStartX(0)
+    setTouchEndX(0)
+  }
 
   // 已取消证书自动轮播
 
@@ -151,12 +179,15 @@ export default function HomePage() {
   return (
     <div className="flex flex-col bg-white">
       {/* Hero Section - O-Cedar style */}
-      <div className="mt-32 md:mt-36 pb-12 md:pb-16 bg-white">
-        <div className="mx-auto px-20 md:px-32 lg:px-40 max-w-[1800px]">
+      <div className="mt-32 md:mt-36 pb-8 md:pb-16 bg-white">
+        <div className="mx-auto px-0 md:px-32 lg:px-40 max-w-[1800px]">
           <section
-            className="relative h-[480px] md:h-[580px] lg:h-[680px] overflow-hidden"
+            className="relative aspect-[2/1] md:aspect-auto md:h-[580px] lg:h-[680px] overflow-hidden"
             onMouseEnter={() => setIsHeroHovering(true)}
             onMouseLeave={() => setIsHeroHovering(false)}
+            onTouchStart={handleHeroTouchStart}
+            onTouchMove={handleHeroTouchMove}
+            onTouchEnd={handleHeroTouchEnd}
           >
             {/* Hero Carousel Images */}
             {heroImages.map((image, index) => (
@@ -194,30 +225,30 @@ export default function HomePage() {
 
             {/* Text content - Left aligned */}
             <div className="absolute inset-0 flex items-center">
-              <div className="max-w-full mx-auto px-8 md:px-12 w-full">
+              <div className="max-w-full mx-auto px-4 sm:px-8 md:px-12 w-full">
                 <div className="max-w-2xl">
                   {/* Main Title */}
-                  <h1 className="text-white mb-4 animate-fade-in-up" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+                  <h1 className="text-white mb-2 sm:mb-4 animate-fade-in-up" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
                     {t('home.hero.title').includes('Future') ? (
-                      <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+                      <span className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-light leading-tight">
                         Excellence in Every Clean
                       </span>
                     ) : (
-                      <span className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight">
+                      <span className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-light leading-tight">
                         卓越清洁 始于细节
                       </span>
                     )}
                   </h1>
 
                   {/* Subtitle */}
-                  <p className="text-white/90 text-base md:text-lg animate-fade-in-up animation-delay-200 font-normal mb-2 leading-relaxed">
+                  <p className="text-white/90 text-sm sm:text-base md:text-lg animate-fade-in-up animation-delay-200 font-normal mb-1 sm:mb-2 leading-relaxed">
                     {t('home.hero.title').includes('Future')
                       ? 'Premium cleaning solutions for modern living'
                       : '为现代生活而生的高端清洁方案'}
                   </p>
 
                   {/* Terms text */}
-                  <p className="text-white/70 text-sm mb-8 animate-fade-in-up animation-delay-400">
+                  <p className="text-white/70 text-xs sm:text-sm mb-4 sm:mb-8 animate-fade-in-up animation-delay-400">
                     {t('home.hero.title').includes('Future')
                       ? 'Discover our premium collection'
                       : '探索我们的高端系列'}
@@ -226,7 +257,7 @@ export default function HomePage() {
                   {/* BUY NOW Button - Inside Hero */}
                   <Link
                     href="/products"
-                    className="group relative inline-flex items-center justify-center px-8 py-2.5 sm:px-10 sm:py-3 bg-primary text-white animate-fade-in-up animation-delay-600 font-semibold text-sm sm:text-base tracking-wider uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_20px_rgba(189,183,107,0.6)]"
+                    className="group relative inline-flex items-center justify-center px-6 py-2 sm:px-10 sm:py-3 bg-primary text-white animate-fade-in-up animation-delay-600 font-semibold text-xs sm:text-base tracking-wider uppercase rounded-md overflow-hidden hover:-translate-y-0.5 transition-all duration-300 hover:shadow-[0_8px_20px_rgba(189,183,107,0.6)]"
                     style={{ fontFamily: 'Arial, "Helvetica Neue", Helvetica, sans-serif', letterSpacing: '0.1em' }}
                   >
                     <span className="relative z-10">
@@ -517,23 +548,23 @@ export default function HomePage() {
 
       {/* Stats Section - 数字化展示 */}
       <section
-        className="py-24 px-6 border-t border-b border-gold-200 relative overflow-hidden"
+        className="py-12 md:py-24 px-6 border-t border-b border-gold-200 relative overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, #FFFCF5 0%, #FFF9E6 50%, #FFFCF5 100%)',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif'
         }}
       >
         <div className="max-w-[1200px] mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12">
             {/* Stat 1 */}
             <div className="text-center">
               <div
-                className="text-6xl font-semibold text-primary mb-4 leading-none"
+                className="text-4xl md:text-6xl font-semibold text-primary mb-2 md:mb-4 leading-none"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 15+
               </div>
-              <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
+              <div className="text-xs md:text-sm text-neutral-600 tracking-[0.1em] uppercase">
                 {language === 'zh' ? '年卓越品质' : 'Years Excellence'}
               </div>
             </div>
@@ -541,12 +572,12 @@ export default function HomePage() {
             {/* Stat 2 */}
             <div className="text-center">
               <div
-                className="text-6xl font-semibold text-primary mb-4 leading-none"
+                className="text-4xl md:text-6xl font-semibold text-primary mb-2 md:mb-4 leading-none"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 500+
               </div>
-              <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
+              <div className="text-xs md:text-sm text-neutral-600 tracking-[0.1em] uppercase">
                 {language === 'zh' ? '全球客户' : 'Global Clients'}
               </div>
             </div>
@@ -554,12 +585,12 @@ export default function HomePage() {
             {/* Stat 3 */}
             <div className="text-center">
               <div
-                className="text-6xl font-semibold text-primary mb-4 leading-none"
+                className="text-4xl md:text-6xl font-semibold text-primary mb-2 md:mb-4 leading-none"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 200+
               </div>
-              <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
+              <div className="text-xs md:text-sm text-neutral-600 tracking-[0.1em] uppercase">
                 {language === 'zh' ? '优质产品' : 'Premium Products'}
               </div>
             </div>
@@ -567,12 +598,12 @@ export default function HomePage() {
             {/* Stat 4 */}
             <div className="text-center">
               <div
-                className="text-6xl font-semibold text-primary mb-4 leading-none"
+                className="text-4xl md:text-6xl font-semibold text-primary mb-2 md:mb-4 leading-none"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}
               >
                 99%
               </div>
-              <div className="text-sm text-neutral-600 tracking-[0.1em] uppercase">
+              <div className="text-xs md:text-sm text-neutral-600 tracking-[0.1em] uppercase">
                 {language === 'zh' ? '客户满意度' : 'Satisfaction'}
               </div>
             </div>
@@ -581,7 +612,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section - Begin Your Journey */}
-      <section className="py-32 px-6 bg-neutral-900 text-white text-center relative overflow-hidden" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
+      <section className="py-12 md:py-20 px-6 bg-neutral-900 text-white text-center relative overflow-hidden" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
         {/* Pulsing light effect */}
         <div
           className="absolute top-1/2 left-1/2 w-[800px] h-[800px] -translate-x-1/2 -translate-y-1/2"
@@ -593,17 +624,17 @@ export default function HomePage() {
 
         <div className="max-w-[800px] mx-auto relative z-10">
           <h2
-            className="text-5xl md:text-7xl font-light text-white mb-8"
+            className="text-2xl sm:text-3xl md:text-5xl font-light text-white mb-3 md:mb-6"
             style={{ fontFamily: 'var(--font-display)', lineHeight: 1.2 }}
           >
             {language === 'zh' ? '开启您的旅程' : 'Begin Your Journey'}
           </h2>
-          <p className="text-xl text-neutral-500 mb-12 leading-relaxed">
+          <p className="text-sm sm:text-base md:text-xl text-neutral-500 mb-6 md:mb-8 leading-relaxed">
             {language === 'zh' ? '与我们一起开启卓越清洁体验的新篇章' : 'Join us to start a new chapter of excellent cleaning experience'}
           </p>
           <Link
             href="/about"
-            className="relative inline-flex items-center gap-3 px-12 py-5 bg-primary text-neutral-900 rounded-full text-lg font-bold tracking-[0.05em] uppercase overflow-hidden group hover:bg-gold-400 hover:-translate-y-1 transition-all duration-300"
+            className="relative inline-flex items-center gap-2 md:gap-3 px-8 py-3 md:px-12 md:py-5 bg-primary text-neutral-900 rounded-full text-sm md:text-lg font-bold tracking-[0.05em] uppercase overflow-hidden group hover:bg-gold-400 hover:-translate-y-1 transition-all duration-300"
           >
             <span className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:left-[100%] transition-all duration-600"></span>
             <span className="relative z-10">{language === 'zh' ? '开始对话' : 'Start Conversation'}</span>

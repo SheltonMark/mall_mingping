@@ -8,7 +8,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useCart, CartItem } from '@/context/CartContext'
 import { useToast } from '@/components/common/ToastContainer'
 import { productApi, type ProductGroup, type ProductSku } from '@/lib/publicApi'
-import IOSPicker from '@/components/common/IOSPicker'
+import AttributeDrawer from '@/components/common/AttributeDrawer'
 import DatePicker from '@/components/common/DatePicker'
 
 type ViewMode = 'gallery' | 'video' | 'params'
@@ -622,18 +622,19 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* 附加属性选择器 (iOS风格) */}
+            {/* 附加属性选择器 (抽屉式) */}
             {selectedSku && optionalAttributes.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-base lg:text-lg font-bold text-gray-900">
                   {language === 'zh' ? '附加属性（潘通色号）' : 'Optional Attributes (Pantone Number)'}
                 </h3>
-                <IOSPicker
+                <AttributeDrawer
                   options={optionalAttributes}
                   value={selectedAttributeDisplay}
                   onChange={handleAttributeSelect}
-                  placeholder={language === 'zh' ? '请选择' : 'Please select'}
+                  placeholder={language === 'zh' ? '点击选择附加属性' : 'Click to select attribute'}
                   language={language}
+                  title={language === 'zh' ? '选择附加属性' : 'Select Attribute'}
                 />
               </div>
             )}
