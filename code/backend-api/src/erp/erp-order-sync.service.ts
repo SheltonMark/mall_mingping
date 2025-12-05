@@ -389,7 +389,7 @@ export class ErpOrderSyncService {
             @AMTN_INT, @USR, GETDATE(), 'F',
             @EST_DD, '1', '${syncConfig.defaultWarehouse}', '1', @REM,
             @USE_DEP, @CUR_ID, @EXC_RTO, @PAY_DAYS, @CHK_DAYS, @CHK_MAN,
-            1, @OS_DD
+            1, GETDATE()
           )
         `);
 
