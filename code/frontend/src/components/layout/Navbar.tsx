@@ -111,23 +111,23 @@ export default function Navbar() {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2 md:gap-6">
+          <div className="flex items-center gap-1.5 md:gap-6">
             {/* Mobile Menu Button - Only visible on mobile */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 hover:bg-gold-50 transition-all duration-250"
+              className="md:hidden flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100 hover:bg-gold-50 transition-all duration-250"
               aria-label="Toggle menu"
             >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
 
-            {/* Language Switcher Button - Hidden on mobile */}
+            {/* Language Switcher Button - Show on all devices */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
-              className="hidden md:flex items-center gap-2 px-4 py-2 bg-transparent border border-neutral-300 rounded-full text-xs font-semibold tracking-[0.05em] text-neutral-600 hover:border-primary hover:text-primary hover:bg-gold-50 transition-all duration-250"
+              className="flex items-center justify-center w-8 h-8 md:w-auto md:h-auto md:gap-2 md:px-4 md:py-2 bg-neutral-100 md:bg-transparent border-0 md:border md:border-neutral-300 rounded-full text-xs font-semibold tracking-[0.05em] text-neutral-600 hover:border-primary hover:text-primary hover:bg-gold-50 transition-all duration-250"
             >
-              <Globe size={14} />
-              <span>{language === 'en' ? '中文' : 'EN'}</span>
+              <Globe size={16} className="md:w-[14px] md:h-[14px]" />
+              <span className="hidden md:inline">{language === 'en' ? '中文' : 'EN'}</span>
             </button>
 
             {/* User Button with Dropdown */}
@@ -135,9 +135,9 @@ export default function Navbar() {
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 onBlur={() => setTimeout(() => setIsUserMenuOpen(false), 200)}
-                className="flex items-center justify-center w-9 h-9 rounded-full bg-neutral-100 border-2 border-transparent hover:border-primary hover:bg-gold-50 hover:-translate-y-0.5 transition-all duration-250"
+                className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full bg-neutral-100 border-2 border-transparent hover:border-primary hover:bg-gold-50 hover:-translate-y-0.5 transition-all duration-250"
               >
-                <User className="text-neutral-600 hover:text-primary transition-colors" size={18} />
+                <User className="text-neutral-600 hover:text-primary transition-colors" size={16} />
               </button>
 
               {/* Dropdown Menu */}
@@ -187,12 +187,12 @@ export default function Navbar() {
             {isAuthenticated ? (
               <Link
                 href="/cart"
-                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
+                className="relative flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
                 style={{ boxShadow: 'var(--shadow-medium)' }}
               >
-                <ShoppingCart className="text-white" size={18} />
+                <ShoppingCart className="text-white" size={16} />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-[18px] h-[18px] bg-red-500 text-white rounded-full text-[0.625rem] font-bold border-2 border-white">
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-[16px] h-[16px] md:w-[18px] md:h-[18px] bg-red-500 text-white rounded-full text-[0.5rem] md:text-[0.625rem] font-bold border-2 border-white">
                     {totalItems}
                   </span>
                 )}
@@ -205,10 +205,10 @@ export default function Navbar() {
                   sessionStorage.setItem('redirect_after_login', pathname)
                   setTimeout(() => router.push('/login'), 1500)
                 }}
-                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
+                className="relative flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full bg-neutral-900 border-2 border-neutral-900 hover:bg-primary hover:border-primary hover:-translate-y-0.5 transition-all duration-250"
                 style={{ boxShadow: 'var(--shadow-medium)' }}
               >
-                <ShoppingCart className="text-white" size={18} />
+                <ShoppingCart className="text-white" size={16} />
               </button>
             )}
           </div>
@@ -253,18 +253,6 @@ export default function Navbar() {
               >
                 {language === 'zh' ? '关于我们' : 'About'}
               </Link>
-
-              {/* Language Switcher in Mobile Menu */}
-              <button
-                onClick={() => {
-                  setLanguage(language === 'en' ? 'zh' : 'en')
-                  setIsMobileMenuOpen(false)
-                }}
-                className="mx-6 mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-transparent border border-neutral-300 rounded-full text-sm font-semibold text-neutral-600 hover:border-primary hover:text-primary hover:bg-gold-50 transition-all"
-              >
-                <Globe size={16} />
-                <span>{language === 'en' ? '中文' : 'EN'}</span>
-              </button>
             </nav>
           </div>
         )}

@@ -22,7 +22,7 @@ export default function ProductsPage() {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [addedItem, setAddedItem] = useState<string | null>(null)
   const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high'>('newest')
+  const [sortBy, setSortBy] = useState<'newest' | 'name_asc' | 'name_desc'>('newest')
   const [currentPage, setCurrentPage] = useState(1) // 当前页码
   const [showMobileFilters, setShowMobileFilters] = useState(false) // 移动端筛选器显示状态
   const { addItem } = useCart()
@@ -182,16 +182,16 @@ export default function ProductsPage() {
     if (sortBy === 'newest') {
       // 按 displayOrder 降序 (数值越大越新)
       return (b.displayOrder || 0) - (a.displayOrder || 0)
-    } else if (sortBy === 'price_low') {
-      // 价格从低到高
-      const priceA = a.skus?.[0]?.price || 0
-      const priceB = b.skus?.[0]?.price || 0
-      return Number(priceA) - Number(priceB)
-    } else if (sortBy === 'price_high') {
-      // 价格从高到低
-      const priceA = a.skus?.[0]?.price || 0
-      const priceB = b.skus?.[0]?.price || 0
-      return Number(priceB) - Number(priceA)
+    } else if (sortBy === 'name_asc') {
+      // 按名称 A-Z
+      const nameA = (language === 'zh' ? a.groupNameZh : (a.groupNameEn || a.groupNameZh)) || ''
+      const nameB = (language === 'zh' ? b.groupNameZh : (b.groupNameEn || b.groupNameZh)) || ''
+      return nameA.localeCompare(nameB)
+    } else if (sortBy === 'name_desc') {
+      // 按名称 Z-A
+      const nameA = (language === 'zh' ? a.groupNameZh : (a.groupNameEn || a.groupNameZh)) || ''
+      const nameB = (language === 'zh' ? b.groupNameZh : (b.groupNameEn || b.groupNameZh)) || ''
+      return nameB.localeCompare(nameA)
     }
     return 0
   })
@@ -253,7 +253,7 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-white pt-32" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
       <div className="max-w-[1440px] mx-auto px-6 pb-8">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8">
+        <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4 md:mb-8">
           <Link href="/" className="hover:text-primary transition-colors">
             {t('nav.home')}
           </Link>
@@ -265,28 +265,28 @@ export default function ProductsPage() {
           <span className="text-gray-900 font-medium">{t('products.breadcrumb')}</span>
         </nav>
 
-        <div className="flex flex-col md:flex-row gap-12">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-12">
           {/* Mobile Filter Button */}
-          <div className="md:hidden flex justify-end mb-4">
+          <div className="md:hidden flex justify-start mb-2">
             <button
               onClick={() => setShowMobileFilters(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
             >
-              <SlidersHorizontal size={18} />
+              <SlidersHorizontal size={16} />
               <span className="text-sm font-medium">{language === 'zh' ? '筛选' : 'Filter'}</span>
             </button>
           </div>
 
           {/* Mobile Filter Sidebar */}
           {showMobileFilters && (
-            <div className="md:hidden fixed inset-0 z-50">
+            <div className="md:hidden fixed inset-0 z-[1001]">
               {/* Backdrop */}
               <div
                 className="absolute inset-0 bg-black/50"
                 onClick={() => setShowMobileFilters(false)}
               />
               {/* Sidebar */}
-              <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto">
+              <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-xl overflow-y-auto pt-24">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-gray-900">{t('products.filters')}</h3>
@@ -305,12 +305,12 @@ export default function ProductsPage() {
                       <CustomSelect
                         options={[
                           { value: 'newest', label: t('products.sort_new') },
-                          { value: 'price_low', label: t('products.sort_price_low') },
-                          { value: 'price_high', label: t('products.sort_price_high') },
+                          { value: 'name_asc', label: language === 'zh' ? '名称 A-Z' : 'Name A-Z' },
+                          { value: 'name_desc', label: language === 'zh' ? '名称 Z-A' : 'Name Z-A' },
                         ]}
                         value={sortBy}
                         onChange={(value) => {
-                          setSortBy(value as 'newest' | 'price_low' | 'price_high')
+                          setSortBy(value as 'newest' | 'name_asc' | 'name_desc')
                           setShowMobileFilters(false)
                         }}
                         className="w-full"
@@ -349,27 +349,27 @@ export default function ProductsPage() {
           {/* Filtering Sidebar - Desktop Only */}
           <aside className="hidden md:block w-56 lg:w-64 shrink-0">
             <div className="sticky top-32">
-              <h3 className="text-lg font-bold mb-8 text-gray-900">{t('products.filters')}</h3>
+              <h3 className="text-xl font-bold mb-8 text-gray-900">{t('products.filters')}</h3>
               <div className="space-y-14">
                 {/* Sort Dropdown */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{language === 'zh' ? '排序' : 'Sort'}</h4>
+                  <h4 className="font-semibold mb-4 text-gray-900 text-base">{language === 'zh' ? '排序' : 'Sort'}</h4>
                   <CustomSelect
                     options={[
                       { value: 'newest', label: t('products.sort_new') },
-                      { value: 'price_low', label: t('products.sort_price_low') },
-                      { value: 'price_high', label: t('products.sort_price_high') },
+                      { value: 'name_asc', label: language === 'zh' ? '名称 A-Z' : 'Name A-Z' },
+                      { value: 'name_desc', label: language === 'zh' ? '名称 Z-A' : 'Name Z-A' },
                     ]}
                     value={sortBy}
-                    onChange={(value) => setSortBy(value as 'newest' | 'price_low' | 'price_high')}
+                    onChange={(value) => setSortBy(value as 'newest' | 'name_asc' | 'name_desc')}
                     className="w-full"
                   />
                 </div>
 
                 {/* Categories */}
                 <div>
-                  <h4 className="font-semibold mb-4 text-gray-900">{t('products.categories')}</h4>
-                  <ul className="space-y-4 text-sm">
+                  <h4 className="font-semibold mb-4 text-gray-900 text-base">{t('products.categories')}</h4>
+                  <ul className="space-y-4 text-base">
                     {categories.map((category) => (
                       <li key={category.id}>
                         <button
