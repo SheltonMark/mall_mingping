@@ -34,6 +34,16 @@ function extractChineseAttribute(additionalAttributes: string | null): string {
 }
 
 /**
+ * 将日期转换为午夜时间（00:00:00）
+ * ERP 系统要求订单日期必须是午夜时间才能在销售订单明细查询中正确显示
+ */
+function toMidnight(date: Date): Date {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+/**
  * 按字节长度截取字符串（用于 GBK 编码的 varchar 字段）
  * 中文字符占 2 字节，英文字符占 1 字节
  */
@@ -342,10 +352,12 @@ export class ErpOrderSyncService {
 
       // 7. 写入主表 MF_POS
       // 使用sql.NVarChar类型，SQL Server会自动转换到varchar字段
+      // OS_DD 必须使用午夜时间，否则 ERP 销售订单明细查询无法显示
+      const orderDateMidnight = toMidnight(order.orderDate);
       const mfPosRequest = new sql.Request(transaction);
       await mfPosRequest
         .input('OS_NO', sql.NVarChar(20), erpOrderNo)
-        .input('OS_DD', sql.DateTime, order.orderDate)
+        .input('OS_DD', sql.DateTime, orderDateMidnight)
         .input('CUS_NO', sql.NVarChar(12), erpCustomerNo)
         .input('SAL_NO', sql.NVarChar(12), erpSalespersonNo)
         .input(
@@ -457,7 +469,7 @@ export class ErpOrderSyncService {
           .input('EST_DD', sql.DateTime, item.expectedDeliveryDate || null)
           .input('REM', sql.NVarChar(1000), truncateByBytes(item.summary || '', 1000))
           .input('BZ_KND', sql.NVarChar(20), truncateByBytes(item.packagingType || '', 20))
-          .input('OS_DD', sql.DateTime, order.orderDate).query(`
+          .input('OS_DD', sql.DateTime, orderDateMidnight).query(`
             INSERT INTO TF_POS (
               OS_ID, OS_NO, ITM, PRD_NO, PRD_NAME, PRD_MARK,
               QTY, UP, AMT, AMTN, TAX, TAX_RTO,
