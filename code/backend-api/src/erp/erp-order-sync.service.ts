@@ -382,12 +382,14 @@ export class ErpOrderSyncService {
             OS_ID, OS_NO, OS_DD, CUS_NO, SAL_NO,
             AMTN_INT, USR, RECORD_DD, CLS_ID,
             EST_DD, SEND_MTH, SEND_WH, PAY_MTH, REM,
-            USE_DEP, CUR_ID, EXC_RTO, PAY_DAYS, CHK_DAYS, CHK_MAN
+            USE_DEP, CUR_ID, EXC_RTO, PAY_DAYS, CHK_DAYS, CHK_MAN,
+            TAX_ID
           ) VALUES (
             'SO', @OS_NO, @OS_DD, @CUS_NO, @SAL_NO,
             @AMTN_INT, @USR, GETDATE(), 'F',
             @EST_DD, '1', '${syncConfig.defaultWarehouse}', '1', @REM,
-            @USE_DEP, @CUR_ID, @EXC_RTO, @PAY_DAYS, @CHK_DAYS, @CHK_MAN
+            @USE_DEP, @CUR_ID, @EXC_RTO, @PAY_DAYS, @CHK_DAYS, @CHK_MAN,
+            1
           )
         `);
 
