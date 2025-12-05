@@ -39,7 +39,7 @@ export default function Footer() {
             <img
               src="/images/logo-light.svg"
               alt="LEMOPX"
-              className="h-10 w-auto"
+              className="h-14 w-auto"
             />
           </Link>
           <p className="text-neutral-500 text-xs leading-relaxed">
@@ -294,7 +294,7 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <p className="text-neutral-600 text-sm text-center space-x-2">
+          <p className="text-neutral-600 text-[10px] md:text-xs text-center space-x-2">
             <span>© 2025 LEMOPX. All rights reserved.</span>
             <span>|</span>
             <a
