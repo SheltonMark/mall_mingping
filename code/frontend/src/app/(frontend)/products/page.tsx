@@ -252,30 +252,30 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-white pt-32" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif' }}>
       <div className="max-w-[1440px] mx-auto px-6 pb-8">
-        {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4 md:mb-8">
-          <Link href="/" className="hover:text-primary transition-colors">
-            {t('nav.home')}
-          </Link>
-          <span>/</span>
-          <Link href="/products" className="hover:text-primary transition-colors">
-            {t('nav.products')}
-          </Link>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">{t('products.breadcrumb')}</span>
-        </nav>
+        {/* Breadcrumb Navigation + Mobile Filter Button */}
+        <div className="flex items-center justify-between mb-4 md:mb-8">
+          <nav className="flex items-center gap-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-primary transition-colors">
+              {t('nav.home')}
+            </Link>
+            <span>/</span>
+            <Link href="/products" className="hover:text-primary transition-colors">
+              {t('nav.products')}
+            </Link>
+            <span>/</span>
+            <span className="text-gray-900 font-medium">{t('products.breadcrumb')}</span>
+          </nav>
+          {/* Mobile Filter Button - Right aligned */}
+          <button
+            onClick={() => setShowMobileFilters(true)}
+            className="md:hidden flex items-center gap-1.5 px-2.5 py-0.5 bg-gray-100 hover:bg-gray-200 rounded text-sm transition-colors"
+          >
+            <SlidersHorizontal size={14} />
+            <span className="font-medium">{language === 'zh' ? '筛选' : 'Filter'}</span>
+          </button>
+        </div>
 
         <div className="flex flex-col md:flex-row gap-6 md:gap-12">
-          {/* Mobile Filter Button */}
-          <div className="md:hidden flex justify-start mb-2">
-            <button
-              onClick={() => setShowMobileFilters(true)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <SlidersHorizontal size={16} />
-              <span className="text-sm font-medium">{language === 'zh' ? '筛选' : 'Filter'}</span>
-            </button>
-          </div>
 
           {/* Mobile Filter Sidebar */}
           {showMobileFilters && (
