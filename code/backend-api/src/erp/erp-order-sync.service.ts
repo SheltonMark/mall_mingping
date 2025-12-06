@@ -369,7 +369,7 @@ export class ErpOrderSyncService {
         .input(
           'EST_DD',
           sql.DateTime,
-          order.items[0]?.expectedDeliveryDate || null,
+          order.items[0]?.expectedDeliveryDate ? toMidnight(order.items[0].expectedDeliveryDate) : null,
         )
         .input('REM', sql.NVarChar(sql.MAX), JSON.stringify(customParamsJson))
         .input('USE_DEP', sql.NVarChar(10), financeInfo.useDep)
@@ -468,7 +468,7 @@ export class ErpOrderSyncService {
             sql.Numeric(28, 8),
             item.volume?.toNumber() || 0,
           )
-          .input('EST_DD', sql.DateTime, item.expectedDeliveryDate || null)
+          .input('EST_DD', sql.DateTime, item.expectedDeliveryDate ? toMidnight(item.expectedDeliveryDate) : null)
           .input('REM', sql.NVarChar(1000), truncateByBytes(item.summary || '', 1000))
           .input('BZ_KND', sql.NVarChar(20), truncateByBytes(item.packagingType || '', 20))
           .input('OS_DD', sql.DateTime, orderDateMidnight).query(`
