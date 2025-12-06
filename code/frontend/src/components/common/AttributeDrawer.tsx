@@ -182,7 +182,7 @@ export default function AttributeDrawer({
           <button
             onClick={handleConfirm}
             disabled={!selectedAttr}
-            className="w-full py-4 bg-primary text-white rounded-full font-semibold hover:bg-primary-dark transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-primary text-white rounded-none font-semibold hover:bg-primary-dark transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {language === 'zh' ? '确认选择' : 'Confirm'}
           </button>
