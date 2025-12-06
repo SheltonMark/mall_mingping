@@ -387,7 +387,7 @@ export class ErpOrderSyncService {
           ) VALUES (
             'SO', @OS_NO, @OS_DD, @CUS_NO, @SAL_NO,
             @AMTN_INT, @USR, GETDATE(), 'F',
-            @EST_DD, '1', '${syncConfig.defaultWarehouse}', '1', @REM,
+            @EST_DD, '1', '${syncConfig.defaultSendWarehouse}', '1', @REM,
             @USE_DEP, @CUR_ID, @EXC_RTO, @PAY_DAYS, @CHK_DAYS, @CHK_MAN,
             1, GETDATE()
           )
