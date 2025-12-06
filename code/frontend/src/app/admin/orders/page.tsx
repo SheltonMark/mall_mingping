@@ -766,10 +766,10 @@ export default function AdminOrdersPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed">
+            <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="w-10 px-2 py-3 text-left">
+                  <th className="w-10 px-3 py-3 text-left">
                     <input
                       type="checkbox"
                       checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
@@ -777,28 +777,28 @@ export default function AdminOrdersPage() {
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                   </th>
-                  <th className="w-44 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     订单号
                   </th>
-                  <th className="w-24 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     状态
                   </th>
-                  <th className="w-28 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     业务员
                   </th>
-                  <th className="w-40 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     客户
                   </th>
-                  <th className="w-28 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     订单日期
                   </th>
-                  <th className="w-16 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     类型
                   </th>
-                  <th className="w-28 px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     总金额
                   </th>
-                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     操作
                   </th>
                 </tr>
@@ -809,7 +809,7 @@ export default function AdminOrdersPage() {
                   const StatusIcon = statusConfig.icon;
                   return (
                   <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrderIds.has(order.id) ? 'bg-blue-50' : ''}`}>
-                    <td className="px-2 py-3 whitespace-nowrap">
+                    <td className="px-3 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={selectedOrderIds.has(order.id)}
@@ -817,43 +817,43 @@ export default function AdminOrdersPage() {
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                     </td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
-                        <Hash className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className="truncate">{order.orderNumber}</span>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                        <Hash className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span>{order.orderNumber}</span>
                       </div>
                       {order.erpOrderNo && (
-                        <div className="text-xs text-green-600 mt-0.5 truncate">
+                        <div className="text-xs text-green-600 mt-1">
                           ERP: {order.erpOrderNo}
                         </div>
                       )}
                     </td>
-                    <td className="px-2 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
-                        <StatusIcon size={11} />
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${statusConfig.bgColor} ${statusConfig.color}`}>
+                        <StatusIcon size={12} />
                         {statusConfig.label}
                       </span>
                     </td>
-                    <td className="px-2 py-3">
-                      <div className="text-sm font-medium text-gray-900 truncate">{order.salesperson?.chineseName || '-'}</div>
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-gray-900">{order.salesperson?.chineseName || '-'}</div>
                       <div className="text-xs text-gray-500">{order.salesperson?.accountId}</div>
                     </td>
-                    <td className="px-2 py-3">
-                      <div className="text-sm text-gray-900 truncate" title={order.customer?.name || order.erpCustomer?.name || '-'}>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900" title={order.customer?.name || order.erpCustomer?.name || '-'}>
                         {order.customer?.name || order.erpCustomer?.name || '-'}
                       </div>
                       {order.erpCustomer?.cusNo && (
                         <div className="text-xs text-gray-500">{order.erpCustomer.cusNo}</div>
                       )}
                     </td>
-                    <td className="px-2 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                        <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="w-4 h-4 text-gray-400" />
                         {new Date(order.orderDate).toLocaleDateString('zh-CN')}
                       </div>
                     </td>
-                    <td className="px-2 py-3 whitespace-nowrap">
-                      <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs font-medium rounded ${
                         order.orderType === 'FORMAL'
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-purple-100 text-purple-800'
@@ -861,34 +861,34 @@ export default function AdminOrdersPage() {
                         {order.orderType === 'FORMAL' ? '销售' : '报价'}
                       </span>
                     </td>
-                    <td className="px-2 py-3 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm font-semibold text-gray-900">
                         ¥{formatAmount(order.totalAmount)}
                       </div>
                     </td>
-                    <td className="px-2 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-0.5">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => viewOrderDetail(order.id)}
                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                           title="查看详情"
                         >
-                          <Eye size={15} />
+                          <Eye size={16} />
                         </button>
                         <button
                           onClick={() => handleExport(order.id)}
                           className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
                           title="导出Excel"
                         >
-                          <Download size={15} />
+                          <Download size={16} />
                         </button>
                         {order.status === 'PENDING' && (
                           <button
                             onClick={() => openReviewModal(order)}
-                            className="flex items-center gap-0.5 px-1.5 py-1 text-xs text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
                             title="审核订单"
                           >
-                            <CheckCircle size={13} />
+                            <CheckCircle size={14} />
                             审核
                           </button>
                         )}
@@ -896,10 +896,10 @@ export default function AdminOrdersPage() {
                           <button
                             onClick={() => handleSyncToErp(order.id)}
                             disabled={reviewLoading}
-                            className="flex items-center gap-0.5 px-1.5 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
                             title={order.status === 'SYNC_FAILED' ? '重新同步ERP' : '同步到ERP'}
                           >
-                            {order.status === 'SYNC_FAILED' ? <RefreshCw size={13} /> : <Upload size={13} />}
+                            {order.status === 'SYNC_FAILED' ? <RefreshCw size={14} /> : <Upload size={14} />}
                             {order.status === 'SYNC_FAILED' ? '重试' : '同步'}
                           </button>
                         )}
