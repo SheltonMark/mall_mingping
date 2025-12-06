@@ -374,8 +374,8 @@ export default function ProductDetailPage() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* 左侧: 图片/视频/参数展示区 */}
           <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
-            {/* 主显示区域 - 响应式正方形: 移动端全宽, 桌面端600px */}
-            <div className="relative w-full max-w-[600px] aspect-square bg-gray-100 overflow-hidden border border-gray-200">
+            {/* 主显示区域 - 响应式正方形: 移动端居中, 桌面端靠左 */}
+            <div className="relative w-full max-w-[600px] mx-auto lg:mx-0 aspect-square bg-gray-100 overflow-hidden border border-gray-200">
               {viewMode === 'gallery' && (
                 <img
                   src={currentImage}
@@ -478,7 +478,7 @@ export default function ProductDetailPage() {
             {/* 5张小图总宽约591px,<5张时自动居中左右留白 */}
             {/* 缩略图 - 移动端更小 */}
             {images.length >= 2 && (
-              <div className="w-full max-w-[600px] flex justify-start">
+              <div className="w-full max-w-[600px] mx-auto lg:mx-0 flex justify-center">
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   {images.map((img, index) => (
                     <button
@@ -500,8 +500,8 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* 视图切换按钮 - 移动端更紧凑 */}
-            <div className="w-full max-w-[600px] flex gap-2 md:gap-4 justify-start pt-2">
+            {/* 视图切换按钮 - 移动端居中, 桌面端相对主图居中 */}
+            <div className="w-full max-w-[600px] mx-auto lg:mx-0 flex gap-2 md:gap-4 justify-center pt-2">
               <button
                 onClick={() => setViewMode('gallery')}
                 className={`flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all text-sm md:text-base ${
