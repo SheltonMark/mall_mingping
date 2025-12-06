@@ -135,7 +135,7 @@ export default function AttributeDrawer({
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 placeholder={language === 'zh' ? '搜索属性...' : 'Search attributes...'}
-                className="w-full pl-12 pr-4 py-3 bg-gray-100 border-0 rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-base"
+                className="w-full pl-12 pr-4 py-3 bg-gray-100 border-0 rounded-none focus:outline-none focus:ring-2 focus:ring-primary text-base"
               />
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function AttributeDrawer({
                   <div
                     key={index}
                     onClick={() => handleSelect(attr)}
-                    className={`bg-white rounded-xl p-4 cursor-pointer border-2 transition-all shadow-sm hover:shadow-md ${
+                    className={`bg-white rounded-none p-4 cursor-pointer border-2 transition-all shadow-sm hover:shadow-md ${
                       isSelected
                         ? 'border-primary bg-primary/5'
                         : 'border-transparent hover:border-primary/50'
