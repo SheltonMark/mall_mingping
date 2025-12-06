@@ -283,12 +283,20 @@ export class OrderService {
               contactPerson: true,
             },
           },
+          erpCustomer: {
+            select: {
+              id: true,
+              cusNo: true,
+              name: true,
+              contactPerson: true,
+            },
+          },
           salesperson: {
             select: {
               id: true,
               accountId: true,
               chineseName: true,
-              
+
             },
           },
           items: {
