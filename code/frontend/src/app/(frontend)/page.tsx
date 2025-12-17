@@ -26,6 +26,8 @@ export default function HomePage() {
   const [mobileCertIndex, setMobileCertIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState(0)
   const [touchEndX, setTouchEndX] = useState(0)
+  const [certTouchStartX, setCertTouchStartX] = useState(0)
+  const [certTouchEndX, setCertTouchEndX] = useState(0)
 
   // Hero轮播图触摸滑动处理
   const handleHeroTouchStart = (e: React.TouchEvent) => {
@@ -52,6 +54,33 @@ export default function HomePage() {
     }
     setTouchStartX(0)
     setTouchEndX(0)
+  }
+
+  // 证书模块触摸滑动处理
+  const handleCertTouchStart = (e: React.TouchEvent) => {
+    setCertTouchStartX(e.targetTouches[0].clientX)
+  }
+
+  const handleCertTouchMove = (e: React.TouchEvent) => {
+    setCertTouchEndX(e.targetTouches[0].clientX)
+  }
+
+  const handleCertTouchEnd = () => {
+    if (!certTouchStartX || !certTouchEndX) return
+    const distance = certTouchStartX - certTouchEndX
+    const minSwipeDistance = 50
+
+    if (Math.abs(distance) > minSwipeDistance && certificates.length > 0) {
+      if (distance > 0) {
+        // 向左滑动 - 下一张
+        setMobileCertIndex((prev) => (prev + 1) % certificates.length)
+      } else {
+        // 向右滑动 - 上一张
+        setMobileCertIndex((prev) => (prev === 0 ? certificates.length - 1 : prev - 1))
+      }
+    }
+    setCertTouchStartX(0)
+    setCertTouchEndX(0)
   }
 
   // 已取消证书自动轮播
@@ -428,7 +457,12 @@ export default function HomePage() {
 
               {/* Mobile: Single Certificate Carousel */}
               <div className="md:hidden px-6">
-                <div className="relative max-w-sm mx-auto">
+                <div
+                  className="relative max-w-sm mx-auto"
+                  onTouchStart={handleCertTouchStart}
+                  onTouchMove={handleCertTouchMove}
+                  onTouchEnd={handleCertTouchEnd}
+                >
                   {/* Left Arrow */}
                   <button
                     onClick={() => setMobileCertIndex(prev => prev === 0 ? certificates.length - 1 : prev - 1)}
