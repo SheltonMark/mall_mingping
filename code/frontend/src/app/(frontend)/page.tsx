@@ -24,27 +24,37 @@ export default function HomePage() {
   const [certificates, setCertificates] = useState<Array<{image: string, label_zh?: string, label_en?: string}>>([])
   const [currentCertificateIndex, setCurrentCertificateIndex] = useState(0)
   const [mobileCertIndex, setMobileCertIndex] = useState(0)
-  const [touchStartX, setTouchStartX] = useState(0)
-  const [touchEndX, setTouchEndX] = useState(0)
-  const [certTouchStartX, setCertTouchStartX] = useState(0)
-  const [certTouchEndX, setCertTouchEndX] = useState(0)
 
-  // Hero轮播图触摸滑动处理
+  // Hero 跟手滑动状态
+  const [heroTouchStart, setHeroTouchStart] = useState(0)
+  const [heroSwipeOffset, setHeroSwipeOffset] = useState(0)
+  const [heroIsSwiping, setHeroIsSwiping] = useState(false)
+
+  // 证书 跟手滑动状态
+  const [certTouchStart, setCertTouchStart] = useState(0)
+  const [certSwipeOffset, setCertSwipeOffset] = useState(0)
+  const [certIsSwiping, setCertIsSwiping] = useState(false)
+
+  // Hero轮播图触摸滑动处理 - 跟手滑动
   const handleHeroTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.targetTouches[0].clientX)
+    setHeroTouchStart(e.targetTouches[0].clientX)
+    setHeroIsSwiping(true)
+    setHeroSwipeOffset(0)
   }
 
   const handleHeroTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.targetTouches[0].clientX)
+    if (!heroIsSwiping) return
+    const currentX = e.targetTouches[0].clientX
+    const diff = currentX - heroTouchStart
+    setHeroSwipeOffset(diff)
   }
 
   const handleHeroTouchEnd = () => {
-    if (!touchStartX || !touchEndX) return
-    const distance = touchStartX - touchEndX
+    if (!heroIsSwiping) return
     const minSwipeDistance = 50
 
-    if (Math.abs(distance) > minSwipeDistance) {
-      if (distance > 0) {
+    if (Math.abs(heroSwipeOffset) > minSwipeDistance && heroImages.length > 1) {
+      if (heroSwipeOffset < 0) {
         // 向左滑动 - 下一张
         setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length)
       } else {
@@ -52,26 +62,31 @@ export default function HomePage() {
         setCurrentHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))
       }
     }
-    setTouchStartX(0)
-    setTouchEndX(0)
+    setHeroIsSwiping(false)
+    setHeroSwipeOffset(0)
+    setHeroTouchStart(0)
   }
 
-  // 证书模块触摸滑动处理
+  // 证书模块触摸滑动处理 - 跟手滑动
   const handleCertTouchStart = (e: React.TouchEvent) => {
-    setCertTouchStartX(e.targetTouches[0].clientX)
+    setCertTouchStart(e.targetTouches[0].clientX)
+    setCertIsSwiping(true)
+    setCertSwipeOffset(0)
   }
 
   const handleCertTouchMove = (e: React.TouchEvent) => {
-    setCertTouchEndX(e.targetTouches[0].clientX)
+    if (!certIsSwiping) return
+    const currentX = e.targetTouches[0].clientX
+    const diff = currentX - certTouchStart
+    setCertSwipeOffset(diff)
   }
 
   const handleCertTouchEnd = () => {
-    if (!certTouchStartX || !certTouchEndX) return
-    const distance = certTouchStartX - certTouchEndX
+    if (!certIsSwiping) return
     const minSwipeDistance = 50
 
-    if (Math.abs(distance) > minSwipeDistance && certificates.length > 0) {
-      if (distance > 0) {
+    if (Math.abs(certSwipeOffset) > minSwipeDistance && certificates.length > 1) {
+      if (certSwipeOffset < 0) {
         // 向左滑动 - 下一张
         setMobileCertIndex((prev) => (prev + 1) % certificates.length)
       } else {
@@ -79,8 +94,9 @@ export default function HomePage() {
         setMobileCertIndex((prev) => (prev === 0 ? certificates.length - 1 : prev - 1))
       }
     }
-    setCertTouchStartX(0)
-    setCertTouchEndX(0)
+    setCertIsSwiping(false)
+    setCertSwipeOffset(0)
+    setCertTouchStart(0)
   }
 
   // 已取消证书自动轮播
@@ -218,21 +234,29 @@ export default function HomePage() {
             onTouchMove={handleHeroTouchMove}
             onTouchEnd={handleHeroTouchEnd}
           >
-            {/* Hero Carousel Images */}
-            {heroImages.map((image, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ${
-                  index === currentHeroIndex ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                <img
-                  src={image}
-                  className="w-full h-full object-cover"
-                  alt={`Hero ${index + 1}`}
-                />
-              </div>
-            ))}
+            {/* Hero Carousel Images - 跟手滑动效果 */}
+            <div
+              className={`flex h-full ${heroIsSwiping ? '' : 'transition-transform duration-300 ease-out'}`}
+              style={{
+                transform: `translateX(calc(-${currentHeroIndex * 100}% + ${heroSwipeOffset}px))`,
+                width: `${heroImages.length * 100}%`
+              }}
+            >
+              {heroImages.map((image, index) => (
+                <div
+                  key={index}
+                  className="relative h-full flex-shrink-0"
+                  style={{ width: `${100 / heroImages.length}%` }}
+                >
+                  <img
+                    src={image}
+                    className="w-full h-full object-cover"
+                    alt={`Hero ${index + 1}`}
+                    draggable={false}
+                  />
+                </div>
+              ))}
+            </div>
 
             {/* Navigation Dots */}
             {heroImages.length > 1 && (
@@ -455,10 +479,10 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Mobile: Single Certificate Carousel */}
+              {/* Mobile: Single Certificate Carousel - 跟手滑动效果 */}
               <div className="md:hidden px-6">
                 <div
-                  className="relative max-w-sm mx-auto"
+                  className="relative max-w-sm mx-auto overflow-hidden"
                   onTouchStart={handleCertTouchStart}
                   onTouchMove={handleCertTouchMove}
                   onTouchEnd={handleCertTouchEnd}
@@ -466,37 +490,52 @@ export default function HomePage() {
                   {/* Left Arrow */}
                   <button
                     onClick={() => setMobileCertIndex(prev => prev === 0 ? certificates.length - 1 : prev - 1)}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 flex items-center justify-center"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow"
                     aria-label="Previous certificate"
                   >
-                    <ChevronLeft size={28} strokeWidth={2} className="text-primary" />
+                    <ChevronLeft size={20} strokeWidth={2} className="text-primary" />
                   </button>
 
-                  {/* Certificate Image */}
-                  <div className="relative bg-white shadow-md overflow-hidden">
-                    <img
-                      src={certificates[mobileCertIndex]?.image}
-                      alt={`Certificate ${mobileCertIndex + 1}`}
-                      className="w-full h-64 object-contain p-4"
-                    />
-                    {(certificates[mobileCertIndex]?.label_zh || certificates[mobileCertIndex]?.label_en) && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                        <p className="text-white text-sm font-medium">
-                          {language === 'zh'
-                            ? (certificates[mobileCertIndex]?.label_zh || certificates[mobileCertIndex]?.label_en)
-                            : (certificates[mobileCertIndex]?.label_en || certificates[mobileCertIndex]?.label_zh)}
-                        </p>
+                  {/* Certificate Images - 跟手滑动容器 */}
+                  <div
+                    className={`flex ${certIsSwiping ? '' : 'transition-transform duration-300 ease-out'}`}
+                    style={{
+                      transform: `translateX(calc(-${mobileCertIndex * 100}% + ${certSwipeOffset}px))`,
+                      width: `${certificates.length * 100}%`
+                    }}
+                  >
+                    {certificates.map((cert, index) => (
+                      <div
+                        key={index}
+                        className="flex-shrink-0 relative bg-white shadow-md"
+                        style={{ width: `${100 / certificates.length}%` }}
+                      >
+                        <img
+                          src={cert.image}
+                          alt={`Certificate ${index + 1}`}
+                          className="w-full h-64 object-contain p-4"
+                          draggable={false}
+                        />
+                        {(cert.label_zh || cert.label_en) && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                            <p className="text-white text-sm font-medium">
+                              {language === 'zh'
+                                ? (cert.label_zh || cert.label_en)
+                                : (cert.label_en || cert.label_zh)}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
 
                   {/* Right Arrow */}
                   <button
                     onClick={() => setMobileCertIndex(prev => prev === certificates.length - 1 ? 0 : prev + 1)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 flex items-center justify-center"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow"
                     aria-label="Next certificate"
                   >
-                    <ChevronRight size={28} strokeWidth={2} className="text-primary" />
+                    <ChevronRight size={20} strokeWidth={2} className="text-primary" />
                   </button>
 
                   {/* Dots Indicator */}
