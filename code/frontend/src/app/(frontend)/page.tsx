@@ -258,19 +258,17 @@ export default function HomePage() {
             onTouchMove={handleHeroTouchMove}
             onTouchEnd={handleHeroTouchEnd}
           >
-            {/* Hero Carousel Images - 跟手滑动效果 */}
+            {/* Hero Carousel Images - iPhone风格滑动 */}
             <div
               className={`flex h-full ${heroIsSwiping ? '' : 'transition-transform duration-500 ease-out'}`}
               style={{
-                transform: `translateX(calc(-${currentHeroIndex * 100}% + ${heroSwipeOffset}px))`,
-                width: `${heroImages.length * 100}%`
+                transform: `translateX(calc(-${currentHeroIndex * 100}% + ${heroSwipeOffset}px))`
               }}
             >
               {heroImages.map((image, index) => (
                 <div
                   key={index}
-                  className="relative h-full flex-shrink-0"
-                  style={{ width: `${100 / heroImages.length}%` }}
+                  className="w-full h-full flex-shrink-0 relative"
                 >
                   <img
                     src={image}
@@ -503,7 +501,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Mobile: Single Certificate Carousel - 跟手滑动效果 */}
+              {/* Mobile: Single Certificate Carousel - iPhone风格滑动 */}
               <div className="md:hidden px-6">
                 <div
                   className="relative max-w-sm mx-auto overflow-hidden"
@@ -513,26 +511,24 @@ export default function HomePage() {
                 >
                   {/* Left Arrow */}
                   <button
-                    onClick={() => setMobileCertIndex(prev => prev === 0 ? certificates.length - 1 : prev - 1)}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow"
+                    onClick={() => setMobileCertIndex(prev => prev > 0 ? prev - 1 : prev)}
+                    className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow ${mobileCertIndex === 0 ? 'opacity-30' : ''}`}
                     aria-label="Previous certificate"
                   >
                     <ChevronLeft size={20} strokeWidth={2} className="text-primary" />
                   </button>
 
-                  {/* Certificate Images - 跟手滑动容器 */}
+                  {/* Certificate Images - iPhone风格轮播 */}
                   <div
                     className={`flex ${certIsSwiping ? '' : 'transition-transform duration-500 ease-out'}`}
                     style={{
-                      transform: `translateX(calc(-${mobileCertIndex * 100}% + ${certSwipeOffset}px))`,
-                      width: `${certificates.length * 100}%`
+                      transform: `translateX(calc(-${mobileCertIndex * 100}% + ${certSwipeOffset}px))`
                     }}
                   >
                     {certificates.map((cert, index) => (
                       <div
                         key={index}
-                        className="flex-shrink-0 relative bg-white shadow-md"
-                        style={{ width: `${100 / certificates.length}%` }}
+                        className="w-full flex-shrink-0 relative bg-white shadow-md"
                       >
                         <img
                           src={cert.image}
@@ -555,8 +551,8 @@ export default function HomePage() {
 
                   {/* Right Arrow */}
                   <button
-                    onClick={() => setMobileCertIndex(prev => prev === certificates.length - 1 ? 0 : prev + 1)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow"
+                    onClick={() => setMobileCertIndex(prev => prev < certificates.length - 1 ? prev + 1 : prev)}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center bg-white/80 rounded-full shadow ${mobileCertIndex === certificates.length - 1 ? 'opacity-30' : ''}`}
                     aria-label="Next certificate"
                   >
                     <ChevronRight size={20} strokeWidth={2} className="text-primary" />
