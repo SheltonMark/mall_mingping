@@ -35,7 +35,7 @@ export default function HomePage() {
   const [certSwipeOffset, setCertSwipeOffset] = useState(0)
   const [certIsSwiping, setCertIsSwiping] = useState(false)
 
-  // Hero轮播图触摸滑动处理 - 跟手滑动
+  // Hero轮播图触摸滑动处理 - 跟手滑动（带边界阻尼）
   const handleHeroTouchStart = (e: React.TouchEvent) => {
     setHeroTouchStart(e.targetTouches[0].clientX)
     setHeroIsSwiping(true)
@@ -43,9 +43,21 @@ export default function HomePage() {
   }
 
   const handleHeroTouchMove = (e: React.TouchEvent) => {
-    if (!heroIsSwiping) return
+    if (!heroIsSwiping || heroImages.length <= 1) return
     const currentX = e.targetTouches[0].clientX
-    const diff = currentX - heroTouchStart
+    let diff = currentX - heroTouchStart
+
+    // 边界阻尼：在第一张往右滑或最后一张往左滑时，添加阻力
+    const isAtStart = currentHeroIndex === 0 && diff > 0
+    const isAtEnd = currentHeroIndex === heroImages.length - 1 && diff < 0
+    if (isAtStart || isAtEnd) {
+      diff = diff * 0.3 // 30% 阻尼效果
+    }
+
+    // 限制最大滑动距离
+    const maxOffset = 150
+    diff = Math.max(-maxOffset, Math.min(maxOffset, diff))
+
     setHeroSwipeOffset(diff)
   }
 
@@ -54,12 +66,12 @@ export default function HomePage() {
     const minSwipeDistance = 50
 
     if (Math.abs(heroSwipeOffset) > minSwipeDistance && heroImages.length > 1) {
-      if (heroSwipeOffset < 0) {
-        // 向左滑动 - 下一张
-        setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length)
-      } else {
-        // 向右滑动 - 上一张
-        setCurrentHeroIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))
+      if (heroSwipeOffset < 0 && currentHeroIndex < heroImages.length - 1) {
+        // 向左滑动 - 下一张（不循环）
+        setCurrentHeroIndex((prev) => prev + 1)
+      } else if (heroSwipeOffset > 0 && currentHeroIndex > 0) {
+        // 向右滑动 - 上一张（不循环）
+        setCurrentHeroIndex((prev) => prev - 1)
       }
     }
     setHeroIsSwiping(false)
@@ -67,7 +79,7 @@ export default function HomePage() {
     setHeroTouchStart(0)
   }
 
-  // 证书模块触摸滑动处理 - 跟手滑动
+  // 证书模块触摸滑动处理 - 跟手滑动（带边界阻尼）
   const handleCertTouchStart = (e: React.TouchEvent) => {
     setCertTouchStart(e.targetTouches[0].clientX)
     setCertIsSwiping(true)
@@ -75,9 +87,21 @@ export default function HomePage() {
   }
 
   const handleCertTouchMove = (e: React.TouchEvent) => {
-    if (!certIsSwiping) return
+    if (!certIsSwiping || certificates.length <= 1) return
     const currentX = e.targetTouches[0].clientX
-    const diff = currentX - certTouchStart
+    let diff = currentX - certTouchStart
+
+    // 边界阻尼
+    const isAtStart = mobileCertIndex === 0 && diff > 0
+    const isAtEnd = mobileCertIndex === certificates.length - 1 && diff < 0
+    if (isAtStart || isAtEnd) {
+      diff = diff * 0.3
+    }
+
+    // 限制最大滑动距离
+    const maxOffset = 120
+    diff = Math.max(-maxOffset, Math.min(maxOffset, diff))
+
     setCertSwipeOffset(diff)
   }
 
@@ -86,12 +110,12 @@ export default function HomePage() {
     const minSwipeDistance = 50
 
     if (Math.abs(certSwipeOffset) > minSwipeDistance && certificates.length > 1) {
-      if (certSwipeOffset < 0) {
-        // 向左滑动 - 下一张
-        setMobileCertIndex((prev) => (prev + 1) % certificates.length)
-      } else {
-        // 向右滑动 - 上一张
-        setMobileCertIndex((prev) => (prev === 0 ? certificates.length - 1 : prev - 1))
+      if (certSwipeOffset < 0 && mobileCertIndex < certificates.length - 1) {
+        // 向左滑动 - 下一张（不循环）
+        setMobileCertIndex((prev) => prev + 1)
+      } else if (certSwipeOffset > 0 && mobileCertIndex > 0) {
+        // 向右滑动 - 上一张（不循环）
+        setMobileCertIndex((prev) => prev - 1)
       }
     }
     setCertIsSwiping(false)
@@ -236,7 +260,7 @@ export default function HomePage() {
           >
             {/* Hero Carousel Images - 跟手滑动效果 */}
             <div
-              className={`flex h-full ${heroIsSwiping ? '' : 'transition-transform duration-300 ease-out'}`}
+              className={`flex h-full ${heroIsSwiping ? '' : 'transition-transform duration-500 ease-out'}`}
               style={{
                 transform: `translateX(calc(-${currentHeroIndex * 100}% + ${heroSwipeOffset}px))`,
                 width: `${heroImages.length * 100}%`
@@ -498,7 +522,7 @@ export default function HomePage() {
 
                   {/* Certificate Images - 跟手滑动容器 */}
                   <div
-                    className={`flex ${certIsSwiping ? '' : 'transition-transform duration-300 ease-out'}`}
+                    className={`flex ${certIsSwiping ? '' : 'transition-transform duration-500 ease-out'}`}
                     style={{
                       transform: `translateX(calc(-${mobileCertIndex * 100}% + ${certSwipeOffset}px))`,
                       width: `${certificates.length * 100}%`
