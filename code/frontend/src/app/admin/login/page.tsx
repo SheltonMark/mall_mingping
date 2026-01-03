@@ -41,9 +41,9 @@ export default function AdminLoginPage() {
           backgroundSize: '80px 80px'
         }} />
 
-        {/* 动态光晕效果 */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* 光晕效果 */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
 
         {/* 科技感几何线条 */}
         <div className="absolute top-20 left-20 w-64 h-64 border border-cyan-500/30 rotate-45 rounded-lg" />
