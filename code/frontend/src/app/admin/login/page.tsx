@@ -64,8 +64,8 @@ export default function AdminLoginPage() {
           <circle cx="50%" cy="50%" r="200" fill="none" stroke="rgba(6, 182, 212, 0.1)" strokeWidth="1" />
 
           {/* 科技感小方块 */}
-          <rect x="10%" y="80%" width="60" height="60" fill="none" stroke="rgba(6, 182, 212, 0.3)" strokeWidth="1.5" transform="rotate(45 calc(10% + 30) calc(80% + 30))" />
-          <rect x="85%" y="15%" width="40" height="40" fill="none" stroke="rgba(20, 184, 166, 0.3)" strokeWidth="1.5" transform="rotate(-30 calc(85% + 20) calc(15% + 20))" />
+          <rect x="10%" y="80%" width="60" height="60" fill="none" stroke="rgba(6, 182, 212, 0.3)" strokeWidth="1.5" transform="rotate(45)" />
+          <rect x="85%" y="15%" width="40" height="40" fill="none" stroke="rgba(20, 184, 166, 0.3)" strokeWidth="1.5" transform="rotate(-30)" />
         </svg>
 
         {/* 扫描线效果 */}
